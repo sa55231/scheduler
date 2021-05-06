@@ -46,6 +46,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnFilePrintPreview)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
 	ON_WM_SETTINGCHANGE()
+	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, &CMainFrame::OnEventObjectSelected)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -137,7 +138,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	EnableD2DSupport();
+	//EnableD2DSupport();
 
 	return TRUE;
 }
@@ -437,4 +438,11 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
+}
+
+LRESULT CMainFrame::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	m_wndProperties.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
+
+	return 0;
 }

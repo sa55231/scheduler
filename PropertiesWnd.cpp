@@ -16,6 +16,7 @@
 #include "Resource.h"
 #include "MainFrm.h"
 #include "scheduler.h"
+#include "CScheduleEvent.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -48,6 +49,7 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_UPDATE_COMMAND_UI(ID_PROPERTIES2, OnUpdateProperties2)
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
+	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -280,4 +282,11 @@ void CPropertiesWnd::SetPropListFont()
 
 	m_wndPropList.SetFont(&m_fntPropList);
 	m_wndObjectCombo.SetFont(&m_fntPropList);
+}
+
+
+LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	CScheduleEvent* event = (CScheduleEvent*)(lparam);
+	return 0;
 }

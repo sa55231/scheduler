@@ -1,40 +1,74 @@
 #include "pch.h"
 #include "TrackRenderer.h"
 
-CTrackRenderer::CTrackRenderer(const CScheduleTrack& track, const CD2D1WriteFactoryWrapper& writeFactory):
-	textFormat(writeFactory), textLayout(writeFactory,textFormat,track.GetName(),10000,10000)
+CTrackRenderer::CTrackRenderer(const CScheduleTrack& track,
+	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush):
+	name(track.GetName()),
+	textFormat(textFormat),
+	backgroundColorBrush(backgroundColorBrush),
+	foregroundColorBrush(foregroundColorBrush),
+	trackBounds(D2D1::RectF()),
+	preferredSize(D2D1::SizeF()),
+	trackLabelSize(D2D1::SizeF())
 {
-	DWRITE_TEXT_METRICS metrics;
-	textLayout->GetMetrics(&metrics);
-	trackLabelSize.width = metrics.widthIncludingTrailingWhitespace;
-	trackLabelSize.height = metrics.height;
-	textLayout = std::move(CD2D1WriteTextLayoutWrapper(writeFactory, textFormat, track.GetName(), trackLabelSize.width, trackLabelSize.height));
-	preferredSize = trackLabelSize;
-	preferredSize.width += trackMargin;
-	for (const auto& event : track.GetEvents())
-	{
-		eventRenderers.emplace_back(event, writeFactory);
-		preferredSize.width += eventRenderers.back().GetPreferredSize().width + margin;
-	}
 }
 
+void CTrackRenderer::SetEventRenderers(std::vector<std::unique_ptr<CEventRenderer>> eventRenderers)
+{
+	this->eventRenderers = std::move(eventRenderers);
+}
+
+bool CTrackRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
+{
+	return (point.y >= trackBounds.top && point.y <= trackBounds.bottom);
+}
+
+CEventRenderer* CTrackRenderer::GetEventAtPoint(const D2D1_POINT_2F& point) const
+{
+	if (point.x >= trackBounds.left && point.x <= trackBounds.right && point.y >= trackBounds.top && point.y <= trackBounds.bottom)
+	{
+		for (const auto& event : eventRenderers)
+		{
+			if (event->ContainsPoint(point)) return event.get();
+		}
+	}
+	return nullptr;
+}
+void CTrackRenderer::SetTrackBounds(D2D1_RECT_F& rect)
+{
+	trackBounds = rect;
+}
+void CTrackRenderer::SetPreferredSize(D2D1_SIZE_F& size)
+{
+	preferredSize = size;
+}
 D2D1_SIZE_F CTrackRenderer::GetPreferredSize() const
 {
 	return preferredSize;
 }
+void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
+{	
+	renderTarget->FillRectangle(trackBounds, backgroundColorBrush);
+	renderTarget->DrawText(name,trackBounds,foregroundColorBrush,textFormat);
 
-void CTrackRenderer::Render(const CD2D1HwndRenderTargetWrapper& renderTarget, const D2D1_POINT_2F& position)
-{
-	backgroundColorBrush.initialize(renderTarget, D2D1::ColorF(D2D1::ColorF::LightGray, 0.5f));
-	foregroundColorBrush.initialize(renderTarget, D2D1::ColorF(D2D1::ColorF::Black));
-	auto rect = D2D1::RectF(position.x, position.y, position.x + trackLabelSize.width, position.y+trackLabelSize.height);
-	renderTarget->FillRectangle(rect, backgroundColorBrush.get());
-	renderTarget->DrawTextLayout(position,textLayout.get(),foregroundColorBrush.get());
-
-	auto xOffset = position.x + trackLabelSize.width + trackMargin;
 	for (auto& event : eventRenderers)
 	{
-		event.Render(renderTarget,D2D1::Point2F(xOffset,position.y));
-		xOffset += event.GetPreferredSize().width + margin;
+		event->Render(renderTarget);
 	}
+	
+
+	if (selected)
+	{
+		renderTarget->DrawRectangle(trackBounds, foregroundColorBrush);
+	}
+}
+
+
+bool CTrackRenderer::IsSelected() const
+{
+	return selected;
+}
+void CTrackRenderer::SetSelected(bool flag)
+{
+	selected = flag;
 }

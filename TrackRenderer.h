@@ -1,31 +1,36 @@
 #pragma once
 
-#include "D2D1HwndRenderTargetWrapper.h"
-#include "D2D1WriteFactoryWrapper.h"
-#include "D2D1WriteTextLayoutWrapper.h"
-#include "D2D1WriteTextFormatWrapper.h"
-#include "D2D1SolidColorBrushWrapper.h"
-
 #include "CScheduleTrack.h"
 #include "EventRenderer.h"
 
 #include <vector>
+#include <unordered_map>
 
 class CTrackRenderer
 {
 public:
-	CTrackRenderer(const CScheduleTrack& track, const CD2D1WriteFactoryWrapper& writeFactory);
-	void Render(const CD2D1HwndRenderTargetWrapper& renderTarget, const D2D1_POINT_2F& position);
+	CTrackRenderer(const CScheduleTrack& track, 
+		CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush);
+	void Render(CHwndRenderTarget* renderTarget);
 	D2D1_SIZE_F GetPreferredSize() const;
+	void SetPreferredSize(D2D1_SIZE_F& size);
+	void SetTrackBounds(D2D1_RECT_F& rect);
+	CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point) const;
+	bool ContainsPoint(const D2D1_POINT_2F& point) const;
+	bool IsSelected() const;
+	void SetSelected(bool flag);
+	void SetEventRenderers(std::vector<std::unique_ptr<CEventRenderer>> eventRenderers);
 private:
-	CD2D1WriteTextFormatWrapper textFormat;
-	CD2D1WriteTextLayoutWrapper textLayout;
+	CString name;
+	CD2DTextFormat* textFormat = nullptr;
 	D2D1_SIZE_F trackLabelSize;
-	CD2D1SolidColorBrushWrapper backgroundColorBrush;
-	CD2D1SolidColorBrushWrapper foregroundColorBrush;
+	CD2DSolidColorBrush* backgroundColorBrush = nullptr;
+	CD2DSolidColorBrush* foregroundColorBrush = nullptr;
 	D2D1_SIZE_F preferredSize;
 	FLOAT margin = 0.f;
 	FLOAT trackMargin = 10.f;
-	std::vector<CEventRenderer> eventRenderers;
+	std::vector<std::unique_ptr<CEventRenderer>> eventRenderers;
+	D2D1_RECT_F trackBounds;
+	bool selected = false;
 };
 

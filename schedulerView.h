@@ -33,13 +33,12 @@ public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 protected:
-	LRESULT DpiChanged(WPARAM wParam, LPARAM lParam);
+//	LRESULT DpiChanged(WPARAM wParam, LPARAM lParam);
 	virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/);
 	virtual void OnInitialUpdate(); // called first time after construct
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-	//virtual void OnUpdate(CView* pSender,LPARAM lHint,CObject* pHint);
 	afx_msg void OnSize(UINT nType,int cx,int cy);
 // Implementation
 public:
@@ -53,14 +52,24 @@ protected:
 
 private:
 	CSchedulerDocumentRenderer docRenderer;
-	FLOAT dpi = 0.f;
-	FLOAT dpiScale = 0.f;
+	FLOAT dpiX = 0.f;
+	FLOAT dpiY = 0.f;
+	FLOAT dpiScaleX = 0.f;
+	FLOAT dpiScaleY = 0.f;
+	CEventRenderer* selectedEvent = nullptr;
+	CTrackRenderer* selectedTrack = nullptr;
 // Generated message map functions
 protected:
+	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFilePrintPreview();
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	DECLARE_MESSAGE_MAP()
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg LRESULT OnAfxDraw2D(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnAfxRecreated2DResources(WPARAM wParam, LPARAM lParam);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+
 };
 
 #ifndef _DEBUG  // debug version in schedulerView.cpp

@@ -42,7 +42,7 @@
 
 
 
-
+#define WM_EVENT_OBJECT_SELECTED (WM_USER+1)
 
 
 

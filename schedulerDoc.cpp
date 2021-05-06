@@ -74,7 +74,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 	}
 
 	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size()-1);
-	std::uniform_int_distribution<int> event_count_distribution(2, 20);
+	std::uniform_int_distribution<int> event_count_distribution(0, 20);
 
 	for (int i = 0; i < 20; i++)
 	{

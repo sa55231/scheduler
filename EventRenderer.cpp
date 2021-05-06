@@ -1,38 +1,57 @@
 #include "pch.h"
 #include "EventRenderer.h"
 
-CEventRenderer::CEventRenderer(const CScheduleEvent& event, const CD2D1WriteFactoryWrapper& writeFactory):
-	textFormat(writeFactory), textLayout(writeFactory, textFormat, event.GetName(), 10000, 10000),
-	trimmingSign(writeFactory, textFormat), color(event.GetColor())
+CEventRenderer::CEventRenderer(const CScheduleEvent& event, CD2DTextFormat* textFormat,
+	CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush) :
+	textFormat(textFormat),
+	backgroundColorBrush(backgroundColorBrush),
+	foregroundColorBrush(foregroundColorBrush),
+	name(event.GetName()),
+	color(event.GetColor()),
+	eventBounds(D2D1::RectF()),
+	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f))
 {
-	DWRITE_TRIMMING trimming = { DWRITE_TRIMMING_GRANULARITY_CHARACTER, 0, 0 };
-	textFormat->SetTrimming(&trimming, trimmingSign.get());
-	
-	DWRITE_TEXT_METRICS metrics;
-	textLayout->GetMetrics(&metrics);
-	eventLabelSize.width = std::chrono::duration_cast<std::chrono::minutes>(event.GetDuration()).count();
-	eventLabelSize.height = metrics.height;
-	textLayout = std::move(CD2D1WriteTextLayoutWrapper(writeFactory, textFormat, event.GetName(), eventLabelSize.width, eventLabelSize.height));
 
+	
+	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event.GetDuration()).count();	
+}
+bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
+{
+	return (point.x >= eventBounds.left && point.x <= eventBounds.right && point.y >= eventBounds.top && point.y <= eventBounds.bottom);
+}
+float CEventRenderer::GetWidth() const
+{
+	return eventWidth;
+}
+void CEventRenderer::Render(CRenderTarget* renderTarget)
+{	
+	renderTarget->FillRoundedRectangle(eventBoundsRoundedRect, backgroundColorBrush);
+	
+	if (selected)
 	{
-		CD2D1WriteTextLayoutWrapper tmpTextLayout(writeFactory, textFormat, _T("XXX"), 10000, 10000);
-		tmpTextLayout->GetMetrics(&minMetrics);
+		renderTarget->DrawRoundedRectangle(eventBoundsRoundedRect, foregroundColorBrush);
+	}	
+
+	if (eventBounds.right - eventBounds.left > minEventRenderWidth)
+	{
+		renderTarget->DrawText(name,eventBounds, foregroundColorBrush, textFormat);
 	}
 }
-D2D1_SIZE_F CEventRenderer::GetPreferredSize() const
+void CEventRenderer::SetMinimumTextRenderingWidth(FLOAT width)
 {
-	return eventLabelSize;
+	minEventRenderWidth = width;
 }
-void CEventRenderer::Render(const CD2D1HwndRenderTargetWrapper& renderTarget, const D2D1_POINT_2F& position)
+void CEventRenderer::SetEventBounds(D2D1_RECT_F& rect)
 {
-	backgroundColorBrush.initialize(renderTarget, D2D1::ColorF(color, 0.5f));
-	foregroundColorBrush.initialize(renderTarget, D2D1::ColorF(D2D1::ColorF::Black));
-	auto rect = D2D1::RectF(position.x, position.y, position.x + eventLabelSize.width, position.y + eventLabelSize.height);
-	auto roundedRect = D2D1::RoundedRect(rect,eventLabelSize.height * 0.5, eventLabelSize.height * 0.5);
-	renderTarget->FillRoundedRectangle(roundedRect, backgroundColorBrush.get());
-	renderTarget->DrawRoundedRectangle(roundedRect, foregroundColorBrush.get());
-	if (eventLabelSize.width > minMetrics.width)
-	{
-		renderTarget->DrawTextLayout(position, textLayout.get(), foregroundColorBrush.get());
-	}
+	eventBounds = rect;
+	auto height = eventBounds.top - eventBounds.bottom;
+	eventBoundsRoundedRect = D2D1::RoundedRect(eventBounds, height * 0.3f, height * 0.3f);
+}
+bool CEventRenderer::IsSelected() const
+{
+	return selected;
+}
+void CEventRenderer::SetSelected(bool flag)
+{
+	selected = flag;
 }

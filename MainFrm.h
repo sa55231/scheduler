@@ -77,6 +77,7 @@ protected:
 	afx_msg void OnFilePrintPreview();
 	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();
