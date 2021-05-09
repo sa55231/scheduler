@@ -33,17 +33,22 @@ CFileView::~CFileView()
 {
 }
 
-BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
+IMPLEMENT_DYNAMIC(CFileView, CViewDockingPane)
+
+BEGIN_MESSAGE_MAP(CFileView, CViewDockingPane)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_CONTEXTMENU()
-	ON_COMMAND(ID_PROPERTIES, OnProperties)
+	ON_COMMAND(ID_ADD_TRACK, OnAddTrack)
+	ON_COMMAND(ID_EDIT_TRACK, OnEditTrack)
+	ON_COMMAND(ID_REMOVE_TRACK, OnRemoveTrack)
 	ON_COMMAND(ID_OPEN, OnFileOpen)
 	ON_COMMAND(ID_OPEN_WITH, OnFileOpenWith)
 	ON_COMMAND(ID_DUMMY_COMPILE, OnDummyCompile)
 	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
+	ON_NOTIFY(LVN_ENDLABELEDIT, 4, OnEndLabelEdit)
 	ON_WM_PAINT()
 	ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
@@ -60,7 +65,7 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rectDummy.SetRectEmpty();
 
 	// Create view:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS;
+	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | LVS_LIST | LVS_EDITLABELS | LVS_SHOWSELALWAYS | LVS_SINGLESEL;
 
 	if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, 4))
 	{
@@ -70,10 +75,10 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Load view images:
 	m_FileViewImages.Create(IDB_FILE_VIEW, 16, 0, RGB(255, 0, 255));
-	m_wndFileView.SetImageList(&m_FileViewImages, TVSIL_NORMAL);
+	m_wndFileView.SetImageList(&m_FileViewImages, LVSIL_SMALL);
 
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
-	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
+	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);	
 
 	OnChangeVisualStyle();
 
@@ -86,10 +91,10 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// All commands will be routed via this control , not via the parent frame:
 	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
-	// Fill in some static tree view data (dummy code, nothing magic here)
-	FillFileView();
+	// Fill in some static tree view data (dummy code, nothing magic here)	
 	AdjustLayout();
 
+	
 	return 0;
 }
 
@@ -101,42 +106,45 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView()
 {
-	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("FakeApp files"), 0, 0);
-	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+	m_wndFileView.InsertItem(0,_T("FakeApp files"), 0);
+	//m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 
-	HTREEITEM hSrc = m_wndFileView.InsertItem(_T("FakeApp Source Files"), 0, 0, hRoot);
+	m_wndFileView.InsertItem(0,_T("FakeApp.cpp"), 1);
+	m_wndFileView.InsertItem(0, _T("FakeApp.rc"), 1);
+	m_wndFileView.InsertItem(0, _T("FakeAppDoc.cpp"), 1);
+	m_wndFileView.InsertItem(0, _T("FakeAppView.cpp"), 1);
+	m_wndFileView.InsertItem(0, _T("MainFrm.cpp"), 1);
+	m_wndFileView.InsertItem(0, _T("pch.cpp"), 1);
 
-	m_wndFileView.InsertItem(_T("FakeApp.cpp"), 1, 1, hSrc);
-	m_wndFileView.InsertItem(_T("FakeApp.rc"), 1, 1, hSrc);
-	m_wndFileView.InsertItem(_T("FakeAppDoc.cpp"), 1, 1, hSrc);
-	m_wndFileView.InsertItem(_T("FakeAppView.cpp"), 1, 1, hSrc);
-	m_wndFileView.InsertItem(_T("MainFrm.cpp"), 1, 1, hSrc);
-	m_wndFileView.InsertItem(_T("pch.cpp"), 1, 1, hSrc);
+	m_wndFileView.InsertItem(0, _T("FakeApp.h"), 2);
+	m_wndFileView.InsertItem(0, _T("FakeAppDoc.h"), 2);
+	m_wndFileView.InsertItem(0, _T("FakeAppView.h"), 2);
+	m_wndFileView.InsertItem(0, _T("Resource.h"), 2);
+	m_wndFileView.InsertItem(0, _T("MainFrm.h"), 2);
+	m_wndFileView.InsertItem(0, _T("pch.h"), 2);
 
-	HTREEITEM hInc = m_wndFileView.InsertItem(_T("FakeApp Header Files"), 0, 0, hRoot);
+	m_wndFileView.InsertItem(0,_T("FakeApp.ico"), 2);
+	m_wndFileView.InsertItem(0, _T("FakeApp.rc2"), 2);
+	m_wndFileView.InsertItem(0, _T("FakeAppDoc.ico"), 2);
+	m_wndFileView.InsertItem(0, _T("FakeToolbar.bmp"), 2);
 
-	m_wndFileView.InsertItem(_T("FakeApp.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("FakeAppDoc.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("FakeAppView.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("Resource.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("MainFrm.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("pch.h"), 2, 2, hInc);
+}
 
-	HTREEITEM hRes = m_wndFileView.InsertItem(_T("FakeApp Resource Files"), 0, 0, hRoot);
+void CFileView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	NMLVDISPINFO* listInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+	if (NULL != listInfo->item.pszText)
+	{
+		m_wndFileView.SetItemText(listInfo->item.iItem, 0, listInfo->item.pszText);
+		GetDocument()->UpdateStockEventName(listInfo->item.iItem, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
+	}
 
-	m_wndFileView.InsertItem(_T("FakeApp.ico"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeApp.rc2"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeAppDoc.ico"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeToolbar.bmp"), 2, 2, hRes);
-
-	m_wndFileView.Expand(hRoot, TVE_EXPAND);
-	m_wndFileView.Expand(hSrc, TVE_EXPAND);
-	m_wndFileView.Expand(hInc, TVE_EXPAND);
+	*pResult = 0;
 }
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	CTreeCtrl* pWndTree = (CTreeCtrl*) &m_wndFileView;
+	CListCtrl* pWndTree = (CListCtrl*) &m_wndFileView;
 	ASSERT_VALID(pWndTree);
 
 	if (pWnd != pWndTree)
@@ -152,15 +160,46 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 		pWndTree->ScreenToClient(&ptTree);
 
 		UINT flags = 0;
-		HTREEITEM hTreeItem = pWndTree->HitTest(ptTree, &flags);
-		if (hTreeItem != nullptr)
+		int hTreeItem = pWndTree->HitTest(ptTree, &flags);
+		if (hTreeItem != -1)
 		{
-			pWndTree->SelectItem(hTreeItem);
+			pWndTree->SetSelectionMark(hTreeItem);
 		}
 	}
 
 	pWndTree->SetFocus();
 	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EXPLORER, point.x, point.y, this, TRUE);
+}
+
+void CFileView::OnInitialUpdate()
+{
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	ReloadEventsList(pDoc);
+}
+void CFileView::OnUpdate(const LPARAM lHint)
+{
+	CFileView* potentialSource = reinterpret_cast<CFileView*>(lHint);
+	if (potentialSource && potentialSource == this) return;
+
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	ReloadEventsList(pDoc);
+}
+
+void CFileView::ReloadEventsList(CSchedulerDoc* pDoc)
+{
+	m_wndFileView.SetRedraw(FALSE);
+	m_wndFileView.DeleteAllItems();
+	int index = 0;
+	for (const auto& ev : pDoc->GetStockEvents())
+	{
+		LVITEM item;
+		
+		m_wndFileView.InsertItem(index++, ev.GetName(), 0);
+	}
+
+	m_wndFileView.SetRedraw(TRUE);
 }
 
 void CFileView::AdjustLayout()
@@ -179,10 +218,30 @@ void CFileView::AdjustLayout()
 	m_wndFileView.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-void CFileView::OnProperties()
+void CFileView::OnAddTrack()
 {
-	AfxMessageBox(_T("Properties...."));
+	AfxMessageBox(_T("OnAddTrack...."));
 
+}
+
+void CFileView::OnRemoveTrack()
+{
+	AfxMessageBox(_T("OnRemoveTrack...."));
+
+}
+
+void CFileView::OnEditTrack()
+{
+	POSITION pos = m_wndFileView.GetFirstSelectedItemPosition();
+	if (pos)
+	{
+		int index = m_wndFileView.GetNextSelectedItem(pos);
+		auto x = m_wndFileView.EditLabel(index);
+		if (x)
+		{
+			x->SetWindowText(_T("ABC"));
+		}
+	}
 }
 
 void CFileView::OnFileOpen()
@@ -237,11 +296,11 @@ void CFileView::OnSetFocus(CWnd* pOldWnd)
 void CFileView::OnChangeVisualStyle()
 {
 	m_wndToolBar.CleanUpLockedImages();
-	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_EXPLORER_24 : IDR_EXPLORER, 0, 0, TRUE /* Locked */);
+	m_wndToolBar.LoadBitmap(IDB_EXPLORER_24, 0, 0, TRUE /* Locked */);
 
 	m_FileViewImages.DeleteImageList();
 
-	UINT uiBmpId = theApp.m_bHiColorIcons ? IDB_FILE_VIEW_24 : IDB_FILE_VIEW;
+	UINT uiBmpId = IDB_FILE_VIEW_24;
 
 	CBitmap bmp;
 	if (!bmp.LoadBitmap(uiBmpId))
@@ -256,7 +315,7 @@ void CFileView::OnChangeVisualStyle()
 
 	UINT nFlags = ILC_MASK;
 
-	nFlags |= (theApp.m_bHiColorIcons) ? ILC_COLOR24 : ILC_COLOR4;
+	nFlags |= ILC_COLOR24;
 
 	m_FileViewImages.Create(16, bmpObj.bmHeight, nFlags, 0, 0);
 	m_FileViewImages.Add(&bmp, RGB(255, 0, 255));

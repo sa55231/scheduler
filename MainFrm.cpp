@@ -128,8 +128,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
 
+	
+	
 	return 0;
 }
+
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
@@ -138,7 +141,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	//EnableD2DSupport();
 
 	return TRUE;
 }
@@ -253,7 +255,15 @@ void CMainFrame::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
+void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
+{
+	m_wndFileView.Initialize(doc);
+}
 
+void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
+{
+	m_wndFileView.Update(lHint);
+}
 // CMainFrame message handlers
 
 void CMainFrame::OnApplicationLook(UINT id)

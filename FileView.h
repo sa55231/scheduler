@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "ViewTree.h"
+#include "ViewDockingPane.h"
 
 class CFileViewToolBar : public CMFCToolBar
 {
@@ -23,8 +23,9 @@ class CFileViewToolBar : public CMFCToolBar
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
-class CFileView : public CDockablePane
+class CFileView : public CViewDockingPane
 {
+	DECLARE_DYNAMIC(CFileView)
 // Construction
 public:
 	CFileView() noexcept;
@@ -35,12 +36,17 @@ public:
 // Attributes
 protected:
 
-	CViewTree m_wndFileView;
+	CListCtrl m_wndFileView;
 	CImageList m_FileViewImages;
 	CFileViewToolBar m_wndToolBar;
 
 protected:
 	void FillFileView();
+	virtual void OnInitialUpdate();
+	virtual void OnUpdate(const LPARAM lHint);
+
+private:
+	void ReloadEventsList(CSchedulerDoc* pDoc);
 
 // Implementation
 public:
@@ -50,7 +56,9 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	afx_msg void OnProperties();
+	afx_msg void OnAddTrack();
+	afx_msg void OnRemoveTrack();
+	afx_msg void OnEditTrack();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileOpenWith();
 	afx_msg void OnDummyCompile();
@@ -59,6 +67,7 @@ protected:
 	afx_msg void OnEditClear();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 };

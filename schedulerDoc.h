@@ -20,6 +20,8 @@ protected: // create from serialization only
 public:
 
 	const std::vector<CScheduleTrack>& GetTracks() const;
+	const std::vector<CScheduleStockEvent>& GetStockEvents() const;
+	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
 
 // Operations
 public:
@@ -28,6 +30,7 @@ public:
 public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
+	void SetModifiedFlag(BOOL bModified = TRUE);
 #ifdef SHARED_HANDLERS
 	virtual void InitializeSearchContent();
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);

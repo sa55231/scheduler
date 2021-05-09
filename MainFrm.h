@@ -45,6 +45,8 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
+	void InitializeSecondaryViews(CSchedulerDoc* doc);
+	void UpdateSecondaryViews(LPARAM lHint);
 
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;

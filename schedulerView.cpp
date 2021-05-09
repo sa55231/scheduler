@@ -22,6 +22,7 @@
 
 #include "schedulerDoc.h"
 #include "schedulerView.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,9 +54,8 @@ END_MESSAGE_MAP()
 // CSchedulerView construction/destruction
 
 CSchedulerView::CSchedulerView() noexcept
-{
-	//factory->GetDpiForWindow(&dpiX, &dpiY);	
-	
+{	
+	SetScrollSizes(MM_TEXT, CSize(0, 0));
 }
 
 CSchedulerView::~CSchedulerView()
@@ -119,6 +119,8 @@ void CSchedulerView::OnInitialUpdate()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
+
+	((CMainFrame*)AfxGetMainWnd())->InitializeSecondaryViews(pDoc);
 }
 
 void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -133,13 +135,15 @@ void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
 		ASSERT(NULL != pDirectWriteFactory);
 		
-		auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(),pDirectWriteFactory);
+		auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(),pDirectWriteFactory, 
+			std::chrono::system_clock::now(), std::chrono::hours(-4));
 		// The total scroll size has to be multiplied by the DPI scale
 		// as the size we calculated earlier is in DIPs
 		sizeTotal.width = sizeTotal.width * dpiScaleX;
 		sizeTotal.height = sizeTotal.height * dpiScaleY;
 		TRACE("ONUPDATE: %f %f\n", sizeTotal.width, sizeTotal.height);
 		SetScrollSizes(MM_TEXT, CSize((int)sizeTotal.width, (int)sizeTotal.height));
+		((CMainFrame*)AfxGetMainWnd())->UpdateSecondaryViews(lHint);
 	}
 }
 

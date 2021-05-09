@@ -129,6 +129,9 @@ BOOL CSchedulerApp::InitInstance()
 		RUNTIME_CLASS(CSchedulerView));
 	if (!pDocTemplate)
 		return FALSE;
+
+	
+
 	AddDocTemplate(pDocTemplate);
 
 

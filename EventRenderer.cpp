@@ -11,9 +11,7 @@ CEventRenderer::CEventRenderer(const CScheduleEvent& event, CD2DTextFormat* text
 	eventBounds(D2D1::RectF()),
 	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f))
 {
-
-	
-	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event.GetDuration()).count();	
+	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event.GetDuration()).count();
 }
 bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
 {
@@ -30,7 +28,7 @@ void CEventRenderer::Render(CRenderTarget* renderTarget)
 	if (selected)
 	{
 		renderTarget->DrawRoundedRectangle(eventBoundsRoundedRect, foregroundColorBrush);
-	}	
+	}
 
 	if (eventBounds.right - eventBounds.left > minEventRenderWidth)
 	{

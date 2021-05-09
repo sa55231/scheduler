@@ -2,24 +2,23 @@
 #include "CScheduleEvent.h"
 
 CScheduleEvent::CScheduleEvent(const CScheduleStockEvent& eventSource):
-	stockId(eventSource.GetId()),name(eventSource.GetName()),duration(eventSource.GetDuration()),
-	color(eventSource.GetColor())
+	stockEvent(&eventSource)
 {
 }
 
 int CScheduleEvent::GetStockId() const
 {
-	return stockId;
+	return stockEvent->GetId();
 }
 CString CScheduleEvent::GetName() const
 {
-	return name;
+	return stockEvent->GetName();
 }
 std::chrono::seconds CScheduleEvent::GetDuration() const
 {
-	return duration;
+	return stockEvent->GetDuration();
 }
 UINT32 CScheduleEvent::GetColor() const
 {
-	return color;
+	return stockEvent->GetColor();
 }

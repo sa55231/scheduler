@@ -26,4 +26,17 @@ std::chrono::seconds CScheduleStockEvent::GetDuration() const
 UINT32 CScheduleStockEvent::GetColor() const
 {
 	return color;
+}	
+
+void CScheduleStockEvent::SetName(const CString& newName)
+{
+	name = newName;
+}
+void CScheduleStockEvent::SetColor(UINT32 newColor)
+{
+	color = newColor;
+}
+void CScheduleStockEvent::SetDuration(const std::chrono::seconds& newDuration)
+{
+	duration = newDuration;
 }

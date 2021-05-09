@@ -7,7 +7,20 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <date/date.h>
+
+
 // add headers that you want to pre-compile here
 #include "framework.h"
+
+#ifndef NOMINMAX
+#ifdef  min
+#undef min
+#endif //  min
+
+#ifdef  max
+#undef max
+#endif //  max
+#endif
 
 #endif //PCH_H

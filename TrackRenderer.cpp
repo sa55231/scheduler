@@ -8,8 +8,7 @@ CTrackRenderer::CTrackRenderer(const CScheduleTrack& track,
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
 	trackBounds(D2D1::RectF()),
-	preferredSize(D2D1::SizeF()),
-	trackLabelSize(D2D1::SizeF())
+	trackLabelBounds(D2D1::RectF())
 {
 }
 
@@ -38,18 +37,16 @@ void CTrackRenderer::SetTrackBounds(D2D1_RECT_F& rect)
 {
 	trackBounds = rect;
 }
-void CTrackRenderer::SetPreferredSize(D2D1_SIZE_F& size)
+
+void CTrackRenderer::SetTrackLabelBounds(D2D1_RECT_F& rect)
 {
-	preferredSize = size;
+	trackLabelBounds = rect;
 }
-D2D1_SIZE_F CTrackRenderer::GetPreferredSize() const
-{
-	return preferredSize;
-}
+
 void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
 {	
-	renderTarget->FillRectangle(trackBounds, backgroundColorBrush);
-	renderTarget->DrawText(name,trackBounds,foregroundColorBrush,textFormat);
+	renderTarget->FillRectangle(trackLabelBounds, backgroundColorBrush);
+	renderTarget->DrawText(name, trackLabelBounds,foregroundColorBrush,textFormat);
 
 	for (auto& event : eventRenderers)
 	{

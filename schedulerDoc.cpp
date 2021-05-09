@@ -62,7 +62,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 	startTime = std::chrono::steady_clock::now();
 
 	std::default_random_engine generator;
-	generator.seed(std::chrono::steady_clock::now().time_since_epoch().count());
+	generator.seed((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> duration_distribution(60,5*3600);
 	std::uniform_int_distribution<int> color_distribution(0x0000FF, 0xCCCCFF);
 	for (int i = 0; i < 20; i++)
@@ -97,8 +97,43 @@ const std::vector<CScheduleTrack>& CSchedulerDoc::GetTracks() const
 {
 	return tracks;
 }
+const std::vector<CScheduleStockEvent>& CSchedulerDoc::GetStockEvents() const
+{
+	return stockEvents;
+}
 
+void CSchedulerDoc::UpdateStockEventName(int index, const CString& newName, LPARAM lHint)
+{
+	ASSERT(index>=0 && index<stockEvents.size());
+	stockEvents.at(index).SetName(newName);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+void CSchedulerDoc::SetModifiedFlag(BOOL bModified)
+{
+	if (bModified != IsModified())
+	{
+		CDocument::SetModifiedFlag(bModified);
 
+		CString strTitle = GetTitle();
+		if (bModified)
+		{
+			// Add '*'
+			strTitle += "*";
+		}
+		else
+		{
+			// Remove '*'
+			strTitle = strTitle.Left(strTitle.GetLength() - 1);
+		}
+		SetTitle(strTitle);
+
+		// Update Window title/Tab content
+		POSITION pos = GetFirstViewPosition();
+		if (pos != nullptr)
+			GetNextView(pos)->GetParentFrame()->OnUpdateFrameTitle(TRUE);
+	}
+}
 // CSchedulerDoc serialization
 
 void CSchedulerDoc::Serialize(CArchive& ar)
