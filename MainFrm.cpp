@@ -300,14 +300,11 @@ void CMainFrame::OnMouseMove(UINT nFlags, CPoint point)
 		CWnd* pDropWnd = WindowFromPoint(pt);
 		ASSERT(pDropWnd); //make sure we have a window
 
-		// Convert from screen coordinates to drop target client coordinates
-		pDropWnd->ScreenToClient(&pt);
-
 		if (pDropWnd->IsKindOf(RUNTIME_CLASS(CSchedulerView)))
 		{
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			CSchedulerView* view = (CSchedulerView*)pDropWnd;
-
+			view->DraggingEventAtPoint(dragItemIndex, pt);
 		}
 		else
 		{

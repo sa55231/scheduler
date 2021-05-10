@@ -44,6 +44,7 @@ protected:
 public:
 	virtual ~CSchedulerView();
 	void AddEventAtPoint(int stockEventIndex, CPoint point);
+	void DraggingEventAtPoint(int stockEventIndex, CPoint point);
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

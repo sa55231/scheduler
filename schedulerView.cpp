@@ -215,6 +215,59 @@ void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 	OnContextMenu(this, point);
 }
 
+void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
+{
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	CRect windowRect;
+	GetWindowRect(windowRect);
+	ScreenToClient(windowRect);
+	ScreenToClient(&point);
+	auto pos = GetScrollPosition();
+	auto horizontalThreshold = std::max(100, (int)(windowRect.right / 10));
+	auto verticalThreshold = std::max(100, (int)(windowRect.bottom / 10));
+	if(point.x > windowRect.right - horizontalThreshold)
+	{
+		SetScrollPos(SB_HORZ, pos.x + 50);
+	}
+	if (pos.x > 0 && point.x > 0 && point.x < horizontalThreshold)
+	{
+		SetScrollPos(SB_HORZ, pos.x - 50);
+	}
+	if (point.y > windowRect.bottom - verticalThreshold)
+	{
+		SetScrollPos(SB_VERT, pos.y + 50);
+	}
+	if (pos.y > 0 && point.y > 0 && point.y < verticalThreshold)
+	{
+		SetScrollPos(SB_VERT, pos.y - 50);
+	}
+
+	pos = GetScrollPosition();
+	// The scroll position has to be converted to DIPs (device indipendent pixels)
+	pos.x += point.x;
+	pos.y += point.y;
+
+	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+
+	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
+	if (track != nullptr)
+	{
+		CEventRenderer* event = track->GetEventAtPoint(dipPosition);
+		if (event != nullptr)
+		{
+			int index = track->GetEventRenderIndex(event);			
+		}
+		else
+		{
+			
+		}
+		
+	}
+	RedrawWindow();
+}
+
 void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 {
 	CSchedulerDoc* pDoc = GetDocument();
