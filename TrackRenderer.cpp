@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "TrackRenderer.h"
 
-CTrackRenderer::CTrackRenderer(const CScheduleTrack& track,
+CTrackRenderer::CTrackRenderer(CScheduleTrack* track,
 	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush):
-	name(track.GetName()),
+	name(track->GetName()),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
@@ -32,6 +32,20 @@ CEventRenderer* CTrackRenderer::GetEventAtPoint(const D2D1_POINT_2F& point) cons
 		}
 	}
 	return nullptr;
+}
+int CTrackRenderer::GetEventRenderIndex(CEventRenderer* eventRenderer) const
+{
+	int index = 0;
+	for (const auto& event : eventRenderers)
+	{
+		if (event.get() == eventRenderer) return index;
+		++index;
+	}
+	return -1;
+}
+CString CTrackRenderer::GetName() const
+{
+	return name;
 }
 void CTrackRenderer::SetTrackBounds(D2D1_RECT_F& rect)
 {

@@ -13,7 +13,7 @@
 //
 
 #pragma once
-#include "FileView.h"
+#include "StockEventView.h"
 #include "ClassView.h"
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
@@ -47,17 +47,21 @@ public:
 #endif
 	void InitializeSecondaryViews(CSchedulerDoc* doc);
 	void UpdateSecondaryViews(LPARAM lHint);
+	void StartDraggingStockEvent(int dragItemIndex, CImageList* dragImageList, CPoint point);
 
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
 	CMFCRibbonApplicationButton m_MainButton;
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
-	CFileView         m_wndFileView;
+	CStockEventView         m_wndStockEventView;
 	CClassView        m_wndClassView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
+	int dragItemIndex = -1;
+	CImageList* dragImageList = nullptr;
+	bool dragging = false;
 
 // Generated message map functions
 protected:
@@ -80,6 +84,10 @@ protected:
 	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
+
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

@@ -7,7 +7,7 @@
 class CEventRenderer
 {
 public:
-	CEventRenderer(const CScheduleEvent& event, CD2DTextFormat* textFormat, 
+	CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat, 
 		CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush);
 	void Render(CRenderTarget* renderTarget);
 	float GetWidth() const;
@@ -16,6 +16,7 @@ public:
 	bool ContainsPoint(const D2D1_POINT_2F& point) const;
 	void SetEventBounds(D2D1_RECT_F& rect);
 	void SetMinimumTextRenderingWidth(FLOAT width);
+	int GetEventId() const;
 private:
 	CD2DTextFormat* textFormat = nullptr;
 	float eventWidth = 0;
@@ -27,5 +28,6 @@ private:
 	D2D1_RECT_F eventBounds;
 	D2D1_ROUNDED_RECT eventBoundsRoundedRect;
 	FLOAT minEventRenderWidth = 16.f;
+	int eventId = -1;
 };
 

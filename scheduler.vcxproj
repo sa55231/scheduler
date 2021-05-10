@@ -210,7 +210,7 @@
     <ClInclude Include="CScheduleTrack.h" />
     <ClInclude Include="ViewDockingPane.h" />
     <ClInclude Include="EventRenderer.h" />
-    <ClInclude Include="FileView.h" />
+    <ClInclude Include="StockEventView.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OutputWnd.h" />
@@ -233,7 +233,7 @@
     <ClCompile Include="CScheduleTrack.cpp" />
     <ClCompile Include="ViewDockingPane.cpp" />
     <ClCompile Include="EventRenderer.cpp" />
-    <ClCompile Include="FileView.cpp" />
+    <ClCompile Include="StockEventView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">

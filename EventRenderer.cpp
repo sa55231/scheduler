@@ -1,17 +1,18 @@
 #include "pch.h"
 #include "EventRenderer.h"
 
-CEventRenderer::CEventRenderer(const CScheduleEvent& event, CD2DTextFormat* textFormat,
+CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat,
 	CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush) :
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
-	name(event.GetName()),
-	color(event.GetColor()),
+	name(event->GetName()),
+	color(event->GetColor()),
 	eventBounds(D2D1::RectF()),
-	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f))
+	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f)),
+	eventId(event->GetStockId())
 {
-	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event.GetDuration()).count();
+	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event->GetDuration()).count();
 }
 bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
 {
@@ -52,4 +53,8 @@ bool CEventRenderer::IsSelected() const
 void CEventRenderer::SetSelected(bool flag)
 {
 	selected = flag;
+}
+int CEventRenderer::GetEventId() const
+{
+	return eventId;
 }

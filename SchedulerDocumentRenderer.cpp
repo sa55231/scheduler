@@ -35,21 +35,21 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 
 	for (const auto& track : doc->GetTracks())
 	{
-		auto trackRenderer = std::make_unique<CTrackRenderer>(track, trackTextFormat, trackBackgroundColorBrush,
+		auto trackRenderer = std::make_unique<CTrackRenderer>(track.get(), trackTextFormat, trackBackgroundColorBrush,
 			trackForegroundColorBrush);		
 		float trackWidth = TRACK_LABEL_WIDTH + margin;
 		trackRenderer->SetTrackLabelBounds(D2D1::RectF(0.f, surfaceSize.height,trackWidth, surfaceSize.height+trackHeight));
 		std::vector<std::unique_ptr<CEventRenderer>> eventRenderers;
 		auto xOffset = trackWidth;
 		std::chrono::seconds trackDuration = std::chrono::seconds::zero();
-		for (const auto& event : track.GetEvents())
+		for (const auto& event : track->GetEvents())
 		{
-			auto color = event.GetColor();
+			auto color = event->GetColor();
 			if (eventBackgroundColorBrushes.find(color) == eventBackgroundColorBrushes.end())
 			{
 				eventBackgroundColorBrushes[color] = new CD2DSolidColorBrush(renderTarget, D2D1::ColorF(color,1.f));
 			}
-			auto eventRenderer = std::make_unique<CEventRenderer>(event, eventTextFormat, 
+			auto eventRenderer = std::make_unique<CEventRenderer>(event.get(), eventTextFormat, 
 				eventBackgroundColorBrushes[color], eventForegroundColorBrush);
 			eventRenderer->SetMinimumTextRenderingWidth(minEventRenderWidth);
 			auto eventWidth = eventRenderer->GetWidth() + margin;
@@ -57,7 +57,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 			trackWidth += eventWidth;
 			xOffset += eventWidth;
 			eventRenderers.push_back(std::move(eventRenderer));
-			trackDuration += event.GetDuration();
+			trackDuration += event->GetDuration();
 		}
 		trackRenderer->SetTrackBounds(D2D1::RectF(0.f, surfaceSize.height,xOffset,trackHeight + surfaceSize.height));
 		trackRenderer->SetEventRenderers(std::move(eventRenderers));
@@ -104,7 +104,6 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 		item.line = makeLine<D2D1_POINT_2F>(D2D1::Point2F(i, HEADER_HEIGHT), D2D1::Point2F(i, surfaceRect.bottom));
 		headerTimelineItems.push_back(std::move(item));
 	}
-
 
 	TRACE("Surface size : %fx%f\n", surfaceSize.width , surfaceSize.height);
 	return surfaceSize;

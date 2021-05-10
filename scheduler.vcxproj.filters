@@ -36,7 +36,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileView.h">
+    <ClInclude Include="StockEventView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClassView.h">
@@ -92,7 +92,7 @@
     <ClCompile Include="schedulerView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileView.cpp">
+    <ClCompile Include="StockEventView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClassView.cpp">

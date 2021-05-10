@@ -23,12 +23,12 @@ class CFileViewToolBar : public CMFCToolBar
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
-class CFileView : public CViewDockingPane
+class CStockEventView : public CViewDockingPane
 {
-	DECLARE_DYNAMIC(CFileView)
+	DECLARE_DYNAMIC(CStockEventView)
 // Construction
 public:
-	CFileView() noexcept;
+	CStockEventView() noexcept;
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
@@ -36,10 +36,11 @@ public:
 // Attributes
 protected:
 
-	CListCtrl m_wndFileView;
-	CImageList m_FileViewImages;
+	CListCtrl m_wndEventListView;
+	CImageList m_EventListImages;
 	CFileViewToolBar m_wndToolBar;
-
+	int addingItemIndex = -1;
+	bool updatingEventsSelection = false;
 protected:
 	void FillFileView();
 	virtual void OnInitialUpdate();
@@ -50,24 +51,23 @@ private:
 
 // Implementation
 public:
-	virtual ~CFileView();
+	virtual ~CStockEventView();
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	afx_msg void OnAddTrack();
-	afx_msg void OnRemoveTrack();
-	afx_msg void OnEditTrack();
-	afx_msg void OnFileOpen();
-	afx_msg void OnFileOpenWith();
-	afx_msg void OnDummyCompile();
-	afx_msg void OnEditCut();
-	afx_msg void OnEditCopy();
-	afx_msg void OnEditClear();
+	afx_msg void OnAddEvent();
+	afx_msg void OnRemoveEvent();
+	afx_msg void OnEditEvent();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBeginDragEvent(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI);
+	afx_msg void OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg LRESULT OnEventObjectSelected(WPARAM wParam, LPARAM lParam);
+	//afx_msg HCURSOR OnQueryDragIcon();
 
 	DECLARE_MESSAGE_MAP()
 };

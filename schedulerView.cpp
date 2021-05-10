@@ -122,7 +122,22 @@ void CSchedulerView::OnInitialUpdate()
 
 	((CMainFrame*)AfxGetMainWnd())->InitializeSecondaryViews(pDoc);
 }
+void CSchedulerView::UpdateRendererLayout(CSchedulerDoc* pDoc)
+{
+	_AFX_D2D_STATE* pD2DState = AfxGetD2DState();
+	ASSERT(NULL != pD2DState);
+	IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
+	ASSERT(NULL != pDirectWriteFactory);
 
+	auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(), pDirectWriteFactory,
+		std::chrono::system_clock::now(), std::chrono::hours(-4));
+	// The total scroll size has to be multiplied by the DPI scale
+	// as the size we calculated earlier is in DIPs
+	sizeTotal.width = sizeTotal.width * dpiScaleX;
+	sizeTotal.height = sizeTotal.height * dpiScaleY;
+	TRACE("ONUPDATE: %f %f\n", sizeTotal.width, sizeTotal.height);
+	SetScrollSizes(MM_TEXT, CSize((int)sizeTotal.width, (int)sizeTotal.height));
+}
 void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	CScrollView::OnUpdate(pSender, lHint, pHint);
@@ -130,19 +145,7 @@ void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	ASSERT_VALID(pDoc);
 	if (pDoc)
 	{
-		_AFX_D2D_STATE* pD2DState = AfxGetD2DState();
-		ASSERT(NULL != pD2DState);
-		IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
-		ASSERT(NULL != pDirectWriteFactory);
-		
-		auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(),pDirectWriteFactory, 
-			std::chrono::system_clock::now(), std::chrono::hours(-4));
-		// The total scroll size has to be multiplied by the DPI scale
-		// as the size we calculated earlier is in DIPs
-		sizeTotal.width = sizeTotal.width * dpiScaleX;
-		sizeTotal.height = sizeTotal.height * dpiScaleY;
-		TRACE("ONUPDATE: %f %f\n", sizeTotal.width, sizeTotal.height);
-		SetScrollSizes(MM_TEXT, CSize((int)sizeTotal.width, (int)sizeTotal.height));
+		UpdateRendererLayout(pDoc);
 		((CMainFrame*)AfxGetMainWnd())->UpdateSecondaryViews(lHint);
 	}
 }
@@ -186,9 +189,16 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 			track->SetSelected(false);
 			selectedTrack = nullptr;
 
-			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, 0, (LPARAM)event);
+			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetEventId(), (LPARAM)this);
 		}
-
+		else
+		{
+			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
+		}
+	}
+	else
+	{
+		AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
 	}
 
 	RedrawWindow();
@@ -205,6 +215,37 @@ void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 	OnContextMenu(this, point);
 }
 
+void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
+{
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	
+	ScreenToClient(&point);
+
+	auto pos = GetScrollPosition();
+	// The scroll position has to be converted to DIPs (device indipendent pixels)
+	pos.x += point.x;
+	pos.y += point.y;
+
+	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
+	if (track != nullptr)
+	{
+		CEventRenderer* event = track->GetEventAtPoint(dipPosition);
+		if (event != nullptr)
+		{
+			int index = track->GetEventRenderIndex(event);
+			pDoc->AddTrackEventAtIndex(stockEventIndex,track->GetName(),index);
+		}
+		else
+		{
+			pDoc->AddTrackEvent(stockEventIndex, track->GetName());
+		}
+		UpdateRendererLayout(pDoc);
+	}
+	RedrawWindow();
+}
 void CSchedulerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
 #ifndef SHARED_HANDLERS

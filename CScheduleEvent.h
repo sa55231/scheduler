@@ -1,12 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <chrono>
 #include "CScheduleStockEvent.h"
 
 class CScheduleEvent
 {
 public:
-	CScheduleEvent(const CScheduleStockEvent& eventSource);
+	CScheduleEvent(CScheduleStockEvent* eventSource);
 	int GetStockId() const;
 	CString GetName() const;
 	std::chrono::seconds GetDuration() const;
@@ -15,3 +16,4 @@ private:
 	const CScheduleStockEvent* stockEvent;
 };
 
+using CScheduleEventPtr = std::unique_ptr<CScheduleEvent>;

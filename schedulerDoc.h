@@ -10,6 +10,8 @@
 #include "CScheduleTrack.h"
 #include "CScheduleStockEvent.h"
 
+
+
 class CSchedulerDoc : public CDocument
 {
 protected: // create from serialization only
@@ -19,10 +21,13 @@ protected: // create from serialization only
 // Attributes
 public:
 
-	const std::vector<CScheduleTrack>& GetTracks() const;
-	const std::vector<CScheduleStockEvent>& GetStockEvents() const;
+	const std::vector<CScheduleTrackPtr>& GetTracks() const;
+	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
 	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
-
+	void DeleteStockEvent(int index, LPARAM lHint);
+	int GetStockEventIndex(int id) const;
+	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index);
+	void AddTrackEvent(int stockEventIndex, const CString& trackName);
 // Operations
 public:
 
@@ -47,8 +52,8 @@ public:
 protected:
 
 private:
-	std::vector<CScheduleTrack> tracks;
-	std::vector<CScheduleStockEvent> stockEvents;
+	std::vector<CScheduleTrackPtr> tracks;
+	std::vector<CScheduleStockEventPtr> stockEvents;
 	std::chrono::steady_clock::time_point startTime;
 
 // Generated message map functions

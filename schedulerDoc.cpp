@@ -70,7 +70,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 		CString name;
 		name.Format(_T("Event #%d"),i);
 		std::chrono::seconds duration(duration_distribution(generator));
-		stockEvents.emplace_back(i,std::move(name),std::move(duration), color_distribution(generator));
+		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(i,std::move(name),std::move(duration), color_distribution(generator)));
 	}
 
 	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size()-1);
@@ -80,32 +80,89 @@ BOOL CSchedulerDoc::OnNewDocument()
 	{
 		CString name(_T("Track: "));
 		name.AppendFormat(_T("%d"),i);
-		std::vector<CScheduleEvent> events;
+		std::vector<CScheduleEventPtr> events;
 		int event_count = event_count_distribution(generator);
 		for (int j = 0; j < event_count; j++)
 		{
-			events.emplace_back(stockEvents.at(stock_distribution(generator)));
+			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get()));
 		}
 
-		tracks.emplace_back(name,events);
+		tracks.emplace_back(std::make_unique<CScheduleTrack>(name,std::move(events)));
 	}
 
 	return TRUE;
 }
 
-const std::vector<CScheduleTrack>& CSchedulerDoc::GetTracks() const
+const std::vector<CScheduleTrackPtr>& CSchedulerDoc::GetTracks() const
 {
 	return tracks;
 }
-const std::vector<CScheduleStockEvent>& CSchedulerDoc::GetStockEvents() const
+const std::vector<CScheduleStockEventPtr>& CSchedulerDoc::GetStockEvents() const
 {
 	return stockEvents;
 }
 
+void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index)
+{
+	if (stockEventIndex < 0 || stockEventIndex >= stockEvents.size()) return;
+
+	auto trackIt = std::find_if(tracks.begin(), tracks.end(), [trackName](const auto& track) {
+		return track->GetName() == trackName;
+	});
+	if (trackIt != tracks.end())
+	{
+		(*trackIt)->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
+	}
+}
+void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName)
+{
+	if (stockEventIndex < 0 || stockEventIndex >= stockEvents.size()) return;
+
+	auto trackIt = std::find_if(tracks.begin(), tracks.end(), [trackName](const auto& track) {
+		return track->GetName() == trackName;
+	});
+	if (trackIt != tracks.end())
+	{
+		(*trackIt)->AddEvent(std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
+	}
+}
+
+int CSchedulerDoc::GetStockEventIndex(int id) const
+{
+	auto it = std::find_if(stockEvents.begin(), stockEvents.end(), [id](const auto& ev) {
+		return ev->GetId() == id;
+	});
+	if (it == stockEvents.end()) return -1;
+	return (*it)->GetId();
+}
+
+void CSchedulerDoc::DeleteStockEvent(int index, LPARAM lHint)
+{
+	ASSERT(index >= 0 && index < stockEvents.size());
+	
+	int id = stockEvents.at(index)->GetId();
+	for (auto&& track : tracks)
+	{
+		track->RemoveEvents(id);
+	}
+	stockEvents.erase(stockEvents.begin() + index);
+
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+
 void CSchedulerDoc::UpdateStockEventName(int index, const CString& newName, LPARAM lHint)
 {
-	ASSERT(index>=0 && index<stockEvents.size());
-	stockEvents.at(index).SetName(newName);
+	ASSERT(index>=0 && index<stockEvents.size()  + 1);
+	if (index == stockEvents.size())
+	{
+		std::chrono::seconds duration(3600);
+		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(index, newName, std::move(duration), 0x0000FF));
+	}
+	else
+	{
+		stockEvents.at(index)->SetName(newName);
+	}
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }

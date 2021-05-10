@@ -4,6 +4,7 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
+#define IDS_EVENT_VIEW                  101
 #define IDB_WRITESMALL                  110
 #define IDB_WRITELARGE                  111
 #define IDB_MAIN                        112
@@ -19,9 +20,9 @@
 #define IDR_MAINFRAME_256               129
 #define IDR_schedulerTYPE               130
 #define ID_WINDOW_MANAGER               131
-#define ID_VIEW_FILEVIEW                133
+#define ID_VIEW_EVENTVIEW               133
 #define ID_VIEW_CLASSVIEW               134
-#define ID_ADD_TRACK                    135
+#define ID_ADD_EVENT                    135
 #define ID_OPEN                         136
 #define ID_OPEN_WITH                    137
 #define ID_DUMMY_COMPILE                138
@@ -111,8 +112,9 @@
 #define IDS_EDIT_MENU                   306
 #define IDR_RIBBON                      307
 #define ID_WRITE_PASTEASHYPERLINK       32770
-#define ID_EDIT_TRACK                  32771
-#define ID_REMOVE_TRACK                  32772
+#define ID_EDIT_EVENT                   32771
+#define ID_REMOVE_EVENT                 32772
+#define IDC_EVENT_LIST                  1000
 
 // Next default values for new objects
 // 
@@ -120,7 +122,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

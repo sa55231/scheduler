@@ -43,12 +43,15 @@ protected:
 // Implementation
 public:
 	virtual ~CSchedulerView();
+	void AddEventAtPoint(int stockEventIndex, CPoint point);
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
+
+	void UpdateRendererLayout(CSchedulerDoc* pDoc);
 
 private:
 	CSchedulerDocumentRenderer docRenderer;

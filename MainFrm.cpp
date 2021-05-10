@@ -18,6 +18,8 @@
 
 #include "MainFrm.h"
 
+#include "schedulerView.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -33,8 +35,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_CAPTION_BAR, &CMainFrame::OnViewCaptionBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAPTION_BAR, &CMainFrame::OnUpdateViewCaptionBar)
 	ON_COMMAND(ID_TOOLS_OPTIONS, &CMainFrame::OnOptions)
-	ON_COMMAND(ID_VIEW_FILEVIEW, &CMainFrame::OnViewFileView)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FILEVIEW, &CMainFrame::OnUpdateViewFileView)
+	ON_COMMAND(ID_VIEW_EVENTVIEW, &CMainFrame::OnViewFileView)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_EVENTVIEW, &CMainFrame::OnUpdateViewFileView)
 	ON_COMMAND(ID_VIEW_CLASSVIEW, &CMainFrame::OnViewClassView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CLASSVIEW, &CMainFrame::OnUpdateViewClassView)
 	ON_COMMAND(ID_VIEW_OUTPUTWND, &CMainFrame::OnViewOutputWindow)
@@ -47,6 +49,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, &CMainFrame::OnEventObjectSelected)
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
+
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -115,11 +120,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
-	m_wndFileView.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndStockEventView.EnableDocking(CBRS_ALIGN_ANY);
 	m_wndClassView.EnableDocking(CBRS_ALIGN_ANY);
-	DockPane(&m_wndFileView);
+	DockPane(&m_wndStockEventView);
 	CDockablePane* pTabbedBar = nullptr;
-	m_wndClassView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);
+	m_wndClassView.AttachToTabWnd(&m_wndStockEventView, DM_SHOW, TRUE, &pTabbedBar);
 	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndOutput);
 	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
@@ -161,9 +166,9 @@ BOOL CMainFrame::CreateDockingWindows()
 
 	// Create file view
 	CString strFileView;
-	bNameValid = strFileView.LoadString(IDS_FILE_VIEW);
+	bNameValid = strFileView.LoadString(IDS_EVENT_VIEW);
 	ASSERT(bNameValid);
-	if (!m_wndFileView.Create(strFileView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_FILEVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT| CBRS_FLOAT_MULTI))
+	if (!m_wndStockEventView.Create(strFileView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_EVENTVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT| CBRS_FLOAT_MULTI))
 	{
 		TRACE0("Failed to create File View window\n");
 		return FALSE; // failed to create
@@ -196,7 +201,7 @@ BOOL CMainFrame::CreateDockingWindows()
 void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 {
 	HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_FILE_VIEW_HC : IDI_FILE_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-	m_wndFileView.SetIcon(hFileViewIcon, FALSE);
+	m_wndStockEventView.SetIcon(hFileViewIcon, FALSE);
 
 	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_CLASS_VIEW_HC : IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndClassView.SetIcon(hClassViewIcon, FALSE);
@@ -257,12 +262,90 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
 {
-	m_wndFileView.Initialize(doc);
+	m_wndStockEventView.Initialize(doc);
 }
 
 void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
 {
-	m_wndFileView.Update(lHint);
+	m_wndStockEventView.Update(lHint);
+}
+
+void CMainFrame::StartDraggingStockEvent(int dragItemIndex, CImageList* imageList, CPoint point)
+{
+	int nOffset = -10; //offset in pixels for drag image (positive is up and to the left; neg is down and to the right)
+	dragImageList = imageList;
+	dragImageList->BeginDrag(0, CPoint(nOffset, nOffset - 4));
+	dragImageList->DragEnter(GetDesktopWindow(), point);
+	this->dragItemIndex = dragItemIndex;
+	dragging = true;	//we are in a drag and drop operation
+	//m_nDropIndex = -1;	//we don't have a drop index yet
+	//m_pDragList = &m_listL; //make note of which list we are dragging from
+	//m_pDropWnd = &m_listL;	//at present the drag list is the drop list
+
+	// Capture all mouse messages
+	SetCapture();
+
+}
+
+void CMainFrame::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (dragging)
+	{
+		CPoint pt(point);	//get our current mouse coordinates
+		ClientToScreen(&pt); //convert to screen coordinates
+		dragImageList->DragMove(pt); //move the drag image to those coordinates
+		// Unlock window updates (this allows the dragging image to be shown smoothly)
+		dragImageList->DragShowNolock(false);
+
+		CWnd* pDropWnd = WindowFromPoint(pt);
+		ASSERT(pDropWnd); //make sure we have a window
+
+		// Convert from screen coordinates to drop target client coordinates
+		pDropWnd->ScreenToClient(&pt);
+
+		if (pDropWnd->IsKindOf(RUNTIME_CLASS(CSchedulerView)))
+		{
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			CSchedulerView* view = (CSchedulerView*)pDropWnd;
+
+		}
+		else
+		{
+			SetCursor(LoadCursor(NULL, IDC_NO));
+		}
+
+		dragImageList->DragShowNolock(true);
+	}
+
+	CFrameWndEx::OnMouseMove(nFlags, point);
+}
+
+void CMainFrame::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (dragging)
+	{
+		ReleaseCapture();
+		dragImageList->DragLeave(GetDesktopWindow());
+		dragImageList->EndDrag();
+		delete dragImageList; //must delete it because it was created at the beginning of the drag
+		CPoint pt(point); //Get current mouse coordinates
+		ClientToScreen(&pt); //Convert to screen coordinates
+		// Get the CWnd pointer of the window that is under the mouse cursor
+		CWnd* pDropWnd = WindowFromPoint(pt);
+		ASSERT(pDropWnd); //make sure we have a window pointer
+		// If window is CListCtrl, we perform the drop
+		if (pDropWnd->IsKindOf(RUNTIME_CLASS(CSchedulerView)))
+		{
+			CSchedulerView* view = (CSchedulerView*)pDropWnd;
+			view->AddEventAtPoint(dragItemIndex, pt);
+			//m_pDropList = (CListCtrl*)pDropWnd; //Set pointer to the list we are dropping on
+			//DropItemOnList(m_pDragList, m_pDropList); //Call routine to perform the actual drop
+
+		}
+
+	}
+	dragItemIndex = -1;
+	dragging = false;
 }
 // CMainFrame message handlers
 
@@ -374,8 +457,8 @@ void CMainFrame::OnViewFileView()
 {
 	// Show or activate the pane, depending on current state.  The
 	// pane can only be closed via the [x] button on the pane frame.
-	m_wndFileView.ShowPane(TRUE, FALSE, TRUE);
-	m_wndFileView.SetFocus();
+	m_wndStockEventView.ShowPane(TRUE, FALSE, TRUE);
+	m_wndStockEventView.SetFocus();
 }
 
 void CMainFrame::OnUpdateViewFileView(CCmdUI* pCmdUI)
@@ -453,6 +536,6 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 LRESULT CMainFrame::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndProperties.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
-
+	m_wndStockEventView.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
 	return 0;
 }

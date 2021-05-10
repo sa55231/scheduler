@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <chrono>
 
 class CScheduleStockEvent
@@ -21,3 +22,4 @@ private:
 	UINT32 color = 0;
 };
 
+using CScheduleStockEventPtr = std::unique_ptr<CScheduleStockEvent>;

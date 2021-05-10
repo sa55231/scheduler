@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "CScheduleEvent.h"
 
-CScheduleEvent::CScheduleEvent(const CScheduleStockEvent& eventSource):
-	stockEvent(&eventSource)
+CScheduleEvent::CScheduleEvent(CScheduleStockEvent* eventSource):
+	stockEvent(eventSource)
 {
 }
 
