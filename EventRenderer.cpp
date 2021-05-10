@@ -2,10 +2,12 @@
 #include "EventRenderer.h"
 
 CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat,
-	CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush) :
+	CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush, 
+	ID2D1StrokeStyle* dropTargetStrokeStyle) :
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
+	dropTargetStrokeStyle(dropTargetStrokeStyle),
 	name(event->GetName()),
 	color(event->GetColor()),
 	eventBounds(D2D1::RectF()),
@@ -26,9 +28,14 @@ void CEventRenderer::Render(CRenderTarget* renderTarget)
 {	
 	renderTarget->FillRoundedRectangle(eventBoundsRoundedRect, backgroundColorBrush);
 	
-	if (selected)
+	if (selected && !dropTarget)
 	{
 		renderTarget->DrawRoundedRectangle(eventBoundsRoundedRect, foregroundColorBrush);
+	}
+
+	if (dropTarget)
+	{
+		renderTarget->DrawRoundedRectangle(eventBoundsRoundedRect, foregroundColorBrush, 2.f, dropTargetStrokeStyle);
 	}
 
 	if (eventBounds.right - eventBounds.left > minEventRenderWidth)
@@ -57,4 +64,12 @@ void CEventRenderer::SetSelected(bool flag)
 int CEventRenderer::GetEventId() const
 {
 	return eventId;
+}
+bool CEventRenderer::IsDropTarget() const
+{
+	return dropTarget;
+}
+void CEventRenderer::SetDropTarget(bool flag)
+{
+	dropTarget = flag;
 }

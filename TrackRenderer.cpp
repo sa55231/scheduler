@@ -2,11 +2,13 @@
 #include "TrackRenderer.h"
 
 CTrackRenderer::CTrackRenderer(CScheduleTrack* track,
-	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush):
+	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, 
+	CD2DSolidColorBrush* foregroundColorBrush, ID2D1StrokeStyle* dropTargetStrokeStyle):
 	name(track->GetName()),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
+	dropTargetStrokeStyle(dropTargetStrokeStyle),
 	trackBounds(D2D1::RectF()),
 	trackLabelBounds(D2D1::RectF())
 {
@@ -56,6 +58,10 @@ void CTrackRenderer::SetTrackLabelBounds(D2D1_RECT_F& rect)
 {
 	trackLabelBounds = rect;
 }
+D2D1_RECT_F CTrackRenderer::GetTrackLabelBounds() const
+{
+	return trackLabelBounds;
+}
 
 void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
 {	
@@ -68,9 +74,14 @@ void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
 	}
 	
 
-	if (selected)
+	if (selected && !dropTarget)
 	{
 		renderTarget->DrawRectangle(trackBounds, foregroundColorBrush);
+	}
+
+	if (dropTarget)
+	{
+		renderTarget->DrawRectangle(trackBounds, foregroundColorBrush,2.f,dropTargetStrokeStyle);
 	}
 }
 
@@ -82,4 +93,12 @@ bool CTrackRenderer::IsSelected() const
 void CTrackRenderer::SetSelected(bool flag)
 {
 	selected = flag;
+}
+bool CTrackRenderer::IsDropTarget() const
+{
+	return dropTarget;
+}
+void CTrackRenderer::SetDropTarget(bool flag)
+{
+	dropTarget = flag;
 }

@@ -62,6 +62,9 @@ private:
 	FLOAT dpiScaleY = 0.f;
 	CEventRenderer* selectedEvent = nullptr;
 	CTrackRenderer* selectedTrack = nullptr;
+	CEventRenderer* dropTargetEvent = nullptr;
+	CTrackRenderer* dropTargetTrack = nullptr;
+
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()

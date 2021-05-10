@@ -128,8 +128,10 @@ void CSchedulerView::UpdateRendererLayout(CSchedulerDoc* pDoc)
 	ASSERT(NULL != pD2DState);
 	IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
 	ASSERT(NULL != pDirectWriteFactory);
+	ID2D1Factory* factory = pD2DState->GetDirect2dFactory();
+	ASSERT(NULL != factory);
 
-	auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(), pDirectWriteFactory,
+	auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(), pDirectWriteFactory,factory,
 		std::chrono::system_clock::now(), std::chrono::hours(-4));
 	// The total scroll size has to be multiplied by the DPI scale
 	// as the size we calculated earlier is in DIPs
@@ -250,20 +252,31 @@ void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
 	pos.y += point.y;
 
 	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+	if (dropTargetEvent != nullptr)
+	{
+		dropTargetEvent->SetDropTarget(false);
+		dropTargetEvent = nullptr;
+	}
+
+	if (dropTargetTrack != nullptr)
+	{
+		dropTargetTrack->SetDropTarget(false);
+		dropTargetTrack = nullptr;
+	}
 
 	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
 	if (track != nullptr)
 	{
+		dropTargetTrack = track;
+		dropTargetTrack->SetDropTarget(true);
 		CEventRenderer* event = track->GetEventAtPoint(dipPosition);
 		if (event != nullptr)
 		{
-			int index = track->GetEventRenderIndex(event);			
-		}
-		else
-		{
-			
-		}
-		
+			dropTargetTrack->SetDropTarget(false);
+			dropTargetTrack = nullptr;
+			dropTargetEvent = event;
+			dropTargetEvent->SetDropTarget(true);
+		}		
 	}
 	RedrawWindow();
 }
@@ -273,7 +286,8 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return;
-	
+	dropTargetTrack = nullptr;
+	dropTargetEvent = nullptr;
 	ScreenToClient(&point);
 
 	auto pos = GetScrollPosition();
@@ -293,7 +307,16 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 		}
 		else
 		{
-			pDoc->AddTrackEvent(stockEventIndex, track->GetName());
+			auto trackLabelBounds = track->GetTrackLabelBounds();
+			if (point.x >= trackLabelBounds.left && point.x <= trackLabelBounds.right)
+			{
+				pDoc->AddTrackEventAtIndex(stockEventIndex, track->GetName(), 0);
+			}
+			else
+			{
+				pDoc->AddTrackEvent(stockEventIndex, track->GetName());
+			}
+			
 		}
 		UpdateRendererLayout(pDoc);
 	}

@@ -19,10 +19,10 @@ CSchedulerDocumentRenderer::CSchedulerDocumentRenderer() : zoomLevel(D2D1::SizeF
 }
 
 D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRenderTarget* renderTarget, 
-	IDWriteFactory* directWriteFactory,	const std::chrono::system_clock::time_point& startTime,
+	IDWriteFactory* directWriteFactory, ID2D1Factory* factory, const std::chrono::system_clock::time_point& startTime,
 	const std::chrono::hours& utcOffset)
 {
-	CreateD2D1Resources(renderTarget, directWriteFactory);
+	CreateD2D1Resources(renderTarget, directWriteFactory,factory);
 
 	tracks.clear();
 	trackSeparationLines.clear();
@@ -36,7 +36,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	for (const auto& track : doc->GetTracks())
 	{
 		auto trackRenderer = std::make_unique<CTrackRenderer>(track.get(), trackTextFormat, trackBackgroundColorBrush,
-			trackForegroundColorBrush);		
+			trackForegroundColorBrush, dropTargetStrokeStyle.p);
 		float trackWidth = TRACK_LABEL_WIDTH + margin;
 		trackRenderer->SetTrackLabelBounds(D2D1::RectF(0.f, surfaceSize.height,trackWidth, surfaceSize.height+trackHeight));
 		std::vector<std::unique_ptr<CEventRenderer>> eventRenderers;
@@ -50,7 +50,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 				eventBackgroundColorBrushes[color] = new CD2DSolidColorBrush(renderTarget, D2D1::ColorF(color,1.f));
 			}
 			auto eventRenderer = std::make_unique<CEventRenderer>(event.get(), eventTextFormat, 
-				eventBackgroundColorBrushes[color], eventForegroundColorBrush);
+				eventBackgroundColorBrushes[color], eventForegroundColorBrush, dropTargetStrokeStyle.p);
 			eventRenderer->SetMinimumTextRenderingWidth(minEventRenderWidth);
 			auto eventWidth = eventRenderer->GetWidth() + margin;
 			eventRenderer->SetEventBounds(D2D1::RectF(xOffset, surfaceSize.height,xOffset+eventWidth, surfaceSize.height+trackHeight));
@@ -109,7 +109,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	return surfaceSize;
 }
 
-void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory)
+void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	if (!trackTextFormat)
 	{
@@ -166,6 +166,23 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTa
 	if (!headerTimelineForegroundColorBrush)
 	{
 		headerTimelineForegroundColorBrush = new CD2DSolidColorBrush(renderTarget, D2D1::ColorF(D2D1::ColorF::Black, 0.8f));
+	}
+	if (!dropTargetStrokeStyle)
+	{
+		float dashes[] = { 2.0f, 2.0f, 0.f, 2.f};
+		HRESULT hr = factory->CreateStrokeStyle(
+			D2D1::StrokeStyleProperties(
+				D2D1_CAP_STYLE_ROUND,
+				D2D1_CAP_STYLE_ROUND,
+				D2D1_CAP_STYLE_ROUND,
+				D2D1_LINE_JOIN_MITER,
+				10.0f,
+				D2D1_DASH_STYLE_DASH,
+				0.0f),
+			nullptr,
+			0,
+			&dropTargetStrokeStyle);
+		ASSERT(SUCCEEDED(hr));
 	}
 	{
 		DWRITE_TEXT_METRICS minMetrics;
