@@ -60,7 +60,6 @@ BOOL CSchedulerDoc::OnNewDocument()
 	tracks.clear();
 	stockEvents.clear();
 	startTime = std::chrono::steady_clock::now();
-
 	std::default_random_engine generator;
 	generator.seed((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> duration_distribution(60,5*3600);
@@ -87,7 +86,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get()));
 		}
 
-		tracks.emplace_back(std::make_unique<CScheduleTrack>(name,std::move(events)));
+		tracks.emplace_back(std::make_unique<CScheduleTrack>(i,name,std::move(events)));
 	}
 
 	return TRUE;
@@ -102,7 +101,7 @@ const std::vector<CScheduleStockEventPtr>& CSchedulerDoc::GetStockEvents() const
 	return stockEvents;
 }
 
-void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index)
+void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint)
 {
 	if (stockEventIndex < 0 || stockEventIndex >= stockEvents.size()) return;
 
@@ -113,8 +112,10 @@ void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& tra
 	{
 		(*trackIt)->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
 	}
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
 }
-void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName)
+void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint)
 {
 	if (stockEventIndex < 0 || stockEventIndex >= stockEvents.size()) return;
 
@@ -125,8 +126,22 @@ void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName)
 	{
 		(*trackIt)->AddEvent(std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
 	}
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
 }
-
+CScheduleStockEvent* CSchedulerDoc::GetStockEventAtIndex(int index) const
+{
+	ASSERT(index >= 0 && index < stockEvents.size());
+	return stockEvents.at(index).get();
+}
+CScheduleStockEvent* CSchedulerDoc::GetStockEvent(int id) const
+{
+	auto it = std::find_if(stockEvents.begin(), stockEvents.end(), [id](const auto& ev) {
+		return ev->GetId() == id;
+		});
+	if (it == stockEvents.end()) return nullptr;
+	return it->get();
+}
 int CSchedulerDoc::GetStockEventIndex(int id) const
 {
 	auto it = std::find_if(stockEvents.begin(), stockEvents.end(), [id](const auto& ev) {

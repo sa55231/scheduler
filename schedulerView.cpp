@@ -197,9 +197,11 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
 		}
+		AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)(track->GetTrackId()), (LPARAM)this);
 	}
 	else
 	{
+		AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
 		AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
 	}
 
@@ -303,24 +305,21 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 		if (event != nullptr)
 		{
 			int index = track->GetEventRenderIndex(event);
-			pDoc->AddTrackEventAtIndex(stockEventIndex,track->GetName(),index);
+			pDoc->AddTrackEventAtIndex(stockEventIndex,track->GetName(),index, reinterpret_cast<LPARAM>(this));
 		}
 		else
 		{
 			auto trackLabelBounds = track->GetTrackLabelBounds();
 			if (point.x >= trackLabelBounds.left && point.x <= trackLabelBounds.right)
 			{
-				pDoc->AddTrackEventAtIndex(stockEventIndex, track->GetName(), 0);
+				pDoc->AddTrackEventAtIndex(stockEventIndex, track->GetName(), 0, reinterpret_cast<LPARAM>(this));
 			}
 			else
 			{
-				pDoc->AddTrackEvent(stockEventIndex, track->GetName());
+				pDoc->AddTrackEvent(stockEventIndex, track->GetName(), reinterpret_cast<LPARAM>(this));
 			}
-			
-		}
-		UpdateRendererLayout(pDoc);
+		}		
 	}
-	RedrawWindow();
 }
 void CSchedulerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {

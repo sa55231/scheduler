@@ -23,9 +23,11 @@ public:
 	void SetEventRenderers(std::vector<std::unique_ptr<CEventRenderer>> eventRenderers);
 	int GetEventRenderIndex(CEventRenderer* eventRenderer) const;
 	CString GetName() const;
+	int GetTrackId() const;
 	bool IsDropTarget() const;
 	void SetDropTarget(bool flag);
 private:
+	int trackId = -1;
 	CString name;
 	CD2DTextFormat* textFormat = nullptr;
 	CD2DSolidColorBrush* backgroundColorBrush = nullptr;

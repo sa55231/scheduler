@@ -263,11 +263,13 @@ void CMainFrame::Dump(CDumpContext& dc) const
 void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
 {
 	m_wndStockEventView.Initialize(doc);
+	m_wndProperties.Initialize(doc);
 }
 
 void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
 {
 	m_wndStockEventView.Update(lHint);
+	m_wndProperties.Update(lHint);
 }
 
 void CMainFrame::StartDraggingStockEvent(int dragItemIndex, CImageList* imageList, CPoint point)

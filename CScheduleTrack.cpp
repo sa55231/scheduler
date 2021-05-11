@@ -3,13 +3,17 @@
 
 CScheduleTrack::CScheduleTrack():totalDuration(0), maxEventDuration(0)
 {}
-CScheduleTrack::CScheduleTrack(CString name, std::vector<CScheduleEventPtr> events):
-	name(std::move(name)),events(std::move(events)), totalDuration(0), maxEventDuration(0)
+CScheduleTrack::CScheduleTrack(int id, CString name, std::vector<CScheduleEventPtr> events):
+	id(id),name(std::move(name)),events(std::move(events)), totalDuration(0), maxEventDuration(0)
 {
 }
 CString CScheduleTrack::GetName() const
 {
 	return name;
+}
+int CScheduleTrack::GetId() const
+{
+	return id;
 }
 const std::vector<CScheduleEventPtr>& CScheduleTrack::GetEvents() const
 {

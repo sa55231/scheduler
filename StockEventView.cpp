@@ -311,7 +311,8 @@ void CStockEventView::OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		if (pNMListView->uNewState & LVIS_SELECTED)
 		{
-			// do stuff...
+			auto event = GetDocument()->GetStockEventAtIndex(pNMListView->iItem);
+			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetId(), (LPARAM)this);			
 		}
 		else
 		{
@@ -342,7 +343,7 @@ LRESULT CStockEventView::OnEventObjectSelected(WPARAM wParam, LPARAM lParam)
 		m_wndEventListView.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
 		m_wndEventListView.SetSelectionMark(index);
 	}
-	return 0;
+	return (LRESULT)TRUE;
 }
 void CStockEventView::OnPaint()
 {

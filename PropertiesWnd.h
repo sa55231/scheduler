@@ -11,19 +11,14 @@
 
 #pragma once
 
-class CPropertiesToolBar : public CMFCToolBar
-{
-public:
-	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
-	{
-		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*) GetOwner(), bDisableIfNoHndler);
-	}
+#include "ViewDockingPane.h"
+#include "CScheduleStockEvent.h"
 
-	virtual BOOL AllowShowOnList() const { return FALSE; }
-};
+#include <chrono>
 
-class CPropertiesWnd : public CDockablePane
+class CPropertiesWnd : public CViewDockingPane
 {
+	DECLARE_DYNAMIC(CPropertiesWnd)
 // Construction
 public:
 	CPropertiesWnd() noexcept;
@@ -37,13 +32,23 @@ public:
 		m_wndPropList.SetVSDotNetLook(bSet);
 		m_wndPropList.SetGroupNameFullWidth(bSet);
 	}
+protected:
+	virtual void OnInitialUpdate();
+	virtual void OnUpdate(const LPARAM lHint);
 
 protected:
 	CFont m_fntPropList;
-	CComboBox m_wndObjectCombo;
-	CPropertiesToolBar m_wndToolBar;
 	CMFCPropertyGridCtrl m_wndPropList;
-
+	enum PropertyControlsID
+	{
+		IDEventName = 0,
+		IDEventColor,
+		IDEventDuration,
+		IDEventDurationDays,
+		IDEventDurationHours,
+		IDEventDurationMinutes,
+		IDEventDurationSeconds,
+	};
 // Implementation
 public:
 	virtual ~CPropertiesWnd();
@@ -51,22 +56,20 @@ public:
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnExpandAllProperties();
-	afx_msg void OnUpdateExpandAllProperties(CCmdUI* pCmdUI);
-	afx_msg void OnSortProperties();
-	afx_msg void OnUpdateSortProperties(CCmdUI* pCmdUI);
-	afx_msg void OnProperties1();
-	afx_msg void OnUpdateProperties1(CCmdUI* pCmdUI);
-	afx_msg void OnProperties2();
-	afx_msg void OnUpdateProperties2(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
+	afx_msg LRESULT OnPropertyChanged(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
+private:
 	void InitPropList();
 	void SetPropListFont();
+	void SetupEventPropertyControls(CScheduleStockEvent* event);
+	std::chrono::seconds GetDurationFromPropertyParent(CMFCPropertyGridProperty* property);
 
+private:
+	CScheduleStockEvent* event = nullptr;
 	int m_nComboHeight;
 };
 

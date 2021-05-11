@@ -4,6 +4,7 @@
 CTrackRenderer::CTrackRenderer(CScheduleTrack* track,
 	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, 
 	CD2DSolidColorBrush* foregroundColorBrush, ID2D1StrokeStyle* dropTargetStrokeStyle):
+	trackId(track->GetId()),
 	name(track->GetName()),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
@@ -44,6 +45,10 @@ int CTrackRenderer::GetEventRenderIndex(CEventRenderer* eventRenderer) const
 		++index;
 	}
 	return -1;
+}
+int CTrackRenderer::GetTrackId() const
+{
+	return trackId;
 }
 CString CTrackRenderer::GetName() const
 {

@@ -36,20 +36,15 @@ CPropertiesWnd::~CPropertiesWnd()
 {
 }
 
-BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
+IMPLEMENT_DYNAMIC(CPropertiesWnd, CViewDockingPane)
+
+BEGIN_MESSAGE_MAP(CPropertiesWnd, CViewDockingPane)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
-	ON_COMMAND(ID_EXPAND_ALL, OnExpandAllProperties)
-	ON_UPDATE_COMMAND_UI(ID_EXPAND_ALL, OnUpdateExpandAllProperties)
-	ON_COMMAND(ID_SORTPROPERTIES, OnSortProperties)
-	ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
-	ON_COMMAND(ID_PROPERTIES1, OnProperties1)
-	ON_UPDATE_COMMAND_UI(ID_PROPERTIES1, OnUpdateProperties1)
-	ON_COMMAND(ID_PROPERTIES2, OnProperties2)
-	ON_UPDATE_COMMAND_UI(ID_PROPERTIES2, OnUpdateProperties2)
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
+	ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -65,11 +60,7 @@ void CPropertiesWnd::AdjustLayout()
 	CRect rectClient;
 	GetClientRect(rectClient);
 
-	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
-
-	m_wndObjectCombo.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndPropList.SetWindowPos(nullptr, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndPropList.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -83,21 +74,7 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create combo:
 	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-	if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, 1))
-	{
-		TRACE0("Failed to create Properties Combo \n");
-		return -1;      // fail to create
-	}
-
-	m_wndObjectCombo.AddString(_T("Application"));
-	m_wndObjectCombo.AddString(_T("Properties Window"));
-	m_wndObjectCombo.SetCurSel(0);
-
-	CRect rectCombo;
-	m_wndObjectCombo.GetClientRect (&rectCombo);
-
-	m_nComboHeight = rectCombo.Height();
-
+	
 	if (!m_wndPropList.Create(WS_VISIBLE | WS_CHILD, rectDummy, this, 2))
 	{
 		TRACE0("Failed to create Properties Grid \n");
@@ -105,18 +82,6 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	InitPropList();
-
-	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
-	m_wndToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE /* Is locked */);
-	m_wndToolBar.CleanUpLockedImages();
-	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_PROPERTIES_HC : IDR_PROPERTIES, 0, 0, TRUE /* Locked */);
-
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-	m_wndToolBar.SetOwner(this);
-
-	// All commands will be routed via this control , not via the parent frame:
-	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
 	AdjustLayout();
 	return 0;
@@ -128,43 +93,141 @@ void CPropertiesWnd::OnSize(UINT nType, int cx, int cy)
 	AdjustLayout();
 }
 
-void CPropertiesWnd::OnExpandAllProperties()
+void CPropertiesWnd::OnInitialUpdate()
 {
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);	
+}
+void CPropertiesWnd::OnUpdate(const LPARAM lHint)
+{
+	CPropertiesWnd* potentialSource = reinterpret_cast<CPropertiesWnd*>(lHint);
+	if (potentialSource && potentialSource == this) return;
+
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	
+}
+std::chrono::seconds CPropertiesWnd::GetDurationFromPropertyParent(CMFCPropertyGridProperty* property)
+{
+	long days = property->GetSubItem(0)->GetValue().intVal;
+	long hours = property->GetSubItem(1)->GetValue().intVal;
+	long minutes = property->GetSubItem(2)->GetValue().intVal;
+	long seconds = property->GetSubItem(3)->GetValue().intVal;
+	if (seconds > 59)
+	{
+		seconds = 59;
+		property->GetSubItem(3)->SetValue((variant_t)seconds);
+	}
+	if (minutes > 59)
+	{
+		minutes = 59;
+		property->GetSubItem(2)->SetValue((variant_t)minutes);
+	}
+	if (hours > 23)
+	{
+		hours = 23;
+		property->GetSubItem(1)->SetValue((variant_t)hours);
+	}		
+
+	using days_t = std::chrono::duration<int, std::ratio<86400>>;
+	return std::chrono::seconds(seconds) + std::chrono::minutes(minutes) +
+		std::chrono::hours(hours) + days_t(days);
+}
+LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
+{	
+	CMFCPropertyGridProperty* property = (CMFCPropertyGridProperty*)lparam;
+	switch ((int)property->GetData())
+	{
+	case IDEventName:
+	{
+		CString newName = (LPCTSTR)(_bstr_t)property->GetValue();
+		if (event)
+		{
+			event->SetName(newName);
+			GetDocument()->SetModifiedFlag(TRUE);
+			GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+		}
+	}
+		break;
+	case IDEventColor:
+	{
+		CMFCPropertyGridColorProperty* colorProp = (CMFCPropertyGridColorProperty*)lparam;
+		auto color = colorProp->GetColor();
+		auto r = GetRValue(color);
+		auto g = GetGValue(color);
+		auto b = GetBValue(color);
+		UINT32 eventColor = (r << 16) | (g << 8) | b;		
+		event->SetColor(eventColor);
+		GetDocument()->SetModifiedFlag(TRUE);
+		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+	}
+		break;
+	case IDEventDurationDays:
+		[[fallthrough]];
+	case IDEventDurationHours:
+		[[fallthrough]];
+	case IDEventDurationMinutes:
+		[[fallthrough]];
+	case IDEventDurationSeconds:
+	{
+		auto durationProperty = property->GetParent();
+		event->SetDuration(GetDurationFromPropertyParent(property->GetParent()));
+		GetDocument()->SetModifiedFlag(TRUE);
+		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+	}	
+		break;
+	case IDEventDuration:
+	{
+		event->SetDuration(GetDurationFromPropertyParent(property));
+		GetDocument()->SetModifiedFlag(TRUE);
+		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+	}
+		break;
+	}
+	return (LRESULT)TRUE;
+}
+
+void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
+{	
+	D2D1::ColorF color(event->GetColor());
+	auto duration = event->GetDuration();
+	using days_t = std::chrono::duration<int, std::ratio<86400>>;
+	const auto d = std::chrono::duration_cast<days_t>(duration);
+	duration -= d;
+	const auto h = std::chrono::duration_cast<std::chrono::hours>(duration);
+	duration -= h;
+	const auto m = std::chrono::duration_cast<std::chrono::minutes>(duration);
+	duration -= m;
+	const auto s = std::chrono::duration_cast<std::chrono::seconds>(duration);	
+
+	auto eventPropertyGroup = new CMFCPropertyGridProperty(_T("Event"));
+	auto eventNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)event->GetName(), _T("Specifies the name of the event"), IDEventName);
+	eventPropertyGroup->AddSubItem(eventNameProperty);
+	auto eventColorProperty = new CMFCPropertyGridColorProperty(_T("Color"), RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f), nullptr, _T("Specifies the event color"), IDEventColor);
+	eventColorProperty->EnableOtherButton(_T("Other..."));
+	eventColorProperty->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
+
+	eventPropertyGroup->AddSubItem(eventColorProperty);
+
+	auto eventDurationPropertyGroup = new CMFCPropertyGridProperty(_T("Duration"), IDEventDuration, FALSE);
+	auto eventDaysProperty = new CMFCPropertyGridProperty(_T("Days"), (_variant_t)(long)d.count(), _T("Specifies the number of days this event will last"),IDEventDurationDays);
+	eventDurationPropertyGroup->AddSubItem(eventDaysProperty);
+	auto eventHoursProperty = new CMFCPropertyGridProperty(_T("Hours"), (_variant_t)(long)h.count(), _T("Specifies the number of hours this event will last"), IDEventDurationHours);
+	eventHoursProperty->EnableSpinControl(TRUE, 0, 23);
+	eventDurationPropertyGroup->AddSubItem(eventHoursProperty);
+	auto eventMinutesProperty = new CMFCPropertyGridProperty(_T("Minutes"), (_variant_t)(long)m.count(), _T("Specifies the number of minutes this event will last"), IDEventDurationMinutes);
+	eventMinutesProperty->EnableSpinControl(TRUE, 0, 59);
+	eventDurationPropertyGroup->AddSubItem(eventMinutesProperty);
+	auto eventSecondsProperty = new CMFCPropertyGridProperty(_T("Seconds"), (_variant_t)(long)s.count(), _T("Specifies the number of seconds this event will last"), IDEventDurationSeconds);
+	eventSecondsProperty->EnableSpinControl(TRUE, 0, 59);
+	eventDurationPropertyGroup->AddSubItem(eventSecondsProperty);
+
+	eventPropertyGroup->AddSubItem(eventDurationPropertyGroup);
+
+	m_wndPropList.AddProperty(eventPropertyGroup);
+	
+
 	m_wndPropList.ExpandAll();
-}
-
-void CPropertiesWnd::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */)
-{
-}
-
-void CPropertiesWnd::OnSortProperties()
-{
-	m_wndPropList.SetAlphabeticMode(!m_wndPropList.IsAlphabeticMode());
-}
-
-void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
-{
-	pCmdUI->SetCheck(m_wndPropList.IsAlphabeticMode());
-}
-
-void CPropertiesWnd::OnProperties1()
-{
-	// TODO: Add your command handler code here
-}
-
-void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
-{
-	// TODO: Add your command update UI handler code here
-}
-
-void CPropertiesWnd::OnProperties2()
-{
-	// TODO: Add your command handler code here
-}
-
-void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
-{
-	// TODO: Add your command update UI handler code here
 }
 
 void CPropertiesWnd::InitPropList()
@@ -176,7 +239,7 @@ void CPropertiesWnd::InitPropList()
 	m_wndPropList.SetVSDotNetLook();
 	m_wndPropList.MarkModifiedProperties();
 
-	CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
+	/*CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
 
 	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D Look"), (_variant_t) false, _T("Specifies the window's font will be non-bold and controls will have a 3D border")));
 
@@ -247,7 +310,7 @@ void CPropertiesWnd::InitPropList()
 	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 3"), (_variant_t) _T("Value 3"), _T("This is a description")));
 
 	pGroup4->Expand(FALSE);
-	m_wndPropList.AddProperty(pGroup4);
+	m_wndPropList.AddProperty(pGroup4);*/
 }
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
@@ -281,12 +344,17 @@ void CPropertiesWnd::SetPropListFont()
 	m_fntPropList.CreateFontIndirect(&lf);
 
 	m_wndPropList.SetFont(&m_fntPropList);
-	m_wndObjectCombo.SetFont(&m_fntPropList);
 }
 
 
 LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
-	CScheduleEvent* event = (CScheduleEvent*)(lparam);
+	m_wndPropList.RemoveAll();
+	int eventId = (int)wparam;
+	event = GetDocument()->GetStockEvent(eventId);
+	if (!event) return 0;
+	
+	SetupEventPropertyControls(event);
+
 	return 0;
 }

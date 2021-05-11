@@ -26,8 +26,10 @@ public:
 	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
 	void DeleteStockEvent(int index, LPARAM lHint);
 	int GetStockEventIndex(int id) const;
-	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index);
-	void AddTrackEvent(int stockEventIndex, const CString& trackName);
+	CScheduleStockEvent* GetStockEvent(int id) const;
+	CScheduleStockEvent* GetStockEventAtIndex(int index) const;
+	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint);
+	void AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint);
 // Operations
 public:
 
