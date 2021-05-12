@@ -75,6 +75,9 @@ void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
 {	
 	if (track == nullptr) return;
 	if (!renderTarget->IsValid()) return;
+	if (!backgroundColorBrush->IsValid()) return;
+	if (!foregroundColorBrush->IsValid()) return;
+	if (!textFormat->IsValid()) return;
 
 	renderTarget->FillRectangle(trackLabelBounds, backgroundColorBrush);
 	renderTarget->DrawText(track->GetName(), trackLabelBounds,foregroundColorBrush,textFormat);

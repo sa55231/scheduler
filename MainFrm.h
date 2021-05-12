@@ -18,6 +18,7 @@
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
 #include "CalendarBar.h"
+#include "TrackEventsListView.h"
 #include "Resource.h"
 
 
@@ -55,10 +56,11 @@ protected:  // control bar embedded members
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CStockEventView         m_wndStockEventView;
-	CClassView        m_wndClassView;
+	CClassView        m_wndTrackView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;
+	CTrackEventsListView m_wndTrackEventsListView;
 	int dragItemIndex = -1;
 	CImageList* dragImageList = nullptr;
 	bool dragging = false;
@@ -68,10 +70,10 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnApplicationLook(UINT id);
 	afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
-	afx_msg void OnViewFileView();
-	afx_msg void OnUpdateViewFileView(CCmdUI* pCmdUI);
-	afx_msg void OnViewClassView();
-	afx_msg void OnUpdateViewClassView(CCmdUI* pCmdUI);
+	afx_msg void OnViewEventView();
+	afx_msg void OnUpdateViewEventView(CCmdUI* pCmdUI);
+	afx_msg void OnViewTrackView();
+	afx_msg void OnUpdateViewTrackView(CCmdUI* pCmdUI);
 	afx_msg void OnViewOutputWindow();
 	afx_msg void OnUpdateViewOutputWindow(CCmdUI* pCmdUI);
 	afx_msg void OnViewPropertiesWindow();

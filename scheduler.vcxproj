@@ -208,6 +208,7 @@
     <ClInclude Include="CScheduleEvent.h" />
     <ClInclude Include="CScheduleStockEvent.h" />
     <ClInclude Include="CScheduleTrack.h" />
+    <ClInclude Include="TrackEventsListView.h" />
     <ClInclude Include="ViewDockingPane.h" />
     <ClInclude Include="EventRenderer.h" />
     <ClInclude Include="StockEventView.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="CScheduleEvent.cpp" />
     <ClCompile Include="CScheduleStockEvent.cpp" />
     <ClCompile Include="CScheduleTrack.cpp" />
+    <ClCompile Include="TrackEventsListView.cpp" />
     <ClCompile Include="ViewDockingPane.cpp" />
     <ClCompile Include="EventRenderer.cpp" />
     <ClCompile Include="StockEventView.cpp" />

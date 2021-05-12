@@ -30,6 +30,7 @@ void CEventRenderer::Render(CRenderTarget* renderTarget)
 	if (!renderTarget->IsValid()) return;
 	if (!backgroundColorBrush->IsValid()) return;
 	if (!foregroundColorBrush->IsValid()) return;
+	if (!textFormat->IsValid()) return;
 	//if (!dropTargetStrokeStyle->IsValid()) return;
 
 	renderTarget->FillRoundedRectangle(eventBoundsRoundedRect, backgroundColorBrush);

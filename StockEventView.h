@@ -41,6 +41,7 @@ protected:
 	CFileViewToolBar m_wndToolBar;
 	int addingItemIndex = -1;
 	bool updatingEventsSelection = false;
+	bool addingEvent = false;
 protected:
 	void FillFileView();
 	virtual void OnInitialUpdate();

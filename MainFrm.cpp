@@ -35,10 +35,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_CAPTION_BAR, &CMainFrame::OnViewCaptionBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAPTION_BAR, &CMainFrame::OnUpdateViewCaptionBar)
 	ON_COMMAND(ID_TOOLS_OPTIONS, &CMainFrame::OnOptions)
-	ON_COMMAND(ID_VIEW_EVENTVIEW, &CMainFrame::OnViewFileView)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_EVENTVIEW, &CMainFrame::OnUpdateViewFileView)
-	ON_COMMAND(ID_VIEW_CLASSVIEW, &CMainFrame::OnViewClassView)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_CLASSVIEW, &CMainFrame::OnUpdateViewClassView)
+	ON_COMMAND(ID_VIEW_EVENTVIEW, &CMainFrame::OnViewEventView)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_EVENTVIEW, &CMainFrame::OnUpdateViewEventView)
+	ON_COMMAND(ID_VIEW_TRACKVIEW, &CMainFrame::OnViewTrackView)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TRACKVIEW, &CMainFrame::OnUpdateViewTrackView)
 	ON_COMMAND(ID_VIEW_OUTPUTWND, &CMainFrame::OnViewOutputWindow)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OUTPUTWND, &CMainFrame::OnUpdateViewOutputWindow)
 	ON_COMMAND(ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPropertiesWindow)
@@ -121,19 +121,24 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_wndStockEventView.EnableDocking(CBRS_ALIGN_ANY);
-	m_wndClassView.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndTrackView.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndStockEventView);
 	CDockablePane* pTabbedBar = nullptr;
-	m_wndClassView.AttachToTabWnd(&m_wndStockEventView, DM_SHOW, TRUE, &pTabbedBar);
-	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
-	DockPane(&m_wndOutput);
+	m_wndTrackView.AttachToTabWnd(&m_wndStockEventView, DM_SHOW, TRUE, &pTabbedBar);
+	
 	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndProperties);
+	//by default put the properties under the tabbed pane
+	m_wndProperties.DockToWindow(pTabbedBar, CBRS_ALIGN_BOTTOM);
+
+	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&m_wndOutput);
+
+	m_wndTrackEventsListView.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&m_wndTrackEventsListView);
 
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
-
-	
 	
 	return 0;
 }
@@ -156,9 +161,9 @@ BOOL CMainFrame::CreateDockingWindows()
 
 	// Create class view
 	CString strClassView;
-	bNameValid = strClassView.LoadString(IDS_CLASS_VIEW);
+	bNameValid = strClassView.LoadString(IDS_TRACKS_VIEW);
 	ASSERT(bNameValid);
-	if (!m_wndClassView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_CLASSVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
+	if (!m_wndTrackView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_TRACKVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
 	{
 		TRACE0("Failed to create Class View window\n");
 		return FALSE; // failed to create
@@ -174,6 +179,27 @@ BOOL CMainFrame::CreateDockingWindows()
 		return FALSE; // failed to create
 	}
 
+	// Create properties window
+	CString strPropertiesWnd;
+	bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
+	ASSERT(bNameValid);
+	if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 200, 200, 400), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
+	{
+		TRACE0("Failed to create Properties window\n");
+		return FALSE; // failed to create
+	}
+
+	// Create track events window
+	CString strTrackEventsWnd;
+	bNameValid = strTrackEventsWnd.LoadString(IDS_VIEW_TRACKEVENTS_WND);
+	ASSERT(bNameValid);
+	if (!m_wndTrackEventsListView.Create(strTrackEventsWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_TRACKEVENTSWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
+	{
+		TRACE0("Failed to create Properties window\n");
+		return FALSE; // failed to create
+	}
+
+
 	// Create output window
 	CString strOutputWnd;
 	bNameValid = strOutputWnd.LoadString(IDS_OUTPUT_WND);
@@ -184,15 +210,6 @@ BOOL CMainFrame::CreateDockingWindows()
 		return FALSE; // failed to create
 	}
 
-	// Create properties window
-	CString strPropertiesWnd;
-	bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
-	ASSERT(bNameValid);
-	if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
-	{
-		TRACE0("Failed to create Properties window\n");
-		return FALSE; // failed to create
-	}
 
 	SetDockingWindowIcons(theApp.m_bHiColorIcons);
 	return TRUE;
@@ -204,7 +221,7 @@ void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 	m_wndStockEventView.SetIcon(hFileViewIcon, FALSE);
 
 	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_CLASS_VIEW_HC : IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-	m_wndClassView.SetIcon(hClassViewIcon, FALSE);
+	m_wndTrackView.SetIcon(hClassViewIcon, FALSE);
 
 	HICON hOutputBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndOutput.SetIcon(hOutputBarIcon, FALSE);
@@ -452,7 +469,7 @@ void CMainFrame::OnOptions()
 	delete pOptionsDlg;
 }
 
-void CMainFrame::OnViewFileView()
+void CMainFrame::OnViewEventView()
 {
 	// Show or activate the pane, depending on current state.  The
 	// pane can only be closed via the [x] button on the pane frame.
@@ -460,20 +477,20 @@ void CMainFrame::OnViewFileView()
 	m_wndStockEventView.SetFocus();
 }
 
-void CMainFrame::OnUpdateViewFileView(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateViewEventView(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
 }
 
-void CMainFrame::OnViewClassView()
+void CMainFrame::OnViewTrackView()
 {
 	// Show or activate the pane, depending on current state.  The
 	// pane can only be closed via the [x] button on the pane frame.
-	m_wndClassView.ShowPane(TRUE, FALSE, TRUE);
-	m_wndClassView.SetFocus();
+	m_wndTrackView.ShowPane(TRUE, FALSE, TRUE);
+	m_wndTrackView.SetFocus();
 }
 
-void CMainFrame::OnUpdateViewClassView(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateViewTrackView(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
 }

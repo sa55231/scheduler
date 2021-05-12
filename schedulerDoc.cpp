@@ -164,8 +164,11 @@ void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName,
 }
 CScheduleStockEvent* CSchedulerDoc::GetStockEventAtIndex(int index) const
 {
-	ASSERT(index >= 0 && index < stockEvents.size());
-	return stockEvents.at(index).get();
+	if (index >= 0 && index < stockEvents.size())
+	{
+		return stockEvents.at(index).get();
+	}
+	return nullptr;
 }
 CScheduleStockEvent* CSchedulerDoc::GetStockEvent(int id) const
 {

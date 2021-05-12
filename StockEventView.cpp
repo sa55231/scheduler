@@ -135,6 +135,7 @@ void CStockEventView::FillFileView()
 
 void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 {
+	addingEvent = false;
 	NMLVDISPINFO* listInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
 	if (NULL != listInfo->item.pszText)
 	{
@@ -258,6 +259,7 @@ void CStockEventView::OnAddEvent()
 	auto editControl = m_wndEventListView.EditLabel(index);
 	if (editControl)
 	{
+		addingEvent = true;
 		editControl->SetWindowText(newEventName);
 		editControl->SetSel(0, -1);
 	}
@@ -305,6 +307,8 @@ void CStockEventView::OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 		return;
 	}
 
+	if (addingEvent) return;
+
 	NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
 
 	if (pNMListView->uChanged & LVIF_STATE)
@@ -312,7 +316,10 @@ void CStockEventView::OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 		if (pNMListView->uNewState & LVIS_SELECTED)
 		{
 			auto event = GetDocument()->GetStockEventAtIndex(pNMListView->iItem);
-			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetId(), (LPARAM)this);			
+			if (event)
+			{
+				AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetId(), (LPARAM)this);
+			}
 		}
 		else
 		{

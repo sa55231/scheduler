@@ -21,7 +21,7 @@
 #define IDR_schedulerTYPE               130
 #define ID_WINDOW_MANAGER               131
 #define ID_VIEW_EVENTVIEW               133
-#define ID_VIEW_CLASSVIEW               134
+#define ID_VIEW_TRACKVIEW               134
 #define ID_ADD_EVENT                    135
 #define ID_OPEN                         136
 #define ID_OPEN_WITH                    137
@@ -46,8 +46,10 @@
 #define ID_EXPAND_ALL                   154
 #define IDS_FILE_VIEW                   155
 #define IDS_CLASS_VIEW                  156
+#define IDS_TRACKS_VIEW                 156
 #define IDS_OUTPUT_WND                  157
 #define IDS_PROPERTIES_WND              158
+#define IDS_VIEW_TRACKEVENTS_WND        159
 #define IDI_FILE_VIEW                   161
 #define IDI_FILE_VIEW_HC                162
 #define IDI_CLASS_VIEW                  163
@@ -105,16 +107,18 @@
 #define IDS_SHORTCUTS                   252
 #define IDS_FOLDERS                     253
 #define IDS_OUTLOOKBAR                  258
+#define ID_VIEW_TRACKEVENTSWND          260
 #define IDS_BUILD_TAB                   300
 #define IDS_DEBUG_TAB                   301
 #define IDS_FIND_TAB                    302
 #define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
 #define IDR_RIBBON                      307
+#define IDC_EVENT_LIST                  1000
+#define IDC_TRACK_EVENT_LIST            1001
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
-#define IDC_EVENT_LIST                  1000
 
 // Next default values for new objects
 // 
