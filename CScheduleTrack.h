@@ -10,6 +10,7 @@ public:
 	CScheduleTrack();
 	CScheduleTrack(int id, CString name, std::vector<CScheduleEventPtr> events);
 	void RemoveEvents(int id);
+	void RemoveEvent(CScheduleEvent* event);
 	CString GetName() const;
 	int GetId() const;
 	const std::vector<CScheduleEventPtr>& GetEvents() const;

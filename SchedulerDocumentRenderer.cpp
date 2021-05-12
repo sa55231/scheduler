@@ -19,8 +19,7 @@ CSchedulerDocumentRenderer::CSchedulerDocumentRenderer() : zoomLevel(D2D1::SizeF
 }
 
 D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRenderTarget* renderTarget, 
-	IDWriteFactory* directWriteFactory, ID2D1Factory* factory, const std::chrono::system_clock::time_point& startTime,
-	const std::chrono::hours& utcOffset)
+	IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	CreateD2D1Resources(renderTarget, directWriteFactory,factory);
 
@@ -86,8 +85,9 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	surfaceRect.bottom = surfaceSize.height;
 	surfaceRect.right = surfaceSize.width;
 		
-
-	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) + utcOffset };
+	auto startTime = doc->GetStartTime();
+	std::chrono::minutes utcOffset(doc->GetUTCOffsetMinutes());
+	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
 
 	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH - margin) / DURATION_COLUMN_WIDTH;	
 	auto secondsInColumnCount = maxDuration.count() / static_cast<std::chrono::seconds::rep>(columnsCount);

@@ -131,8 +131,7 @@ void CSchedulerView::UpdateRendererLayout(CSchedulerDoc* pDoc)
 	ID2D1Factory* factory = pD2DState->GetDirect2dFactory();
 	ASSERT(NULL != factory);
 
-	auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(), pDirectWriteFactory,factory,
-		std::chrono::system_clock::now(), std::chrono::hours(-4));
+	auto sizeTotal = docRenderer.UpdateLayout(pDoc, GetRenderTarget(), pDirectWriteFactory,factory);
 	// The total scroll size has to be multiplied by the DPI scale
 	// as the size we calculated earlier is in DIPs
 	sizeTotal.width = sizeTotal.width * dpiScaleX;
@@ -157,6 +156,8 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return;
+
+	lastLButtonDownPoint = point;
 
 	if (selectedEvent != nullptr)
 	{
@@ -187,10 +188,7 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			event->SetSelected(true);
 			selectedEvent = event;
-			
 			track->SetSelected(false);
-			selectedTrack = nullptr;
-
 			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetEventId(), (LPARAM)this);
 		}
 		else
@@ -210,12 +208,102 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 }
 void CSchedulerView::OnLButtonUp(UINT nFlags, CPoint point)
 {
+	if (dragging)
+	{
+		ReleaseCapture();
+
+		if(eventDraggingImageList)
+		{
+			eventDraggingImageList->DragLeave(GetDesktopWindow());
+			eventDraggingImageList->EndDrag();
+			delete eventDraggingImageList;
+			eventDraggingImageList = nullptr;
+		}
+
+		CSchedulerDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
+		if (!pDoc) return;
+
+		CPoint pt(point); //Get current mouse coordinates
+		ClientToScreen(&pt); //Convert to screen coordinates
+		// Get the CWnd pointer of the window that is under the mouse cursor
+		CWnd* pDropWnd = WindowFromPoint(pt);
+		ASSERT(pDropWnd); //make sure we have a window
+
+		if (selectedEvent != nullptr && pDropWnd == this && selectedEvent != dropTargetEvent)
+		{
+			int stockEventIndex = pDoc->GetStockEventIndex(selectedEvent->GetEventId());
+			// This is kinda a bug and kinda not
+			// When dropping on an event in a different track, it inserts in front of the dropped event
+			// When dropping on an event on the same track it inserts it after the dropped event
+			// but only sometimes. sometimes it's before (deterministic, it's not magic).
+			// But, it has the weird effect of actually being quite intuitive on its behaviour
+			// So, at least for now, i'm leaving it in.
+			selectedTrack->GetTrack()->RemoveEvent(selectedEvent->GetEvent());
+			AddEventAtPoint(stockEventIndex, pt);
+		}		
+		if (dropTargetTrack != nullptr)
+		{
+			dropTargetTrack->SetDropTarget(false);
+			dropTargetTrack = nullptr;
+		}
+
+		if (dropTargetEvent != nullptr)
+		{
+			dropTargetEvent->SetDropTarget(false);
+			dropTargetEvent = nullptr;
+		}
+		dragging = false;
+		RedrawWindow();
+	}
+
 	CScrollView::OnLButtonUp(nFlags, point);
 }
 
+void CSchedulerView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (!dragging)
+	{
+		auto distance = std::sqrt((lastLButtonDownPoint.x - point.x) * (lastLButtonDownPoint.x - point.x) +
+			(lastLButtonDownPoint.y - point.y) * (lastLButtonDownPoint.y - point.y));		
+		dragging = (nFlags & MK_LBUTTON) && (selectedEvent != nullptr) && (distance > 20.0);
+		if (dragging)
+		{
+			int nOffset = -10; //offset in pixels for drag image (positive is up and to the left; neg is down and to the right)
+			eventDraggingImageList = new CImageList();
+			eventDraggingImageList->Create(100, 100, ILC_COLOR4, 1, 0);
+			eventDraggingImageList->BeginDrag(0, CPoint(nOffset, nOffset - 4));
+			eventDraggingImageList->DragEnter(GetDesktopWindow(), point);
+			SetCapture();
+		}
+	}
+	
+	if (dragging)
+	{
+		CPoint pt(point);	//get our current mouse coordinates
+		ClientToScreen(&pt); //convert to screen coordinates
+		if (eventDraggingImageList)
+		{
+			eventDraggingImageList->DragMove(pt); //move the drag image to those coordinates
+			// Unlock window updates (this allows the dragging image to be shown smoothly)
+			eventDraggingImageList->DragShowNolock(false);
+		}
+
+		CWnd* pDropWnd = WindowFromPoint(pt);
+		ASSERT(pDropWnd); //make sure we have a window
+
+		if (selectedEvent != nullptr && pDropWnd == this)
+		{
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			DraggingEventAtPoint(-1, pt);
+		}
+	}
+
+	CView::OnMouseMove(nFlags, point);
+}
 void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
-	ClientToScreen(&point);
+	ClientToScreen(&point); //Convert to screen coordinates
 	OnContextMenu(this, point);
 }
 
@@ -275,7 +363,6 @@ void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
 		if (event != nullptr)
 		{
 			dropTargetTrack->SetDropTarget(false);
-			dropTargetTrack = nullptr;
 			dropTargetEvent = event;
 			dropTargetEvent->SetDropTarget(true);
 		}		
@@ -288,8 +375,6 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return;
-	dropTargetTrack = nullptr;
-	dropTargetEvent = nullptr;
 	ScreenToClient(&point);
 
 	auto pos = GetScrollPosition();

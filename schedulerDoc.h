@@ -20,7 +20,10 @@ protected: // create from serialization only
 
 // Attributes
 public:
-
+	int GetUTCOffsetMinutes() const;
+	void SetUTCOffsetMinutes(int offset, LPARAM lHint);
+	std::chrono::system_clock::time_point GetStartTime() const;
+	void SetStartTime(const std::chrono::system_clock::time_point& time, LPARAM lHint);
 	const std::vector<CScheduleTrackPtr>& GetTracks() const;
 	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
 	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
@@ -56,7 +59,8 @@ protected:
 private:
 	std::vector<CScheduleTrackPtr> tracks;
 	std::vector<CScheduleStockEventPtr> stockEvents;
-	std::chrono::steady_clock::time_point startTime;
+	std::chrono::system_clock::time_point startTime;
+	int utcOffsetMinutes = 0;
 
 // Generated message map functions
 protected:

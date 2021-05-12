@@ -59,7 +59,18 @@ BOOL CSchedulerDoc::OnNewDocument()
 	// (SDI documents will reuse this document)
 	tracks.clear();
 	stockEvents.clear();
-	startTime = std::chrono::steady_clock::now();
+	startTime = std::chrono::system_clock::now();
+	DYNAMIC_TIME_ZONE_INFORMATION timezoneInfo = { 0 };
+	auto tzInfo = GetDynamicTimeZoneInformation(&timezoneInfo);
+	utcOffsetMinutes = timezoneInfo.Bias;
+	if (tzInfo == TIME_ZONE_ID_DAYLIGHT)
+	{
+		utcOffsetMinutes += timezoneInfo.DaylightBias;
+	}
+	else if (tzInfo == TIME_ZONE_ID_STANDARD || tzInfo == TIME_ZONE_ID_UNKNOWN)
+	{
+		utcOffsetMinutes += timezoneInfo.StandardBias;
+	}
 	std::default_random_engine generator;
 	generator.seed((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> duration_distribution(60,5*3600);
@@ -90,6 +101,28 @@ BOOL CSchedulerDoc::OnNewDocument()
 	}
 
 	return TRUE;
+}
+
+int CSchedulerDoc::GetUTCOffsetMinutes() const
+{
+	return utcOffsetMinutes;
+}
+void CSchedulerDoc::SetUTCOffsetMinutes(int offset, LPARAM lHint)
+{
+	utcOffsetMinutes = offset;
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+
+std::chrono::system_clock::time_point CSchedulerDoc::GetStartTime() const
+{
+	return startTime;
+}
+void CSchedulerDoc::SetStartTime(const std::chrono::system_clock::time_point& time, LPARAM lHint)
+{
+	startTime = time;
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
 }
 
 const std::vector<CScheduleTrackPtr>& CSchedulerDoc::GetTracks() const

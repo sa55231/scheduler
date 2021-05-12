@@ -64,6 +64,9 @@ private:
 	CTrackRenderer* selectedTrack = nullptr;
 	CEventRenderer* dropTargetEvent = nullptr;
 	CTrackRenderer* dropTargetTrack = nullptr;
+	bool dragging = false;
+	CPoint lastLButtonDownPoint = {0,0};
+	CImageList* eventDraggingImageList = nullptr;
 
 // Generated message map functions
 protected:
@@ -76,6 +79,7 @@ protected:
 	afx_msg LRESULT OnAfxDraw2D(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnAfxRecreated2DResources(WPARAM wParam, LPARAM lParam);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
 };
 

@@ -26,9 +26,9 @@ public:
 	int GetTrackId() const;
 	bool IsDropTarget() const;
 	void SetDropTarget(bool flag);
+	CScheduleTrack* GetTrack() const;
 private:
-	int trackId = -1;
-	CString name;
+	CScheduleTrack* track = nullptr;
 	CD2DTextFormat* textFormat = nullptr;
 	CD2DSolidColorBrush* backgroundColorBrush = nullptr;
 	CD2DSolidColorBrush* foregroundColorBrush = nullptr;

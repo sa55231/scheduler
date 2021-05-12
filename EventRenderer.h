@@ -20,21 +20,20 @@ public:
 	int GetEventId() const;
 	bool IsDropTarget() const;
 	void SetDropTarget(bool flag);
-
+	CScheduleEvent* GetEvent() const;
 private:
+	CScheduleEvent* event = nullptr;
+	CString name;
+	int eventId = -1;
 	CD2DTextFormat* textFormat = nullptr;
 	float eventWidth = 0;
 	CD2DSolidColorBrush* backgroundColorBrush = nullptr;
 	CD2DSolidColorBrush* foregroundColorBrush = nullptr;
 	ID2D1StrokeStyle* dropTargetStrokeStyle = nullptr;
-	CString name;
-	UINT32 color = 0;
 	bool selected = false;
 	D2D1_RECT_F eventBounds;
 	D2D1_ROUNDED_RECT eventBoundsRoundedRect;
 	FLOAT minEventRenderWidth = 16.f;
-	int eventId = -1;
 	bool dropTarget = false;
-
 };
 

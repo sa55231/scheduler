@@ -4,15 +4,15 @@
 CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat,
 	CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush, 
 	ID2D1StrokeStyle* dropTargetStrokeStyle) :
+	event(event),
+	name(event->GetName()),
+	eventId(event->GetStockId()),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),
 	dropTargetStrokeStyle(dropTargetStrokeStyle),
-	name(event->GetName()),
-	color(event->GetColor()),
 	eventBounds(D2D1::RectF()),
-	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f)),
-	eventId(event->GetStockId())
+	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f))
 {
 	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event->GetDuration()).count();
 }
@@ -26,6 +26,12 @@ float CEventRenderer::GetWidth() const
 }
 void CEventRenderer::Render(CRenderTarget* renderTarget)
 {	
+	if (event == nullptr) return;
+	if (!renderTarget->IsValid()) return;
+	if (!backgroundColorBrush->IsValid()) return;
+	if (!foregroundColorBrush->IsValid()) return;
+	//if (!dropTargetStrokeStyle->IsValid()) return;
+
 	renderTarget->FillRoundedRectangle(eventBoundsRoundedRect, backgroundColorBrush);
 	
 	if (selected && !dropTarget)
@@ -64,6 +70,10 @@ void CEventRenderer::SetSelected(bool flag)
 int CEventRenderer::GetEventId() const
 {
 	return eventId;
+}
+CScheduleEvent* CEventRenderer::GetEvent() const
+{
+	return event;
 }
 bool CEventRenderer::IsDropTarget() const
 {

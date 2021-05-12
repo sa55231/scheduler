@@ -31,7 +31,7 @@ void CScheduleTrack::AddEvent(CScheduleEventPtr event)
 
 void CScheduleTrack::InsertEventAtIndex(int index, CScheduleEventPtr event)
 {
-	if (index < 0 || index >= events.size()) return;
+	if (index < 0 || index > events.size()) return;
 	totalDuration += event->GetDuration();
 	if (maxEventDuration.count() < event->GetDuration().count())
 	{
@@ -53,4 +53,14 @@ void CScheduleTrack::RemoveEvents(int id)
 		return ev->GetStockId() == id;
 	}),
 	events.end());
+}
+void CScheduleTrack::RemoveEvent(CScheduleEvent* event)
+{
+	auto it = std::find_if(events.begin(), events.end(), [event](const auto& ev) {
+		return ev.get() == event;
+	});
+	if (it != events.end())
+	{
+		events.erase(it);
+	}
 }
