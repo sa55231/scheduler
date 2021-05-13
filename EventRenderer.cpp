@@ -16,6 +16,7 @@ CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat
 {
 	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event->GetDuration()).count();
 }
+
 bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
 {
 	return (point.x >= eventBounds.left && point.x <= eventBounds.right && point.y >= eventBounds.top && point.y <= eventBounds.bottom);
@@ -23,6 +24,24 @@ bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
 float CEventRenderer::GetWidth() const
 {
 	return eventWidth;
+}
+D2D1_SIZE_F CEventRenderer::GetSize() const
+{
+	return D2D1::SizeF(eventBounds.right-eventBounds.left,eventBounds.bottom-eventBounds.top);
+}
+D2D1_RECT_F CEventRenderer::GetEventBounds() const
+{
+	return eventBounds;
+}
+void CEventRenderer::Render(CRenderTarget* renderTarget, CD2DSolidColorBrush* backgroundColorBrush, 
+	CD2DSolidColorBrush* foregroundColorBrush, CD2DTextFormat* textFormat)
+{
+	 D2D1_RECT_F bounds = D2D1::RectF(0,0,eventBounds.right-eventBounds.left, eventBounds.bottom - eventBounds.top);
+	 auto height = bounds.top - bounds.bottom;
+	 D2D1_ROUNDED_RECT boundsRoundedRect = D2D1::RoundedRect(bounds, height * 0.3f, height * 0.3f);
+	 renderTarget->FillRoundedRectangle(boundsRoundedRect, backgroundColorBrush);
+	 renderTarget->DrawRoundedRectangle(boundsRoundedRect, foregroundColorBrush);
+	 renderTarget->DrawText(name, bounds, foregroundColorBrush, textFormat == nullptr ? this->textFormat : textFormat);
 }
 void CEventRenderer::Render(CRenderTarget* renderTarget)
 {	

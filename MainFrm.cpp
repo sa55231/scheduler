@@ -49,6 +49,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, &CMainFrame::OnEventObjectSelected)
+	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, &CMainFrame::OnTrackObjectSelected)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
 
@@ -217,7 +218,7 @@ BOOL CMainFrame::CreateDockingWindows()
 
 void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 {
-	HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_FILE_VIEW_HC : IDI_FILE_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_EVENT_ICON_HC : IDI_EVENT_ICON), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndStockEventView.SetIcon(hFileViewIcon, FALSE);
 
 	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_CLASS_VIEW_HC : IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
@@ -281,12 +282,14 @@ void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
 {
 	m_wndStockEventView.Initialize(doc);
 	m_wndProperties.Initialize(doc);
+	m_wndTrackEventsListView.Initialize(doc);
 }
 
 void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
 {
 	m_wndStockEventView.Update(lHint);
 	m_wndProperties.Update(lHint);
+	m_wndTrackEventsListView.Update(lHint);
 }
 
 void CMainFrame::StartDraggingStockEvent(int dragItemIndex, CImageList* imageList, CPoint point)
@@ -553,5 +556,11 @@ LRESULT CMainFrame::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndProperties.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
 	m_wndStockEventView.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
+	return 0;
+}
+
+LRESULT CMainFrame::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	m_wndTrackEventsListView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
 	return 0;
 }

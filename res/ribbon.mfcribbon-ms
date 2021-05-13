@@ -37,18 +37,6 @@
         </ID>
       </IMAGE_LARGE>
       <ELEMENTS>
-[!if APP_TYPE_MTLD]
-        <ELEMENT>
-          <ELEMENT_NAME>Button</ELEMENT_NAME>
-          <ID>
-            <NAME>ID_FILE_NEW_FRAME</NAME>
-            <VALUE>57613</VALUE>
-          </ID>
-          <TEXT>&amp;New Frame</TEXT>
-          <INDEX_SMALL>0</INDEX_SMALL>
-          <INDEX_LARGE>0</INDEX_LARGE>
-        </ELEMENT>
-[!endif]
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
           <ID>
@@ -334,27 +322,6 @@
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-[!if CONTAINER || CONTAINER_SERVER]
-          <PANEL>
-            <ELEMENT_NAME>Panel</ELEMENT_NAME>
-            <NAME>Insert</NAME>
-            <KEYS>I</KEYS>
-            <INDEX>-1</INDEX>
-            <ELEMENTS>
-              <ELEMENT>
-                <ELEMENT_NAME>Button</ELEMENT_NAME>
-                <ID>
-                  <NAME>ID_OLE_INSERT_NEW</NAME>
-                  <VALUE>57856</VALUE>
-                </ID>
-                <TEXT>Insert Object...</TEXT>
-                <KEYS>I</KEYS>
-                <INDEX_SMALL>4</INDEX_SMALL>
-                <INDEX_LARGE>1</INDEX_LARGE>
-              </ELEMENT>
-            </ELEMENTS>
-          </PANEL>
-[!endif]
           <PANEL>
             <ELEMENT_NAME>Panel</ELEMENT_NAME>
             <NAME>View</NAME>
@@ -454,7 +421,39 @@
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-[!endif]
+          [!endif]
+
+          <PANEL>
+            <ELEMENT_NAME>Panel</ELEMENT_NAME>
+            <NAME>Document</NAME>
+            <KEYS>D</KEYS>
+            <INDEX>5</INDEX>
+            <ELEMENTS>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_DOCUMENT_SETTINGS_MANAGER</NAME>
+                  <VALUE>1002</VALUE>
+                </ID>
+                <TEXT>Document</TEXT>
+                <KEYS>D</KEYS>
+                <ALWAYS_LARGE>TRUE</ALWAYS_LARGE>
+                <INDEX_SMALL>1</INDEX_SMALL>
+                <INDEX_LARGE>2</INDEX_LARGE>
+                <ELEMENTS>
+                  <ELEMENT>
+                    <ELEMENT_NAME>Button</ELEMENT_NAME>
+                    <ID>
+                      <NAME>ID_SET_START_TIME</NAME>
+                      <VALUE>32773</VALUE>
+                    </ID>
+                    <TEXT>Start Time</TEXT>
+                  </ELEMENT>
+                </ELEMENTS>
+              </ELEMENT>
+            </ELEMENTS>
+          </PANEL>
+
         </PANELS>
       </CATEGORY>
     </CATEGORIES>

@@ -267,5 +267,11 @@
     <Image Include="res\Toolbar256.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\Event.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\event_ic.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

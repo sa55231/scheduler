@@ -266,13 +266,12 @@ void CSchedulerView::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		auto distance = std::sqrt((lastLButtonDownPoint.x - point.x) * (lastLButtonDownPoint.x - point.x) +
 			(lastLButtonDownPoint.y - point.y) * (lastLButtonDownPoint.y - point.y));		
-		dragging = (nFlags & MK_LBUTTON) && (selectedEvent != nullptr) && (distance > 20.0);
-		if (dragging)
+		
+		if ((nFlags & MK_LBUTTON) && (selectedEvent != nullptr) && (distance > 20.0))
 		{
-			int nOffset = -10; //offset in pixels for drag image (positive is up and to the left; neg is down and to the right)
-			eventDraggingImageList = new CImageList();
-			eventDraggingImageList->Create(100, 100, ILC_COLOR4, 1, 0);
-			eventDraggingImageList->BeginDrag(0, CPoint(nOffset, nOffset - 4));
+			dragging = true;
+			CreateEventDraggingImageList();
+			eventDraggingImageList->BeginDrag(0, CPoint(0, 0));
 			eventDraggingImageList->DragEnter(GetDesktopWindow(), point);
 			SetCapture();
 		}
@@ -297,9 +296,71 @@ void CSchedulerView::OnMouseMove(UINT nFlags, CPoint point)
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			DraggingEventAtPoint(-1, pt);
 		}
+		else
+		{
+			SetCursor(LoadCursor(NULL, IDC_NO));
+		}
+		if (eventDraggingImageList)
+		{
+			eventDraggingImageList->DragShowNolock(true);
+		}
+		
 	}
 
 	CView::OnMouseMove(nFlags, point);
+}
+void CSchedulerView::CreateEventDraggingImageList()
+{
+	auto eventSize = selectedEvent->GetSize();
+	_AFX_D2D_STATE* pD2DState = AfxGetD2DState();
+	ASSERT(NULL != pD2DState);
+	ID2D1Factory* factory = pD2DState->GetDirect2dFactory();
+	ASSERT(NULL != factory);
+	IWICImagingFactory* wicFactory = pD2DState->GetWICFactory();
+	ASSERT(NULL != wicFactory);
+	CComPtr<IWICBitmap> wicBitmap;
+	HRESULT hr = wicFactory->CreateBitmap((UINT)eventSize.width, (UINT)eventSize.height,
+		GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &wicBitmap);
+	ATLENSURE_SUCCEEDED(hr);
+
+	ID2D1RenderTarget* bitmapRenderTarget;
+	D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties();
+	rtProps.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	rtProps.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	rtProps.usage = D2D1_RENDER_TARGET_USAGE_NONE;
+	hr = factory->CreateWicBitmapRenderTarget(wicBitmap, rtProps, &bitmapRenderTarget);
+	ATLENSURE_SUCCEEDED(hr);
+	CRenderTarget br;
+	br.Attach(bitmapRenderTarget);
+	{
+		br.BeginDraw();
+		br.Clear(D2D1::ColorF(D2D1::ColorF::Black, 1.f));
+		CD2DSolidColorBrush brush(&br, D2D1::ColorF(selectedEvent->GetEvent()->GetColor(), 1.f));
+		CD2DSolidColorBrush frBrush(&br, D2D1::ColorF(D2D1::ColorF::Black, 1.f));
+		selectedEvent->Render(&br, &brush, &frBrush, nullptr);
+		br.EndDraw();
+	}
+	
+	CComPtr<IWICComponentInfo> componentInfo;
+	CComPtr <IWICPixelFormatInfo> pixelFormatInfo;
+	hr = wicFactory->CreateComponentInfo(GUID_WICPixelFormat32bppPBGRA, &componentInfo);
+	ATLENSURE_SUCCEEDED(hr);
+	hr = componentInfo->QueryInterface<IWICPixelFormatInfo>(&pixelFormatInfo);
+	ATLENSURE_SUCCEEDED(hr);
+	UINT bitsPerPixel = 0;
+	hr = pixelFormatInfo->GetBitsPerPixel(&bitsPerPixel);
+	ATLENSURE_SUCCEEDED(hr);
+	UINT bytesPerPixel = bitsPerPixel / 8;
+	UINT stride = (UINT)eventSize.width * bytesPerPixel;
+	UINT bufSize = stride * eventSize.height;
+	BYTE* buf = new  BYTE[bufSize];
+	hr = wicBitmap->CopyPixels(nullptr, stride, bufSize, buf);
+	ATLENSURE_SUCCEEDED(hr);
+	CBitmap bmp;
+	bmp.CreateBitmap(eventSize.width, eventSize.height, 1, bitsPerPixel, buf);
+	eventDraggingImageList = new CImageList();
+	eventDraggingImageList->Create(eventSize.width, eventSize.height, ILC_COLOR32, 1, 1);
+	eventDraggingImageList->Add(&bmp, RGB(0, 0, 0));
 }
 void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
@@ -457,5 +518,9 @@ CSchedulerDoc* CSchedulerView::GetDocument() const // non-debug version is inlin
 }
 #endif //_DEBUG
 
-
 // CSchedulerView message handlers
+
+IMPLEMENT_DYNAMIC(CSimpleBitmap, CD2DBitmap)
+CSimpleBitmap::CSimpleBitmap(CRenderTarget* pParentTarget):CD2DBitmap(pParentTarget)
+{
+}

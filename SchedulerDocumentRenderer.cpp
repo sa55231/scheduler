@@ -31,7 +31,6 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	std::chrono::seconds maxDuration = std::chrono::seconds::min();
 	trackSeparationLines.emplace_back(D2D1::Point2F(0.f, surfaceSize.height - margin / 2.f), D2D1::Point2F(maxWidth, surfaceSize.height - margin / 2.f));
 
-
 	for (const auto& track : doc->GetTracks())
 	{
 		auto trackRenderer = std::make_unique<CTrackRenderer>(track.get(), trackTextFormat, trackBackgroundColorBrush,

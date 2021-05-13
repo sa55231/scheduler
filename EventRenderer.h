@@ -11,18 +11,21 @@ public:
 		CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush,
 		ID2D1StrokeStyle* dropTargetStrokeStyle);
 	void Render(CRenderTarget* renderTarget);
+	void Render(CRenderTarget* renderTarget, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush, CD2DTextFormat* textFormat);
 	float GetWidth() const;
+	D2D1_SIZE_F GetSize() const;
 	bool IsSelected() const;
 	void SetSelected(bool flag);
 	bool ContainsPoint(const D2D1_POINT_2F& point) const;
 	void SetEventBounds(D2D1_RECT_F& rect);
+	D2D1_RECT_F GetEventBounds() const;
 	void SetMinimumTextRenderingWidth(FLOAT width);
 	int GetEventId() const;
 	bool IsDropTarget() const;
 	void SetDropTarget(bool flag);
 	CScheduleEvent* GetEvent() const;
 private:
-	CScheduleEvent* event = nullptr;
+	CScheduleEvent* event = nullptr;	
 	CString name;
 	int eventId = -1;
 	CD2DTextFormat* textFormat = nullptr;

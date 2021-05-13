@@ -15,6 +15,13 @@
 #pragma once
 #include "SchedulerDocumentRenderer.h"
 
+class CSimpleBitmap : public CD2DBitmap
+{
+	DECLARE_DYNAMIC(CSimpleBitmap)
+public:
+	CSimpleBitmap(CRenderTarget* pParentTarget);
+};
+
 class CSchedulerView : public CScrollView
 {
 protected: // create from serialization only
@@ -53,7 +60,7 @@ public:
 protected:
 
 	void UpdateRendererLayout(CSchedulerDoc* pDoc);
-
+	void CreateEventDraggingImageList();
 private:
 	CSchedulerDocumentRenderer docRenderer;
 	FLOAT dpiX = 0.f;

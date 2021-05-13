@@ -124,7 +124,14 @@ void CSchedulerDoc::SetStartTime(const std::chrono::system_clock::time_point& ti
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
-
+CScheduleTrack* CSchedulerDoc::GetTrack(int id) const
+{
+	auto it = std::find_if(tracks.begin(), tracks.end(), [id](const auto& track) {
+		return track->GetId() == id;
+		});
+	if (it == tracks.end()) return nullptr;
+	return it->get();
+}
 const std::vector<CScheduleTrackPtr>& CSchedulerDoc::GetTracks() const
 {
 	return tracks;
