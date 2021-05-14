@@ -141,6 +141,11 @@ void CSchedulerView::UpdateRendererLayout(CSchedulerDoc* pDoc)
 }
 void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+	selectedEvent = nullptr;
+	selectedTrack = nullptr;
+	dropTargetEvent = nullptr;
+	dropTargetTrack = nullptr;
+
 	CScrollView::OnUpdate(pSender, lHint, pHint);
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -293,8 +298,15 @@ void CSchedulerView::OnMouseMove(UINT nFlags, CPoint point)
 
 		if (selectedEvent != nullptr && pDropWnd == this)
 		{
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			DraggingEventAtPoint(-1, pt);
+			if (dropTargetEvent == nullptr && dropTargetTrack == nullptr)
+			{
+				SetCursor(LoadCursor(NULL, IDC_NO));
+			}
+			else
+			{
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
+			}
 		}
 		else
 		{
@@ -335,9 +347,9 @@ void CSchedulerView::CreateEventDraggingImageList()
 	{
 		br.BeginDraw();
 		br.Clear(D2D1::ColorF(D2D1::ColorF::Black, 1.f));
-		CD2DSolidColorBrush brush(&br, D2D1::ColorF(selectedEvent->GetEvent()->GetColor(), 1.f));
-		CD2DSolidColorBrush frBrush(&br, D2D1::ColorF(D2D1::ColorF::Black, 1.f));
-		selectedEvent->Render(&br, &brush, &frBrush, nullptr);
+		CD2DSolidColorBrush bgBrush(&br, D2D1::ColorF(selectedEvent->GetEvent()->GetColor(), 1.f));
+		CD2DSolidColorBrush frBrush(&br, docRenderer.GetEventForegroundColor());
+		selectedEvent->Render(&br, &bgBrush, &frBrush, nullptr);
 		br.EndDraw();
 	}
 	
@@ -352,14 +364,14 @@ void CSchedulerView::CreateEventDraggingImageList()
 	ATLENSURE_SUCCEEDED(hr);
 	UINT bytesPerPixel = bitsPerPixel / 8;
 	UINT stride = (UINT)eventSize.width * bytesPerPixel;
-	UINT bufSize = stride * eventSize.height;
-	BYTE* buf = new  BYTE[bufSize];
-	hr = wicBitmap->CopyPixels(nullptr, stride, bufSize, buf);
+	UINT bufSize = stride * (UINT)eventSize.height;
+	std::unique_ptr<BYTE[]> buf = std::make_unique<BYTE[]>(bufSize);
+	hr = wicBitmap->CopyPixels(nullptr, stride, bufSize, buf.get());
 	ATLENSURE_SUCCEEDED(hr);
 	CBitmap bmp;
-	bmp.CreateBitmap(eventSize.width, eventSize.height, 1, bitsPerPixel, buf);
+	bmp.CreateBitmap((int)eventSize.width, (int)eventSize.height, 1, bitsPerPixel, buf.get());
 	eventDraggingImageList = new CImageList();
-	eventDraggingImageList->Create(eventSize.width, eventSize.height, ILC_COLOR32, 1, 1);
+	eventDraggingImageList->Create((int)eventSize.width, (int)eventSize.height, ILC_COLOR32, 1, 1);
 	eventDraggingImageList->Add(&bmp, RGB(0, 0, 0));
 }
 void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)

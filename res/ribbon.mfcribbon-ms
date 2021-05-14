@@ -1,10 +1,15 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <AFX_RIBBON>
   <HEADER>
     <VERSION>1</VERSION>
   </HEADER>
   <RIBBON_BAR>
     <ELEMENT_NAME>RibbonBar</ELEMENT_NAME>
+    <ENABLE_TOOLTIPS>TRUE</ENABLE_TOOLTIPS>
+    <ENABLE_TOOLTIPS_DESCRIPTION>TRUE</ENABLE_TOOLTIPS_DESCRIPTION>
+    <ENABLE_KEYS>TRUE</ENABLE_KEYS>
+    <ENABLE_PRINTPREVIEW>TRUE</ENABLE_PRINTPREVIEW>
+    <ENABLE_DRAWUSINGFONT>FALSE</ENABLE_DRAWUSINGFONT>
     <IMAGE>
       <ID>
         <NAME>IDB_BUTTONS</NAME>
@@ -14,6 +19,11 @@
     <BUTTON_MAIN>
       <ELEMENT_NAME>Button_Main</ELEMENT_NAME>
       <KEYS>F</KEYS>
+      <PALETTE_TOP>FALSE</PALETTE_TOP>
+      <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+      <INDEX_SMALL>-1</INDEX_SMALL>
+      <INDEX_LARGE>-1</INDEX_LARGE>
+      <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
       <IMAGE>
         <ID>
           <NAME>IDB_MAIN</NAME>
@@ -44,8 +54,12 @@
             <VALUE>57600</VALUE>
           </ID>
           <TEXT>&amp;New</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>0</INDEX_SMALL>
           <INDEX_LARGE>0</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -54,8 +68,12 @@
             <VALUE>57601</VALUE>
           </ID>
           <TEXT>&amp;Open...</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>1</INDEX_SMALL>
           <INDEX_LARGE>1</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -64,8 +82,12 @@
             <VALUE>57603</VALUE>
           </ID>
           <TEXT>&amp;Save</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>2</INDEX_SMALL>
           <INDEX_LARGE>2</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -74,10 +96,13 @@
             <VALUE>57604</VALUE>
           </ID>
           <TEXT>Save &amp;As...</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>3</INDEX_SMALL>
           <INDEX_LARGE>3</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
-[!if PRINTING]
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
           <ID>
@@ -87,12 +112,21 @@
           <TEXT>Print</TEXT>
           <KEYS>P</KEYS>
           <KEYS_MENU>W</KEYS_MENU>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>4</INDEX_SMALL>
           <INDEX_LARGE>4</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
           <ELEMENTS>
             <ELEMENT>
               <ELEMENT_NAME>Label</ELEMENT_NAME>
               <TEXT>Preview and print the document</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
             </ELEMENT>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -101,8 +135,11 @@
                 <VALUE>57608</VALUE>
               </ID>
               <TEXT>&amp;Quick Print</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
               <INDEX_SMALL>5</INDEX_SMALL>
               <INDEX_LARGE>5</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               <ALWAYS_DESCRIPTION>TRUE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
@@ -112,8 +149,11 @@
                 <VALUE>57609</VALUE>
               </ID>
               <TEXT>Print Pre&amp;view</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
               <INDEX_SMALL>6</INDEX_SMALL>
               <INDEX_LARGE>6</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               <ALWAYS_DESCRIPTION>TRUE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
@@ -123,14 +163,15 @@
                 <VALUE>57606</VALUE>
               </ID>
               <TEXT>Print Set&amp;up</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
               <INDEX_SMALL>7</INDEX_SMALL>
               <INDEX_LARGE>7</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               <ALWAYS_DESCRIPTION>TRUE</ALWAYS_DESCRIPTION>
             </ELEMENT>
           </ELEMENTS>
         </ELEMENT>
-[!endif]
-[!if APP_TYPE_MDI]
         <ELEMENT>
           <ELEMENT_NAME>Separator</ELEMENT_NAME>
           <HORIZ>TRUE</HORIZ>
@@ -142,10 +183,13 @@
             <VALUE>57602</VALUE>
           </ID>
           <TEXT>&amp;Close</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>8</INDEX_SMALL>
           <INDEX_LARGE>8</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
-[!endif]
         <ELEMENT>
           <ELEMENT_NAME>Button_Main_Panel</ELEMENT_NAME>
           <ID>
@@ -153,52 +197,66 @@
             <VALUE>57665</VALUE>
           </ID>
           <TEXT>E&amp;xit</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>10</INDEX_SMALL>
+          <INDEX_LARGE>-1</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
         </ELEMENT>
       </ELEMENTS>
       <RECENT_FILE_LIST>
         <ENABLE>TRUE</ENABLE>
         <LABEL>Recent Documents</LABEL>
+        <WIDTH>300</WIDTH>
       </RECENT_FILE_LIST>
     </CATEGORY_MAIN>
     <QAT_ELEMENTS>
       <ELEMENT_NAME>QAT</ELEMENT_NAME>
+      <QAT_TOP>TRUE</QAT_TOP>
       <ITEMS>
         <ITEM>
           <ID>
             <NAME>ID_FILE_NEW</NAME>
             <VALUE>57600</VALUE>
           </ID>
+          <VISIBLE>TRUE</VISIBLE>
         </ITEM>
         <ITEM>
           <ID>
             <NAME>ID_FILE_OPEN</NAME>
             <VALUE>57601</VALUE>
           </ID>
+          <VISIBLE>TRUE</VISIBLE>
         </ITEM>
         <ITEM>
           <ID>
             <NAME>ID_FILE_SAVE</NAME>
             <VALUE>57603</VALUE>
           </ID>
+          <VISIBLE>TRUE</VISIBLE>
         </ITEM>
         <ITEM>
           <ID>
             <NAME>ID_FILE_PRINT_DIRECT</NAME>
             <VALUE>57608</VALUE>
           </ID>
+          <VISIBLE>TRUE</VISIBLE>
         </ITEM>
       </ITEMS>
     </QAT_ELEMENTS>
     <TAB_ELEMENTS>
       <ELEMENT_NAME>Group</ELEMENT_NAME>
       <ELEMENTS>
-[!if ENABLE_VISUAL_STYLE_SWITCHING]
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
           <TEXT>Style</TEXT>
-          <DEFAULT_COMMAND>FALSE</DEFAULT_COMMAND>
           <KEYS>S</KEYS>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+          <INDEX_SMALL>-1</INDEX_SMALL>
+          <INDEX_LARGE>-1</INDEX_LARGE>
+          <DEFAULT_COMMAND>FALSE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
           <ELEMENTS>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -207,6 +265,12 @@
                 <VALUE>215</VALUE>
               </ID>
               <TEXT>Office 2007 (&amp;Blue Style)</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -215,6 +279,12 @@
                 <VALUE>216</VALUE>
               </ID>
               <TEXT>Office 2007 (B&amp;lack Style)</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -223,6 +293,12 @@
                 <VALUE>217</VALUE>
               </ID>
               <TEXT>Office 2007 (&amp;Silver Style)</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -231,6 +307,12 @@
                 <VALUE>218</VALUE>
               </ID>
               <TEXT>Office 2007 (&amp;Aqua Style)</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
             </ELEMENT>
             <ELEMENT>
               <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -239,10 +321,15 @@
                 <VALUE>219</VALUE>
               </ID>
               <TEXT>Win&amp;dows 7</TEXT>
+              <PALETTE_TOP>FALSE</PALETTE_TOP>
+              <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+              <INDEX_SMALL>-1</INDEX_SMALL>
+              <INDEX_LARGE>-1</INDEX_LARGE>
+              <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
             </ELEMENT>
           </ELEMENTS>
         </ELEMENT>
-[!endif]
         <ELEMENT>
           <ELEMENT_NAME>Button</ELEMENT_NAME>
           <ID>
@@ -250,8 +337,12 @@
             <VALUE>57664</VALUE>
           </ID>
           <KEYS>A</KEYS>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
           <INDEX_SMALL>0</INDEX_SMALL>
           <INDEX_LARGE>-1</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+          <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
         </ELEMENT>
       </ELEMENTS>
     </TAB_ELEMENTS>
@@ -278,6 +369,8 @@
             <NAME>Clipboard</NAME>
             <KEYS>D</KEYS>
             <INDEX>1</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
             <ELEMENTS>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -287,8 +380,12 @@
                 </ID>
                 <TEXT>Paste</TEXT>
                 <KEYS>V</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>0</INDEX_SMALL>
                 <INDEX_LARGE>0</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -298,7 +395,12 @@
                 </ID>
                 <TEXT>Cut</TEXT>
                 <KEYS>X</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -308,7 +410,12 @@
                 </ID>
                 <TEXT>Copy</TEXT>
                 <KEYS>C</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>2</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -318,7 +425,12 @@
                 </ID>
                 <TEXT>Select All</TEXT>
                 <KEYS>A</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>3</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
@@ -326,6 +438,8 @@
             <ELEMENT_NAME>Panel</ELEMENT_NAME>
             <NAME>View</NAME>
             <INDEX>2</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
             <ELEMENTS>
               <ELEMENT>
                 <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
@@ -334,9 +448,13 @@
                   <VALUE>59393</VALUE>
                 </ID>
                 <TEXT>Status Bar</TEXT>
-              <KEYS>S</KEYS>
+                <KEYS>S</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               </ELEMENT>
-[!if ADV_DOCKING_CAPTION]
               <ELEMENT>
                 <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
                 <ID>
@@ -344,17 +462,22 @@
                   <VALUE>221</VALUE>
                 </ID>
                 <TEXT>Caption Bar</TEXT>
-              <KEYS>P</KEYS>
+                <KEYS>P</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               </ELEMENT>
-[!endif]
             </ELEMENTS>
           </PANEL>
-[!if RICH_EDIT_VIEW]
           <PANEL>
             <ELEMENT_NAME>Panel</ELEMENT_NAME>
             <NAME>Find/Replace</NAME>
-            <KEYS>f</KEYS>
+            <KEYS>F</KEYS>
             <INDEX>3</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
             <ELEMENTS>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -363,9 +486,13 @@
                   <VALUE>57636</VALUE>
                 </ID>
                 <TEXT>Find...</TEXT>
-                <KEYS>f</KEYS>
+                <KEYS>F</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>5</INDEX_SMALL>
                 <INDEX_LARGE>2</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -374,8 +501,13 @@
                   <VALUE>57640</VALUE>
                 </ID>
                 <TEXT>Find Next</TEXT>
-                <KEYS>n</KEYS>
+                <KEYS>N</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>6</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -384,18 +516,23 @@
                   <VALUE>57641</VALUE>
                 </ID>
                 <TEXT>Replace</TEXT>
-                <KEYS>r</KEYS>
+                <KEYS>R</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>7</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-[!endif]
-[!if APP_TYPE_MDI]
           <PANEL>
             <ELEMENT_NAME>Panel</ELEMENT_NAME>
             <NAME>Window</NAME>
             <KEYS>W</KEYS>
             <INDEX>4</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
             <ELEMENTS>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -405,9 +542,12 @@
                 </ID>
                 <TEXT>Windows</TEXT>
                 <KEYS>W</KEYS>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
                 <ALWAYS_LARGE>TRUE</ALWAYS_LARGE>
                 <INDEX_SMALL>8</INDEX_SMALL>
                 <INDEX_LARGE>3</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
                 <ELEMENTS>
                   <ELEMENT>
                     <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -416,18 +556,24 @@
                       <VALUE>57648</VALUE>
                     </ID>
                     <TEXT>&amp;New Window</TEXT>
+                    <PALETTE_TOP>FALSE</PALETTE_TOP>
+                    <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                    <INDEX_SMALL>-1</INDEX_SMALL>
+                    <INDEX_LARGE>-1</INDEX_LARGE>
+                    <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                    <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
                   </ELEMENT>
                 </ELEMENTS>
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-          [!endif]
-
           <PANEL>
             <ELEMENT_NAME>Panel</ELEMENT_NAME>
             <NAME>Document</NAME>
             <KEYS>D</KEYS>
             <INDEX>5</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
             <ELEMENTS>
               <ELEMENT>
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
@@ -437,23 +583,62 @@
                 </ID>
                 <TEXT>Document</TEXT>
                 <KEYS>D</KEYS>
-                <ALWAYS_LARGE>TRUE</ALWAYS_LARGE>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
                 <INDEX_SMALL>1</INDEX_SMALL>
                 <INDEX_LARGE>2</INDEX_LARGE>
-                <ELEMENTS>
-                  <ELEMENT>
-                    <ELEMENT_NAME>Button</ELEMENT_NAME>
-                    <ID>
-                      <NAME>ID_SET_START_TIME</NAME>
-                      <VALUE>32773</VALUE>
-                    </ID>
-                    <TEXT>Start Time</TEXT>
-                  </ELEMENT>
-                </ELEMENTS>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
               </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_SET_START_TIME</NAME>
+                  <VALUE>32773</VALUE>
+                </ID>
+                <TEXT>Start Time</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button_Gallery</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_BUTTON2</NAME>
+                  <VALUE>32773</VALUE>
+                </ID>
+                <TEXT>Button1</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>2</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <BUTTON_MODE>TRUE</BUTTON_MODE>
+                <MENU_RESIZE>FALSE</MENU_RESIZE>
+                <MENU_RESIZE_VERTICAL>FALSE</MENU_RESIZE_VERTICAL>
+                <ICONS_IN_ROW>0</ICONS_IN_ROW>
+                <SIZE_ICON>0, 0</SIZE_ICON>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Separator</ELEMENT_NAME>
+                <HORIZ>TRUE</HORIZ>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Label</ELEMENT_NAME>
+                <TEXT>Static1</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              </ELEMENT>
+
+              
             </ELEMENTS>
           </PANEL>
-
         </PANELS>
       </CATEGORY>
     </CATEGORIES>

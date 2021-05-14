@@ -17,6 +17,7 @@ public:
 		ID2D1Factory* factory);
 	CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point);
 	CTrackRenderer* GetTrackAtPoint(const D2D1_POINT_2F& point);
+	D2D1_COLOR_F GetEventForegroundColor() const;
 private:	
 	void CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory ,ID2D1Factory* factory);
 	template <typename T> using Line = std::pair<T, T>;

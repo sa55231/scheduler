@@ -52,7 +52,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, &CMainFrame::OnTrackObjectSelected)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
-
+	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_MANAGER, &CMainFrame::OnUpdateSetStartTime)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -563,4 +563,9 @@ LRESULT CMainFrame::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndTrackEventsListView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
 	return 0;
+}
+
+void CMainFrame::OnUpdateSetStartTime(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable();
 }

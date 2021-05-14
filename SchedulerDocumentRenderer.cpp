@@ -108,6 +108,15 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	return surfaceSize;
 }
 
+D2D1_COLOR_F CSchedulerDocumentRenderer::GetEventForegroundColor() const
+{
+	if (eventForegroundColorBrush != nullptr)
+	{
+		return eventForegroundColorBrush->GetColor();
+	}
+	return D2D1::ColorF(0.f,0.f,0.f);
+}
+
 void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	if (!trackTextFormat)
