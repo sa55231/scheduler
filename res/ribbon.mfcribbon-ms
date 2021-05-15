@@ -567,78 +567,7 @@
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-          <PANEL>
-            <ELEMENT_NAME>Panel</ELEMENT_NAME>
-            <NAME>Document</NAME>
-            <KEYS>D</KEYS>
-            <INDEX>5</INDEX>
-            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
-            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
-            <ELEMENTS>
-              <ELEMENT>
-                <ELEMENT_NAME>Button</ELEMENT_NAME>
-                <ID>
-                  <NAME>ID_DOCUMENT_SETTINGS_MANAGER</NAME>
-                  <VALUE>1002</VALUE>
-                </ID>
-                <TEXT>Document</TEXT>
-                <KEYS>D</KEYS>
-                <PALETTE_TOP>FALSE</PALETTE_TOP>
-                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
-                <INDEX_SMALL>1</INDEX_SMALL>
-                <INDEX_LARGE>2</INDEX_LARGE>
-                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
-                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
-              </ELEMENT>
-              <ELEMENT>
-                <ELEMENT_NAME>Button</ELEMENT_NAME>
-                <ID>
-                  <NAME>ID_SET_START_TIME</NAME>
-                  <VALUE>32773</VALUE>
-                </ID>
-                <TEXT>Start Time</TEXT>
-                <PALETTE_TOP>FALSE</PALETTE_TOP>
-                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
-                <INDEX_SMALL>-1</INDEX_SMALL>
-                <INDEX_LARGE>-1</INDEX_LARGE>
-                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
-                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
-              </ELEMENT>
-              <ELEMENT>
-                <ELEMENT_NAME>Button_Gallery</ELEMENT_NAME>
-                <ID>
-                  <NAME>ID_BUTTON2</NAME>
-                  <VALUE>32773</VALUE>
-                </ID>
-                <TEXT>Button1</TEXT>
-                <PALETTE_TOP>FALSE</PALETTE_TOP>
-                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
-                <INDEX_SMALL>2</INDEX_SMALL>
-                <INDEX_LARGE>-1</INDEX_LARGE>
-                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
-                <BUTTON_MODE>TRUE</BUTTON_MODE>
-                <MENU_RESIZE>FALSE</MENU_RESIZE>
-                <MENU_RESIZE_VERTICAL>FALSE</MENU_RESIZE_VERTICAL>
-                <ICONS_IN_ROW>0</ICONS_IN_ROW>
-                <SIZE_ICON>0, 0</SIZE_ICON>
-              </ELEMENT>
-              <ELEMENT>
-                <ELEMENT_NAME>Separator</ELEMENT_NAME>
-                <HORIZ>TRUE</HORIZ>
-              </ELEMENT>
-              <ELEMENT>
-                <ELEMENT_NAME>Label</ELEMENT_NAME>
-                <TEXT>Static1</TEXT>
-                <PALETTE_TOP>FALSE</PALETTE_TOP>
-                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
-                <INDEX_SMALL>-1</INDEX_SMALL>
-                <INDEX_LARGE>-1</INDEX_LARGE>
-                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
-              </ELEMENT>
-
-              
-            </ELEMENTS>
-          </PANEL>
+          
         </PANELS>
       </CATEGORY>
     </CATEGORIES>

@@ -19,6 +19,7 @@
 #include "MainFrm.h"
 
 #include "schedulerView.h"
+#include "RibbonDateTimeControl.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,7 +53,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, &CMainFrame::OnTrackObjectSelected)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
-	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_MANAGER, &CMainFrame::OnUpdateSetStartTime)
+	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START, &CMainFrame::OnUpdateSetStartTime)
+	
+	//ON_REGISTERED_MESSAGE(AFX_WM_ON_RIBBON_CUSTOMIZE, OnRibbonCustomize)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -77,6 +80,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndRibbonBar.Create(this);
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 
+	auto homeCategory = m_wndRibbonBar.GetCategory(1);
+	CMFCRibbonPanel* pPanelClipboard = homeCategory->AddPanel(_T("Document Settings\nzc"));
+	CRibbonDateTimeControl* startDateButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START);
+	startDateButton->SetText(_T("Start Date"));
+	pPanelClipboard->Add(startDateButton);
+	
+
+	
 	if (!m_wndStatusBar.Create(this))
 	{
 		TRACE0("Failed to create status bar\n");
@@ -568,4 +579,16 @@ LRESULT CMainFrame::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 void CMainFrame::OnUpdateSetStartTime(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable();
+}
+
+LRESULT CMainFrame::OnRibbonCustomize(WPARAM wparam, LPARAM lparam)
+{
+	CMFCRibbonCustomizePropertyPage pageCustomize(&m_wndRibbonBar);
+	CList<UINT, UINT> lstPopular;
+	lstPopular.AddTail(ID_FILE_NEW);
+	lstPopular.AddTail(ID_FILE_OPEN);
+
+	// add a custom category
+	pageCustomize.AddCustomCategory(_T("Popular Commands"), lstPopular);
+	return (LRESULT)TRUE;
 }

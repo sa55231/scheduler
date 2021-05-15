@@ -123,18 +123,24 @@
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
+#define ID_DOCUMENT_SETTINGS_START      1003
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
 #define ID_SET_START_TIME               32773
 #define ID_BUTTON2                      32773
+#define ID_SLIDER2                      32774
+#define ID_CONTEXT2                     32775
+#define ID_BUTTON3                      32776
+#define ID_SPIN2                        32777
+#define ID_COMBO2                       32778
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        311
-#define _APS_NEXT_COMMAND_VALUE         32774
+#define _APS_NEXT_COMMAND_VALUE         32779
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

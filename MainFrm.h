@@ -90,6 +90,7 @@ protected:
 	afx_msg void OnUpdateSetStartTime(CCmdUI* pCmdUI);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg LRESULT OnRibbonCustomize(WPARAM wparam, LPARAM lparam);
 
 	DECLARE_MESSAGE_MAP()
 

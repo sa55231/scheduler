@@ -81,6 +81,9 @@
     <ClInclude Include="TrackEventsListView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RibbonDateTimeControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scheduler.cpp">
@@ -138,6 +141,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TrackEventsListView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RibbonDateTimeControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
