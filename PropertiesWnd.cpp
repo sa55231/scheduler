@@ -350,6 +350,7 @@ void CPropertiesWnd::SetPropListFont()
 LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndPropList.RemoveAll();
+	m_wndPropList.RedrawWindow();
 	int eventId = (int)wparam;
 	event = GetDocument()->GetStockEvent(eventId);
 	if (!event) return 0;

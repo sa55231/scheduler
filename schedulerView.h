@@ -15,13 +15,6 @@
 #pragma once
 #include "SchedulerDocumentRenderer.h"
 
-class CSimpleBitmap : public CD2DBitmap
-{
-	DECLARE_DYNAMIC(CSimpleBitmap)
-public:
-	CSimpleBitmap(CRenderTarget* pParentTarget);
-};
-
 class CSchedulerView : public CScrollView
 {
 protected: // create from serialization only
@@ -52,6 +45,7 @@ public:
 	virtual ~CSchedulerView();
 	void AddEventAtPoint(int stockEventIndex, CPoint point);
 	void DraggingEventAtPoint(int stockEventIndex, CPoint point);
+	void OnRemoveScheduledEvent();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -61,6 +55,7 @@ protected:
 
 	void UpdateRendererLayout(CSchedulerDoc* pDoc);
 	void CreateEventDraggingImageList();
+	CBitmap* ConvertIconToBitmap(HICON hIcon);
 private:
 	CSchedulerDocumentRenderer docRenderer;
 	FLOAT dpiX = 0.f;
@@ -74,7 +69,8 @@ private:
 	bool dragging = false;
 	CPoint lastLButtonDownPoint = {0,0};
 	CImageList* eventDraggingImageList = nullptr;
-
+	CImageList contextMenuImageList;
+	CBitmap removeSelectedEventBitmap;
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -87,7 +83,8 @@ protected:
 	afx_msg LRESULT OnAfxRecreated2DResources(WPARAM wParam, LPARAM lParam);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-
+	afx_msg void OnUpdateCommandRemoveScheduledEvent(CCmdUI* pCmdUI);
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
 
 #ifndef _DEBUG  // debug version in schedulerView.cpp

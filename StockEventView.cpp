@@ -51,6 +51,7 @@ BEGIN_MESSAGE_MAP(CStockEventView, CViewDockingPane)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_EVENT_LIST, OnEventListItemChanged)
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
 	//ON_WM_QUERYDRAGICON()
+	ON_COMMAND(ID_REMOVE_SCHEDULED_EVENT, &CStockEventView::OnRemoveScheduledEventKey)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ int CStockEventView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
 	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);	
-
+	CMFCToolBar::AddToolBarForImageCollection(IDR_EXPLORER, IDB_EXPLORER_24);
 	OnChangeVisualStyle();
 
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
@@ -402,3 +403,9 @@ void CStockEventView::OnChangeVisualStyle()
 }
 
 
+
+
+void CStockEventView::OnRemoveScheduledEventKey()
+{
+	// TODO: Add your command handler code here
+}

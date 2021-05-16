@@ -296,6 +296,8 @@
     <Image Include="res\properties_hc.bmp" />
     <Image Include="res\properties_wnd.ico" />
     <Image Include="res\properties_wnd_hc.ico" />
+    <Image Include="res\remove_scheduled.bmp" />
+    <Image Include="res\remove_scheduled_event.bmp" />
     <Image Include="res\scheduler.ico" />
     <Image Include="res\schedulerDoc.ico" />
     <Image Include="res\sort.bmp" />

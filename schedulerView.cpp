@@ -49,6 +49,9 @@ BEGIN_MESSAGE_MAP(CSchedulerView, CScrollView)
 	ON_WM_CREATE()
 	ON_REGISTERED_MESSAGE(AFX_WM_DRAW2D, &CSchedulerView::OnAfxDraw2D)
 	ON_REGISTERED_MESSAGE(AFX_WM_RECREATED2DRESOURCES, &CSchedulerView::OnAfxRecreated2DResources)
+	ON_UPDATE_COMMAND_UI(ID_REMOVE_SCHEDULED_EVENT, OnUpdateCommandRemoveScheduledEvent)
+	ON_COMMAND(ID_REMOVE_SCHEDULED_EVENT, OnRemoveScheduledEvent)
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // CSchedulerView construction/destruction
@@ -73,6 +76,9 @@ int CSchedulerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	dpiScaleX = dpiX / 96.f;
 	dpiScaleY = dpiY / 96.f;
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
+	CMFCToolBar::AddToolBarForImageCollection(IDR_REMOVE_SCHEDULED_EVENT, IDB_REMOVE_SCHEDULED_EVENT);
+	
+	
 	return 0;
 }
 
@@ -479,11 +485,27 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 		}		
 	}
 }
+
+
+CBitmap* CSchedulerView::ConvertIconToBitmap(HICON hIcon)
+{
+	CDC dc;
+	CBitmap bmp;
+	CClientDC ClientDC(this);
+	dc.CreateCompatibleDC(&ClientDC);
+	bmp.CreateCompatibleBitmap(&ClientDC, 13, 13);
+	CBitmap* pOldBmp = (CBitmap*)dc.SelectObject(&bmp);
+	::DrawIconEx(dc.GetSafeHdc(), 0, 0, hIcon, 13, 13, 0, (HBRUSH)RGB(255, 255, 255), DI_NORMAL);
+	dc.SelectObject(pOldBmp);
+	dc.DeleteDC();
+	HBITMAP hBitmap = (HBITMAP)::CopyImage((HANDLE)((HBITMAP)bmp),
+		IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE);
+
+	return CBitmap::FromHandle(hBitmap);
+}
 void CSchedulerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
-#ifndef SHARED_HANDLERS
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
-#endif
+	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_REMOVE_SCHEDULED_EVENT, point.x, point.y, this, TRUE);
 }
 
 // CSchedulerView printing
@@ -531,8 +553,31 @@ CSchedulerDoc* CSchedulerView::GetDocument() const // non-debug version is inlin
 #endif //_DEBUG
 
 // CSchedulerView message handlers
-
-IMPLEMENT_DYNAMIC(CSimpleBitmap, CD2DBitmap)
-CSimpleBitmap::CSimpleBitmap(CRenderTarget* pParentTarget):CD2DBitmap(pParentTarget)
+void CSchedulerView::OnUpdateCommandRemoveScheduledEvent(CCmdUI* pCmdUI)
 {
+	pCmdUI->Enable(selectedEvent != nullptr);
+}
+void CSchedulerView::OnRemoveScheduledEvent()
+{
+	if (selectedEvent == nullptr) return;
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+
+	AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
+	AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
+
+	pDoc->RemoveEventFromTrack(selectedTrack->GetTrack(), selectedEvent->GetEvent());	
+}
+
+void CSchedulerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	switch (nChar)
+	{
+	case VK_DELETE:
+		OnRemoveScheduledEvent();
+		break;
+	default:
+		CView::OnKeyDown(nChar, nRepCnt, nFlags);
+	}
 }

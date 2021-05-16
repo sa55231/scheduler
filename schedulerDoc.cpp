@@ -171,6 +171,12 @@ void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName,
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
+void CSchedulerDoc::RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event)
+{
+	track->RemoveEvent(event);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, -1);
+}
 CScheduleStockEvent* CSchedulerDoc::GetStockEventAtIndex(int index) const
 {
 	if (index >= 0 && index < stockEvents.size())

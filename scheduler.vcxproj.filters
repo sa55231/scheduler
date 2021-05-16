@@ -291,5 +291,11 @@
     <Image Include="res\track_event_list_hc.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\remove_scheduled.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\remove_scheduled_event.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@
 #define IDS_TRACK_EVENT_NAME            102
 #define IDS_TRACK_EVENT_START_DATE      103
 #define IDS_TRACK_EVENT_END_DATE        104
+#define IDS_REMOVE_EVENT                105
 #define IDB_WRITESMALL                  110
 #define IDB_WRITELARGE                  111
 #define IDB_MAIN                        112
@@ -122,8 +123,10 @@
 #define IDI_EVENT_ICON                  311
 #define IDR_TRACK_EVENTS_LIST           311
 #define IDB_TRACK_EVENTS_LIST           313
-#define IDB_BITMAP2                     314
 #define IDB_TRACK_EVENTS_LIST_24        314
+#define IDR_POPUP_REMOVE_SCHEDULED_EVENT 315
+#define IDB_REMOVE_SCHEDULED_EVENT      316
+#define IDR_REMOVE_SCHEDULED_EVENT      317
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
@@ -131,6 +134,9 @@
 #define ID_DOCUMENT_SETTINGS_START_TIME 1004
 #define ID_DOCUMENT_SETTINGS_UTC_OFFFSET 1005
 #define ID_EXPORT_EVENTS_CSV            1006
+#define ID_REMOVE_SCHEDULED_EVENT       1007
+#define ID_REMOVE_SCHEDULED_EVENT1      1008
+#define ID_REMOVE_SCHEDULED_EVENT2      1009
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
@@ -146,9 +152,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        315
-#define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_COMMAND_VALUE         32783
+#define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

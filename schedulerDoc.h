@@ -34,6 +34,7 @@ public:
 	CScheduleStockEvent* GetStockEventAtIndex(int index) const;
 	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint);
 	void AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint);
+	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);
 // Operations
 public:
 

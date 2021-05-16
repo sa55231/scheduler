@@ -241,6 +241,9 @@ void CSchedulerApp::PreLoadState()
 	bNameValid = strName.LoadString(IDS_EXPLORER);
 	ASSERT(bNameValid);
 	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_EXPLORER);
+	bNameValid = strName.LoadString(IDS_REMOVE_EVENT);
+	ASSERT(bNameValid);
+	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_REMOVE_SCHEDULED_EVENT);	
 }
 
 void CSchedulerApp::LoadCustomState()
