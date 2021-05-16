@@ -20,7 +20,7 @@
 #include "CalendarBar.h"
 #include "TrackEventsListView.h"
 #include "Resource.h"
-
+#include "RibbonDateTimeControl.h"
 
 class CMainFrame : public CFrameWndEx
 {
@@ -50,6 +50,9 @@ public:
 	void UpdateSecondaryViews(LPARAM lHint);
 	void StartDraggingStockEvent(int dragItemIndex, CImageList* dragImageList, CPoint point);
 
+private:
+	
+
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
 	CMFCRibbonApplicationButton m_MainButton;
@@ -64,7 +67,6 @@ protected:  // control bar embedded members
 	int dragItemIndex = -1;
 	CImageList* dragImageList = nullptr;
 	bool dragging = false;
-
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -87,11 +89,14 @@ protected:
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnTrackObjectSelected(WPARAM wparam, LPARAM lparam);
+	afx_msg LRESULT OnDocumentLoaded(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnUpdateSetStartTime(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateSetStartDate(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateSetUTCOffset(CCmdUI* pCmdUI);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg LRESULT OnRibbonCustomize(WPARAM wparam, LPARAM lparam);
-
+	afx_msg void OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult);
+	afx_msg void OnSetUTCOffset();
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

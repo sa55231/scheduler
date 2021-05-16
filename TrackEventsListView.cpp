@@ -97,14 +97,13 @@ LRESULT CTrackEventsListView::OnTrackObjectSelected(WPARAM wParam, LPARAM lParam
 
 	auto startTime = pDoc->GetStartTime();
 	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
-	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
-	std::locale loc;
+	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };	
 	int index = 0;
 	for (const auto& ev : track->GetEvents())
 	{
-		CString startText(date::format(loc, "%Y %b %d %R", start).c_str());
+		CString startText(date::format("%Y %b %d %R", start).c_str());
 		auto end = start + ev->GetDuration();
-		CString endText(date::format(loc, "%Y %b %d %R", end).c_str());
+		CString endText(date::format("%Y %b %d %R", end).c_str());
 		start = end;
 		auto insertedIndex = m_wndEventsList.InsertItem(index++, ev->GetName());
 		m_wndEventsList.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);

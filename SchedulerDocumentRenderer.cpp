@@ -91,12 +91,11 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH - margin) / DURATION_COLUMN_WIDTH;	
 	auto secondsInColumnCount = maxDuration.count() / static_cast<std::chrono::seconds::rep>(columnsCount);
 	std::chrono::seconds secondsInColumn(secondsInColumnCount);
-	std::locale loc;
 	for (float i = TRACK_LABEL_WIDTH + margin; i < surfaceRect.right; i += DURATION_COLUMN_WIDTH)
 	{
 		HeaderTimelineItem item;
 		item.textBounds = D2D1::RectF(i - 50.f, 0.f, i + 50.f, HEADER_HEIGHT);
-		CString text (date::format(loc,"%Y %b %d\n%R", start).c_str());
+		CString text (date::format("%Y %b %d\n%R", start).c_str());
 		start += secondsInColumn;
 		
 		item.text = text;

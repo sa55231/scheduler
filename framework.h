@@ -44,7 +44,7 @@
 
 #define WM_EVENT_OBJECT_SELECTED (WM_USER+1)
 #define WM_TRACK_OBJECT_SELECTED (WM_USER+2)
-
+#define WM_DOCUMENT_LOADED		 (WM_USER+3)
 
 #ifdef _UNICODE
 #if defined _M_IX86

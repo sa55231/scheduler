@@ -1,76 +1,16 @@
 #include "pch.h"
 #include "RibbonDateTimeControl.h"
 
-
-class CRibbonDateTimeMenuButton : public CMFCRibbonButton
-{
-	DECLARE_DYNCREATE(CRibbonDateTimeMenuButton)
-public:
-	CRibbonDateTimeMenuButton() {}
-	CRibbonDateTimeMenuButton(CWnd* pWndParent, int x, int y)
-	{	
-	}
-	
-	void OnAfterChangeRect(CDC* pDC)
-	{
-		CWnd* pWndParent = GetParentWnd();
-
-		DWORD dwEditStyle = WS_CHILD | WS_TABSTOP;
-		dateTimeCtrl = new CDateTimeCtrl();
-		CRect rectBtn = GetRect();
-		CRect originalRect = rectBtn;
-		pWndParent->ClientToScreen(&rectBtn);
-
-		int x = rectBtn.left;
-		int y = rectBtn.bottom;
-
-		dateTimeCtrl->Create(dwEditStyle, originalRect, pWndParent, -1);
-
-		//dateTimeCtrl->SetWindowPos(NULL, rectEdit.left, rectEdit.top, rectEdit.Width(), rectEdit.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
-
-		dateTimeCtrl->ShowWindow(SW_SHOWNOACTIVATE);
-	}
-	void GetClientRect(LPRECT rect)
-	{
-		if (dateTimeCtrl)
-		{
-			dateTimeCtrl->GetClientRect(rect);
-		}		
-		
-	}
-	~CRibbonDateTimeMenuButton()
-	{
-		if (dateTimeCtrl)
-		{
-			dateTimeCtrl->DestroyWindow();
-			delete dateTimeCtrl;
-			dateTimeCtrl = nullptr;
-		}
-	}
-private:
-	//CMFCToolBarDateTimeCtrl ctrl;
-	CDateTimeCtrl* dateTimeCtrl = nullptr;
-};
-IMPLEMENT_DYNCREATE(CRibbonDateTimeMenuButton, CMFCRibbonButton)
-
 IMPLEMENT_DYNCREATE(CRibbonDateTimeControl, CMFCRibbonBaseElement)
 
 static const int nDefaultComboHeight = 150;
 static const int nDefaultWidth = 108;
 
-class RibbonComboboxButton : public CMFCRibbonButton
-{
-public:
-	RibbonComboboxButton()
-	{
-		
-		CMFCToolBarMenuButton a;
 
-	}
-};
-
-CRibbonDateTimeControl::CRibbonDateTimeControl(UINT id):id(id)
+CRibbonDateTimeControl::CRibbonDateTimeControl(UINT id, const CString& label, bool time):
+	m_strLabel(label),isTime(time)
 {
+	m_nID = id;
 	Init();
 }
 
@@ -94,6 +34,23 @@ void CRibbonDateTimeControl::Init()
 	//SetButtonMode();
 }
 
+CTime CRibbonDateTimeControl::GetTime()
+{
+	if (dateTimeCtrl && dateTimeCtrl->GetSafeHwnd() != NULL)
+	{
+		dateTimeCtrl->GetTime(m_time);
+	}
+	return m_time;
+}
+void CRibbonDateTimeControl::SetTime(const CTime& time)
+{
+	m_time = time;
+	if (dateTimeCtrl && dateTimeCtrl->GetSafeHwnd() != NULL)
+	{
+		dateTimeCtrl->SetTime(&m_time);
+	}
+}
+
 void CRibbonDateTimeControl::CopyFrom(const CMFCRibbonBaseElement& s)
 {
 	CMFCRibbonBaseElement::CopyFrom(s);
@@ -105,6 +62,12 @@ void CRibbonDateTimeControl::CopyFrom(const CMFCRibbonBaseElement& s)
 		delete dateTimeCtrl;
 		dateTimeCtrl = nullptr;
 	}
+
+	m_lLabelLength = src.m_lLabelLength;
+	m_lControlLength = src.m_lControlLength;
+	m_strLabel = src.m_strLabel;
+	isTime = src.isTime;
+	m_time = src.m_time;
 
 }
 
@@ -118,12 +81,17 @@ CSize CRibbonDateTimeControl::GetRegularSize(CDC* pDC)
 	{
 		nTextHeight++;
 	}	
-	int cy = nTextHeight + 15;
-	int cx = pDC->GetTextExtent(_T("Start date:")).cx;
-	cx += pDC->GetTextExtent(_T("99/99/9999 99:99")).cx;
+	int cy = nTextHeight + m_szMargin.cy + tm.tmExternalLeading;
+	int cx =  pDC->GetTextExtent(m_strLabel).cx;
+	m_lLabelLength = cx;
 
-	
-	cx += 10;
+	m_lControlLength= pDC->GetTextExtent(_T("9999/MMMM/99  ")).cx;
+	cx += m_lControlLength;
+	if (GetGlobalData()->GetRibbonImageScale() > 1.)
+	{
+		cx = (int)(.5 + GetGlobalData()->GetRibbonImageScale() * cx);
+	}
+
 	return CSize(cx,cy);
 }
 
@@ -136,18 +104,18 @@ void CRibbonDateTimeControl::OnDraw(CDC* pDC)
 	{
 		return;
 	}
+	
+	CRect rectEdit = m_rect;
 
-	pDC->DrawText(_T("Start date:"), m_rect, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-
-	if (dateTimeCtrl)
+	int cx = m_lControlLength;
+	if (GetGlobalData()->GetRibbonImageScale() > 1.)
 	{
-		CMFCToolBarDateTimeCtrl dummy;
-		dummy.m_nStyle |= DTS_RIGHTALIGN;		
-		dummy.m_bImage = true;
-		dummy.OnDraw(pDC, m_rect, nullptr);
-		return;
+		cx = (int)(.5 + GetGlobalData()->GetRibbonImageScale() * cx);
 	}
 
+	rectEdit.right -= cx;
+
+	pDC->DrawText(m_strLabel, rectEdit, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
 
 }
 
@@ -178,7 +146,7 @@ void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)
 	{
 		CWnd* pWndParent = GetParentWnd();
 
-		DWORD dwEditStyle = WS_CHILD | WS_TABSTOP;
+		
 		dateTimeCtrl = new CDateTimeCtrl();
 		CRect rectBtn = GetRect();
 		CRect originalRect = rectBtn;
@@ -186,10 +154,23 @@ void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)
 
 		int x = rectBtn.left;
 		int y = rectBtn.bottom;
-
-		dateTimeCtrl->Create(dwEditStyle, CRect(0,0,0,0), pWndParent, id);
+		DWORD dwEditStyle = WS_CHILD | WS_VISIBLE;
+		if (isTime)
+		{
+			dwEditStyle |= DTS_TIMEFORMAT;			
+		}		
+		dateTimeCtrl->Create(dwEditStyle, CRect(0,0,0,0), pWndParent, m_nID);
 		dateTimeCtrl->SetFont(GetTopLevelRibbonBar()->GetFont());
-		//dateTimeCtrl->SetWindowPos(NULL, rectEdit.left, rectEdit.top, rectEdit.Width(), rectEdit.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
+		dateTimeCtrl->SetTime(&m_time);
+
+		if (isTime)
+		{
+			dateTimeCtrl->SetFormat(_T("HH:mm"));
+		}
+		else
+		{
+			dateTimeCtrl->SetFormat(_T("yyyy/MMM/dd"));
+		}
 	}
 
 
@@ -197,7 +178,7 @@ void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)
 	{
 		CRect rectEdit = m_rect;
 
-		int cx = 100;
+		int cx = m_lControlLength;
 		if (GetGlobalData()->GetRibbonImageScale() > 1.)
 		{
 			cx = (int)(.5 + GetGlobalData()->GetRibbonImageScale() * cx);
@@ -205,7 +186,7 @@ void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)
 
 		rectEdit.left = rectEdit.right - cx;
 
-		rectEdit.DeflateRect(m_szMargin.cx, m_szMargin.cy);
+		//rectEdit.DeflateRect(m_szMargin.cx, m_szMargin.cy);
 
 		dateTimeCtrl->SetWindowPos(NULL, rectEdit.left, rectEdit.top, rectEdit.Width(), rectEdit.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
 		dateTimeCtrl->ShowWindow(SW_SHOWNOACTIVATE);

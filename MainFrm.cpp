@@ -19,7 +19,7 @@
 #include "MainFrm.h"
 
 #include "schedulerView.h"
-#include "RibbonDateTimeControl.h"
+#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,16 +53,69 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, &CMainFrame::OnTrackObjectSelected)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
-	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START, &CMainFrame::OnUpdateSetStartTime)
-	
+	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START_DATE, &CMainFrame::OnUpdateSetStartDate)
+	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START_TIME, &CMainFrame::OnUpdateSetStartTime)
+	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnUpdateSetUTCOffset)
+	ON_MESSAGE(WM_DOCUMENT_LOADED, &CMainFrame::OnDocumentLoaded)
+	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_DATE, &CMainFrame::OnStartTimeChange)
+	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_TIME, &CMainFrame::OnStartTimeChange)
+	ON_COMMAND(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnSetUTCOffset)
 	//ON_REGISTERED_MESSAGE(AFX_WM_ON_RIBBON_CUSTOMIZE, OnRibbonCustomize)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
 
+namespace
+{
+	//TODO: Get the list from Windows itself, as surely it has them.
+	// for now it will have to do, as while i found a c# way of doing it
+	// there doesn't seem to be an easy c++ way.
+	const std::vector<std::pair<CString, int>> utcOffsets = 
+	{
+		{_T("UTC-12:00"),12 * 60},
+		{_T("UTC-11:00"),11 * 60},
+		{_T("UTC-10:00"),10 * 60},
+		{_T("UTC-09:30"),(int)(9.5 * 60)},
+		{_T("UTC-09:00"),9 * 60},
+		{_T("UTC-08:00"),8 * 60},
+		{_T("UTC-07:00"),7 * 60},
+		{_T("UTC-06:00"),6 * 60},
+		{_T("UTC-05:00"),5 * 60},
+		{_T("UTC-04:00"),4 * 60},
+		{_T("UTC-03:30"),(int)(3.5 * 60)},
+		{_T("UTC-03:00"),3 * 60},
+		{_T("UTC-02:00"),2 * 60},
+		{_T("UTC-01:00"),1 * 60},
+		{_T("UTC+00:00"),0 * 60},
+		{_T("UTC+01:00"),-1 * 60},
+		{_T("UTC+02:00"),-2 * 60},
+		{_T("UTC+03:00"),-3 * 60},
+		{_T("UTC+03:30"),-(int)(3.5 * 60)},
+		{_T("UTC+04:00"),4 * 60},
+		{_T("UTC+04:30"),-(int)(4.5 * 60)},
+		{_T("UTC+05:00"),-5 * 60},
+		{_T("UTC+05:30"),-(int)(5.5 * 60)},
+		{_T("UTC+05:45"),-(int)(5.75 * 60)},
+		{_T("UTC+06:00"),-6 * 60},
+		{_T("UTC+06:30"),-(int)(6.5 * 60)},
+		{_T("UTC+07:00"),-7 * 60},
+		{_T("UTC+08:00"),-8 * 60},
+		{_T("UTC+08:45"),-(int)(8.75 * 60)},
+		{_T("UTC+09:00"),-9 * 60},
+		{_T("UTC+09:30"),-(int)(9.5 * 60)},
+		{_T("UTC+10:00"),-10 * 60},
+		{_T("UTC+10:30"),-(int)(10.5 * 60)},
+		{_T("UTC+11:00"),-11 * 60},
+		{_T("UTC+12:00"),-12 * 60},
+		{_T("UTC+12:45"),-(int)(12.75 * 60)},
+		{_T("UTC+13:00"),-13 * 60},
+		{_T("UTC+14:00"),-14 * 60},
+	};
+}
+
+
 CMainFrame::CMainFrame() noexcept
 {
-	// TODO: add member initialization code here
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLUE);
 }
 
@@ -81,12 +134,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 
 	auto homeCategory = m_wndRibbonBar.GetCategory(1);
-	CMFCRibbonPanel* pPanelClipboard = homeCategory->AddPanel(_T("Document Settings\nzc"));
-	CRibbonDateTimeControl* startDateButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START);
-	startDateButton->SetText(_T("Start Date"));
-	pPanelClipboard->Add(startDateButton);
-	
-
+	CMFCRibbonPanel* documentTimePanel = homeCategory->AddPanel(_T("Start Time\nzc"));
+	auto startDateButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START_DATE, _T("Start date:"));
+	auto startTimeButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START_TIME, _T("Start time:"), true);
+	auto utcOffsetsCombo = new CMFCRibbonComboBox(ID_DOCUMENT_SETTINGS_UTC_OFFFSET,FALSE,-1,_T("UTC Offset:"));
+	for (const auto& offset : utcOffsets)
+	{
+		utcOffsetsCombo->AddItem(offset.first,(DWORD_PTR)&offset.second);
+	}
+	documentTimePanel->Add(startDateButton);
+	documentTimePanel->Add(startTimeButton);
+	documentTimePanel->Add(utcOffsetsCombo);
 	
 	if (!m_wndStatusBar.Create(this))
 	{
@@ -580,15 +638,72 @@ void CMainFrame::OnUpdateSetStartTime(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable();
 }
-
-LRESULT CMainFrame::OnRibbonCustomize(WPARAM wparam, LPARAM lparam)
+void CMainFrame::OnUpdateSetStartDate(CCmdUI* pCmdUI)
 {
-	CMFCRibbonCustomizePropertyPage pageCustomize(&m_wndRibbonBar);
-	CList<UINT, UINT> lstPopular;
-	lstPopular.AddTail(ID_FILE_NEW);
-	lstPopular.AddTail(ID_FILE_OPEN);
+	pCmdUI->Enable();
+}
+void CMainFrame::OnUpdateSetUTCOffset(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable();
+}
+LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
+{
+	//called by CSchedulerDoc when it initialized or when it loaded
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(lparam);
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return (LRESULT)FALSE;
 
-	// add a custom category
-	pageCustomize.AddCustomCategory(_T("Popular Commands"), lstPopular);
+	auto utcOffset  = pDoc->GetUTCOffsetMinutes();
+	auto startTime = pDoc->GetStartTime();
+	CTime time(startTime.time_since_epoch().count());
+
+	CRibbonDateTimeControl* startDateButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_DATE));
+	CRibbonDateTimeControl* startTimeButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_TIME));
+	CMFCRibbonComboBox* utcOffsetsCombo = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_UTC_OFFFSET));
+
+	startDateButton->SetTime(time);
+	startTimeButton->SetTime(time);
+	for (int i = 0; i < utcOffsets.size(); ++i)
+	{
+		if (utcOffsets.at(i).second == utcOffset)
+		{
+			utcOffsetsCombo->SelectItem(i);
+			break;
+		}
+	}
+	
+
 	return (LRESULT)TRUE;
+}
+void CMainFrame::OnSetUTCOffset()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	CMFCRibbonComboBox* utcOffsetsCombo = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_UTC_OFFFSET));
+	auto data = (int*)utcOffsetsCombo->GetItemData(utcOffsetsCombo->GetCurSel());
+	pDoc->SetUTCOffsetMinutes(*data, 0);
+}
+void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	CRibbonDateTimeControl* startDateButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_DATE));
+	CRibbonDateTimeControl* startTimeButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_TIME));
+
+	auto date = startDateButton->GetTime();
+	auto time = startTimeButton->GetTime();
+	auto hour = std::chrono::hours(time.GetHour());
+	auto minute = std::chrono::minutes(time.GetMinute());
+	auto seconds = std::chrono::seconds(time.GetSecond());
+	auto year = date.GetYear();
+	auto month = date.GetMonth();
+	auto day = date.GetDay();
+
+	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
+	auto local_time = date::make_time(hour+minute+seconds);
+	auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
+	std::chrono::system_clock::time_point tp (((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
+	pDoc->SetStartTime(tp,0);
 }

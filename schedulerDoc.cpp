@@ -100,6 +100,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 		tracks.emplace_back(std::make_unique<CScheduleTrack>(i,name,std::move(events)));
 	}
 
+	AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
 	return TRUE;
 }
 
@@ -270,6 +271,8 @@ TRY
 		{
 			throw new CArchiveException(CArchiveException::badClass,_T("Bad file opened"));
 		}
+
+		AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
 	}	
 }
 CATCH_ALL(e)
