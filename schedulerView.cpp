@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(CSchedulerView, CScrollView)
 //	ON_MESSAGE(WM_DPICHANGED, &CSchedulerView::DpiChanged)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
 	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDOWN()
@@ -162,7 +163,7 @@ void CSchedulerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 }
 
-void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
+void CSchedulerView::HandleEventSelection(CPoint point)
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -215,6 +216,10 @@ void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 
 	RedrawWindow();
+}
+void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	HandleEventSelection(point);
 	CScrollView::OnLButtonDown(nFlags, point);
 }
 void CSchedulerView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -379,6 +384,11 @@ void CSchedulerView::CreateEventDraggingImageList()
 	eventDraggingImageList = new CImageList();
 	eventDraggingImageList->Create((int)eventSize.width, (int)eventSize.height, ILC_COLOR32, 1, 1);
 	eventDraggingImageList->Add(&bmp, RGB(0, 0, 0));
+}
+void CSchedulerView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	HandleEventSelection(point);
+	CScrollView::OnRButtonDown(nFlags, point);
 }
 void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {

@@ -52,7 +52,7 @@ public:
 #endif
 
 protected:
-
+	void HandleEventSelection(CPoint point);
 	void UpdateRendererLayout(CSchedulerDoc* pDoc);
 	void CreateEventDraggingImageList();
 	CBitmap* ConvertIconToBitmap(HICON hIcon);
@@ -75,6 +75,7 @@ private:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFilePrintPreview();
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
