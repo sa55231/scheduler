@@ -655,7 +655,7 @@ LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 
 	auto utcOffset  = pDoc->GetUTCOffsetMinutes();
 	auto startTime = pDoc->GetStartTime();
-	CTime time(startTime.time_since_epoch().count());
+	CTime time(std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()).count());
 
 	CRibbonDateTimeControl* startDateButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_DATE));
 	CRibbonDateTimeControl* startTimeButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_TIME));

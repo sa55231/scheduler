@@ -114,9 +114,8 @@ void CRibbonDateTimeControl::OnDraw(CDC* pDC)
 	}
 
 	rectEdit.right -= cx;
-
-	pDC->DrawText(m_strLabel, rectEdit, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-
+	pDC->DrawText(m_strLabel, rectEdit, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);	
+	//CMFCVisualManager::GetInstance()->GetRibbonEditBackgroundColor(nullptr, false, true, false);
 }
 
 void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)

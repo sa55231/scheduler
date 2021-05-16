@@ -279,5 +279,17 @@
     <Image Include="res\event_ic.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\track_event_list.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\track_event_list_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

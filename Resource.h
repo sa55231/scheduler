@@ -120,12 +120,17 @@
 #define IDI_EVENT_ICON_HC               310
 #define IDI_EVENT_ICON_HC1              311
 #define IDI_EVENT_ICON                  311
+#define IDR_TRACK_EVENTS_LIST           311
+#define IDB_TRACK_EVENTS_LIST           313
+#define IDB_BITMAP2                     314
+#define IDB_TRACK_EVENTS_LIST_24        314
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
 #define ID_DOCUMENT_SETTINGS_START_DATE 1003
 #define ID_DOCUMENT_SETTINGS_START_TIME 1004
 #define ID_DOCUMENT_SETTINGS_UTC_OFFFSET 1005
+#define ID_EXPORT_EVENTS_CSV            1006
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
@@ -141,7 +146,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        311
+#define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32779
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310

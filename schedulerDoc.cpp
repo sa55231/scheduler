@@ -30,7 +30,8 @@
 #define new DEBUG_NEW
 #endif
 
-static constexpr int32_t MAGIC = 0x3F3D72CB;
+static constexpr uint32_t MAGIC = 0x3F3D72CB;
+static constexpr uint32_t VERSION = 1;
 
 // CSchedulerDoc
 
@@ -256,23 +257,112 @@ void CSchedulerDoc::Serialize(CArchive& ar)
 {
 TRY
 {
-
 	if (ar.IsStoring())
-	{
-		// TODO: add storing code here
+	{	
 		ar << MAGIC;
+		ar << VERSION;
+		ar << utcOffsetMinutes;
+		ar << startTime.time_since_epoch().count();
+		ar << stockEvents.size();
+		for (const auto& ev : stockEvents)
+		{
+			ar << ev->GetId();
+			ar << ev->GetName();
+			ar << ev->GetDuration().count();
+			ar << ev->GetColor();
+		}
+		ar << tracks.size();
+		for (const auto& tr : tracks)
+		{
+			ar << tr->GetId();
+			ar << tr->GetName();
+			ar << tr->GetEvents().size();
+			for (const auto& ev : tr->GetEvents())
+			{
+				ar << ev->GetStockId();
+			}
+		}
 	}
 	else
 	{
-		// TODO: add loading code here
-		int32_t magic;
+		uint32_t magic;
 		ar >> magic;
 		if (magic != MAGIC)
 		{
+			UpdateAllViews(nullptr, 0);
 			throw new CArchiveException(CArchiveException::badClass,_T("Bad file opened"));
 		}
+		uint32_t version = 0;
+		ar >> version;
+		if (version != VERSION)
+		{
+			//we're loading a different version than the current one
+			// TODO:: Add version handling code here, for now we just yell,
+			// since we are only at version 1
+			UpdateAllViews(nullptr, 0);
+			throw new CArchiveException(CArchiveException::badSchema, _T("Document is corrupted"));
+		}
+
+		int utcOffset;
+		ar >> utcOffset;
+		std::chrono::system_clock::time_point::duration::rep rep;
+		ar >> rep;		
+		size_t stockEventsSize = 0;
+		ar >> stockEventsSize;
+
+		std::vector<CScheduleTrackPtr> newTracks;
+		std::vector<CScheduleStockEventPtr> newStockEvents;
+
+		for (size_t i = 0; i < stockEventsSize; ++i)
+		{
+			int id;
+			CString name;
+			long long secondsRaw;
+			UINT32 color;
+			ar >> id;
+			ar >> name;
+			ar >> secondsRaw;
+			ar >> color;
+			std::chrono::seconds duration(secondsRaw);
+			newStockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, std::move(name), std::move(duration), color));
+		}
+		size_t tracksSize = 0;
+		ar >> tracksSize;
+		for (size_t i = 0; i < tracksSize; ++i)
+		{
+			int id;
+			CString name;
+			size_t eventsSize = 0;
+			ar >> id;
+			ar >> name;
+			ar >> eventsSize;			
+			std::vector<CScheduleEventPtr> events;
+			for (size_t j = 0; j < eventsSize; j++)
+			{
+				int stockId;
+				ar >> stockId;
+				auto it = std::find_if(newStockEvents.begin(), newStockEvents.end(), [stockId](const auto& ev) {
+					return ev->GetId() == stockId;
+				});
+				if (it == newStockEvents.end())
+				{
+					throw new CArchiveException(CArchiveException::badSchema, _T("The document is corrupted"));
+				}
+
+				events.emplace_back(std::make_unique<CScheduleEvent>(it->get()));
+			}
+			newTracks.emplace_back(std::make_unique<CScheduleTrack>(id, name, std::move(events)));
+		}
+
+		tracks.clear();
+		stockEvents.clear();
+		startTime = std::chrono::system_clock::time_point(std::chrono::system_clock::time_point::duration(rep));
+		utcOffsetMinutes = utcOffset;
+		tracks = std::move(newTracks);
+		stockEvents = std::move(newStockEvents);
 
 		AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
+		UpdateAllViews(nullptr, 0);
 	}	
 }
 CATCH_ALL(e)

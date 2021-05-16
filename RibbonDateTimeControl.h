@@ -1,7 +1,10 @@
 #pragma once
 #include <afxbaseribbonelement.h>
+
+
+
 class CRibbonDateTimeControl :
-    public CMFCRibbonButton
+    public CMFCRibbonBaseElement
 {
     DECLARE_DYNCREATE(CRibbonDateTimeControl)
 protected:

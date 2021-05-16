@@ -4,6 +4,8 @@
 CTrackRenderer::CTrackRenderer(CScheduleTrack* track,
 	CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, 
 	CD2DSolidColorBrush* foregroundColorBrush, ID2D1StrokeStyle* dropTargetStrokeStyle):
+	trackId(track->GetId()),
+	name(track->GetName()),
 	track(track),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
@@ -51,11 +53,11 @@ CScheduleTrack* CTrackRenderer::GetTrack() const
 }
 int CTrackRenderer::GetTrackId() const
 {
-	return track->GetId();
+	return trackId;
 }
 CString CTrackRenderer::GetName() const
 {
-	return track->GetName();
+	return name;
 }
 void CTrackRenderer::SetTrackBounds(D2D1_RECT_F& rect)
 {
@@ -80,7 +82,7 @@ void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
 	if (!textFormat->IsValid()) return;
 
 	renderTarget->FillRectangle(trackLabelBounds, backgroundColorBrush);
-	renderTarget->DrawText(track->GetName(), trackLabelBounds,foregroundColorBrush,textFormat);
+	renderTarget->DrawText(name, trackLabelBounds,foregroundColorBrush,textFormat);
 
 	for (auto& event : eventRenderers)
 	{

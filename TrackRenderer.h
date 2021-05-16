@@ -28,6 +28,8 @@ public:
 	void SetDropTarget(bool flag);
 	CScheduleTrack* GetTrack() const;
 private:
+	int trackId = 0;
+	CString name;
 	CScheduleTrack* track = nullptr;
 	CD2DTextFormat* textFormat = nullptr;
 	CD2DSolidColorBrush* backgroundColorBrush = nullptr;

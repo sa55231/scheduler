@@ -25,6 +25,8 @@ BEGIN_MESSAGE_MAP(CTrackEventsListView, CViewDockingPane)
 	ON_WM_PAINT()
 	ON_WM_SETFOCUS()
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, OnTrackObjectSelected)
+	ON_UPDATE_COMMAND_UI(ID_EXPORT_EVENTS_CSV, OnUpdateCommandToolbarButtons)
+	ON_COMMAND(ID_EXPORT_EVENTS_CSV, OnExportToCSV)
 END_MESSAGE_MAP()
 
 
@@ -55,8 +57,19 @@ int CTrackEventsListView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ASSERT(bNameValid);
 	m_wndEventsList.InsertColumn(2, strTemp, LVCFMT_CENTER);
 
+	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_TRACK_EVENTS_LIST);
+	m_wndToolBar.LoadToolBar(IDR_TRACK_EVENTS_LIST, 0, 0, TRUE /* Is locked */);
+
 	OnChangeVisualStyle();
 
+	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
+
+	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+
+	m_wndToolBar.SetOwner(this);
+
+	// All commands will be routed via this control , not via the parent frame:
+	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
 	// Fill in some static tree view data (dummy code, nothing magic here)	
 	AdjustLayout();
@@ -87,13 +100,13 @@ LRESULT CTrackEventsListView::OnTrackObjectSelected(WPARAM wParam, LPARAM lParam
 	if (sender && sender == this) return (LRESULT)FALSE;
 
 	m_wndEventsList.DeleteAllItems();
-
-	int trackId = (int)wParam;
-	auto track = GetDocument()->GetTrack(trackId);
-	if (!track) return (LRESULT)FALSE;
-
+	trackId = (int)wParam;
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+
+	auto track = pDoc->GetTrack(trackId);
+	if (!track) return (LRESULT)FALSE;
+
 
 	auto startTime = pDoc->GetStartTime();
 	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
@@ -123,9 +136,11 @@ void CTrackEventsListView::AdjustLayout()
 
 	CRect rectClient;
 	GetClientRect(rectClient);
+
+	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 	
-	m_wndEventsList.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + 1, 
-		rectClient.Width() - 2, rectClient.Height() - 2, SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndEventsList.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 
 	m_wndEventsList.SetColumnWidth(0, rectClient.Width()/3);
 	m_wndEventsList.SetColumnWidth(1, rectClient.Width() / 3);
@@ -153,5 +168,60 @@ void CTrackEventsListView::OnSetFocus(CWnd* pOldWnd)
 
 void CTrackEventsListView::OnChangeVisualStyle()
 {
+	m_wndToolBar.CleanUpLockedImages();
+	m_wndToolBar.LoadBitmap(IDB_TRACK_EVENTS_LIST_24, 0, 0, TRUE /* Locked */);
 
+}
+void CTrackEventsListView::OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_wndEventsList.GetSafeHwnd() != nullptr && m_wndEventsList.GetItemCount() > 0);
+}
+void CTrackEventsListView::OnExportToCSV()
+{
+	if (m_wndEventsList.GetItemCount() <= 0) return;
+	char strFilter[] = { "CSV Files (*.csv)|*.csv|" };
+	CFileDialog fileSaveDlg(FALSE, CString(".csv"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, CString(strFilter));
+
+	if (fileSaveDlg.DoModal() == IDOK)
+	{
+		auto file = fileSaveDlg.GetPathName();		
+		CSchedulerDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
+
+		auto track = pDoc->GetTrack(trackId);
+		if (!track) return;
+
+		TRY
+		{
+			CStdioFile cFile(file, CFile::modeWrite| CFile::modeCreate);			
+			cFile.WriteString(_T("TRACK, EVENT, START, END\n"));			
+			auto startTime = pDoc->GetStartTime();
+			std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
+			date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+			int index = 0;
+			for (const auto& ev : track->GetEvents())
+			{
+				CString startText(date::format("%Y %b %d %R", start).c_str());
+				auto end = start + ev->GetDuration();
+				CString endText(date::format("%Y %b %d %R", end).c_str());
+				start = end;				
+				cFile.WriteString(track->GetName());
+				cFile.WriteString(_T(","));
+				cFile.WriteString(ev->GetName());
+				cFile.WriteString(_T(","));
+				cFile.WriteString(startText);
+				cFile.WriteString(_T(","));
+				cFile.WriteString(endText);
+				cFile.WriteString(_T("\n"));
+			}
+
+		}
+		CATCH_ALL(e)
+		{
+			MessageBox(_T("Cannot write to file"),_T("Error"), MB_OK| MB_ICONERROR);
+		}
+		END_CATCH_ALL
+
+
+	}
 }
