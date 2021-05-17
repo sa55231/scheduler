@@ -142,6 +142,7 @@
 #define ID_REMOVE_EVENT                 32772
 #define ID_SET_START_TIME               32773
 #define ID_BUTTON2                      32773
+#define ID_REMOVE_ALL_EVENTS_BUTTON     32773
 #define ID_SLIDER2                      32774
 #define ID_CONTEXT2                     32775
 #define ID_BUTTON3                      32776

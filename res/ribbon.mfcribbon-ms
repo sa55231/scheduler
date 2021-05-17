@@ -567,7 +567,29 @@
               </ELEMENT>
             </ELEMENTS>
           </PANEL>
-          
+          <PANEL>
+            <ELEMENT_NAME>Panel</ELEMENT_NAME>
+            <NAME>Remove All Events</NAME>
+            <INDEX>5</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
+            <ELEMENTS>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_REMOVE_ALL_EVENTS_BUTTON</NAME>
+                  <VALUE>32773</VALUE>
+                </ID>
+                <TEXT>Remove All</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>TRUE</ALWAYS_LARGE>
+                <INDEX_SMALL>4</INDEX_SMALL>
+                <INDEX_LARGE>4</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+            </ELEMENTS>
+          </PANEL>
         </PANELS>
       </CATEGORY>
     </CATEGORIES>

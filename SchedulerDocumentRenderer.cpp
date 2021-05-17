@@ -88,19 +88,22 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	std::chrono::minutes utcOffset(doc->GetUTCOffsetMinutes());
 	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
 
-	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH - margin) / DURATION_COLUMN_WIDTH;	
-	auto secondsInColumnCount = maxDuration.count() / static_cast<std::chrono::seconds::rep>(columnsCount);
-	std::chrono::seconds secondsInColumn(secondsInColumnCount);
-	for (float i = TRACK_LABEL_WIDTH + margin; i < surfaceRect.right; i += DURATION_COLUMN_WIDTH)
+	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH - margin) / DURATION_COLUMN_WIDTH;
+	if (columnsCount > 1.f)
 	{
-		HeaderTimelineItem item;
-		item.textBounds = D2D1::RectF(i - 50.f, 0.f, i + 50.f, HEADER_HEIGHT);
-		CString text (date::format("%Y %b %d\n%R", start).c_str());
-		start += secondsInColumn;
-		
-		item.text = text;
-		item.line = makeLine<D2D1_POINT_2F>(D2D1::Point2F(i, HEADER_HEIGHT), D2D1::Point2F(i, surfaceRect.bottom));
-		headerTimelineItems.push_back(std::move(item));
+		auto secondsInColumnCount = maxDuration.count() / static_cast<std::chrono::seconds::rep>(columnsCount);
+		std::chrono::seconds secondsInColumn(secondsInColumnCount);
+		for (float i = TRACK_LABEL_WIDTH + margin; i < surfaceRect.right; i += DURATION_COLUMN_WIDTH)
+		{
+			HeaderTimelineItem item;
+			item.textBounds = D2D1::RectF(i - 50.f, 0.f, i + 50.f, HEADER_HEIGHT);
+			CString text(date::format("%Y %b %d\n%R", start).c_str());
+			start += secondsInColumn;
+
+			item.text = text;
+			item.line = makeLine<D2D1_POINT_2F>(D2D1::Point2F(i, HEADER_HEIGHT), D2D1::Point2F(i, surfaceRect.bottom));
+			headerTimelineItems.push_back(std::move(item));
+		}
 	}
 
 	TRACE("Surface size : %fx%f\n", surfaceSize.width , surfaceSize.height);

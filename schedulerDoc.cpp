@@ -142,7 +142,23 @@ const std::vector<CScheduleStockEventPtr>& CSchedulerDoc::GetStockEvents() const
 {
 	return stockEvents;
 }
-
+bool CSchedulerDoc::AreScheduledEvents() const
+{
+	for (const auto& track : tracks)
+	{
+		if (!track->GetEvents().empty()) return true;
+	}
+	return false;
+}
+void CSchedulerDoc::RemoveAllScheduledEvents()
+{
+	for (auto&& track : tracks)
+	{
+		track->RemoveAllEvents();
+	}
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, -1);
+}
 void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint)
 {
 	if (stockEventIndex < 0 || stockEventIndex >= stockEvents.size()) return;
@@ -234,28 +250,8 @@ void CSchedulerDoc::UpdateStockEventName(int index, const CString& newName, LPAR
 }
 void CSchedulerDoc::SetModifiedFlag(BOOL bModified)
 {
-	if (bModified != IsModified())
-	{
-		CDocument::SetModifiedFlag(bModified);
-
-		CString strTitle = GetTitle();
-		if (bModified)
-		{
-			// Add '*'
-			strTitle += "*";
-		}
-		else
-		{
-			// Remove '*'
-			strTitle = strTitle.Left(strTitle.GetLength() - 1);
-		}
-		SetTitle(strTitle);
-
-		// Update Window title/Tab content
-		POSITION pos = GetFirstViewPosition();
-		if (pos != nullptr)
-			GetNextView(pos)->GetParentFrame()->OnUpdateFrameTitle(TRUE);
-	}
+	CDocument::SetModifiedFlag(bModified);
+	UpdateFrameCounts();
 }
 // CSchedulerDoc serialization
 

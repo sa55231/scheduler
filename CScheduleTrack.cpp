@@ -64,3 +64,7 @@ void CScheduleTrack::RemoveEvent(CScheduleEvent* event)
 		events.erase(it);
 	}
 }
+void CScheduleTrack::RemoveAllEvents()
+{
+	events.clear();
+}

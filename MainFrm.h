@@ -38,7 +38,7 @@ public:
 // Overrides
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-
+	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 // Implementation
 public:
 	virtual ~CMainFrame();
@@ -93,10 +93,13 @@ protected:
 	afx_msg void OnUpdateSetStartTime(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateSetStartDate(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateSetUTCOffset(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateRemoveAllEvents(CCmdUI* pCmdUI);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnSetUTCOffset();
+	afx_msg void OnRemoveAllEvents();
+	
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

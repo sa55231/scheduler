@@ -60,6 +60,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_DATE, &CMainFrame::OnStartTimeChange)
 	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_TIME, &CMainFrame::OnStartTimeChange)
 	ON_COMMAND(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnSetUTCOffset)
+	ON_UPDATE_COMMAND_UI(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnUpdateRemoveAllEvents)
+	ON_COMMAND(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnRemoveAllEvents)
 	//ON_REGISTERED_MESSAGE(AFX_WM_ON_RIBBON_CUSTOMIZE, OnRibbonCustomize)
 END_MESSAGE_MAP()
 
@@ -646,6 +648,14 @@ void CMainFrame::OnUpdateSetUTCOffset(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable();
 }
+void CMainFrame::OnUpdateRemoveAllEvents(CCmdUI* pCmdUI)
+{
+	CSchedulerDoc* pDoc = (CSchedulerDoc*)GetActiveDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+
+	pCmdUI->Enable(pDoc->AreScheduledEvents());
+}
 LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 {
 	//called by CSchedulerDoc when it initialized or when it loaded
@@ -706,4 +716,47 @@ void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
 	auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
 	std::chrono::system_clock::time_point tp (((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
 	pDoc->SetStartTime(tp,0);
+}
+
+void CMainFrame::OnRemoveAllEvents()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+
+	const int result = MessageBox(_T("All scheduled events will be removed. Are you sure?"), _T("Confirm"), MB_YESNO | MB_ICONWARNING);
+	if (result == IDYES)
+	{
+		pDoc->RemoveAllScheduledEvents();
+	}
+}
+
+void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
+{
+	CFrameWndEx::OnUpdateFrameTitle(bAddToTitle);
+
+	if ((GetStyle() & FWS_ADDTOTITLE) == 0)
+		return;     // do not add title
+
+	CString csText;
+	CDocument* pDocument = NULL;
+
+	CFrameWnd* pFrame = GetActiveFrame();  //SDI
+
+	CMDIChildWnd* pMDIFrame = ((CMDIFrameWnd*)this)->MDIGetActive(); // MDI will return non zero
+
+	if (pMDIFrame)
+		pFrame = pMDIFrame;
+
+	if (pFrame != NULL && (pDocument = pFrame->GetActiveDocument()) != NULL)
+	{
+		csText += " ";
+
+		csText += pDocument->GetTitle();
+
+		if (pDocument->IsModified())
+			csText += " *";
+	}
+
+	UpdateFrameTitleForDocument(csText);
 }
