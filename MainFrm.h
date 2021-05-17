@@ -60,9 +60,7 @@ protected:  // control bar embedded members
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CStockEventView         m_wndStockEventView;
 	CTracksView        m_wndTracksView;
-	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
-	CMFCCaptionBar    m_wndCaptionBar;
 	CTrackEventsListView m_wndTrackEventsListView;
 	int dragItemIndex = -1;
 	CImageList* dragImageList = nullptr;
@@ -76,12 +74,10 @@ protected:
 	afx_msg void OnUpdateViewEventView(CCmdUI* pCmdUI);
 	afx_msg void OnViewTrackView();
 	afx_msg void OnUpdateViewTrackView(CCmdUI* pCmdUI);
-	afx_msg void OnViewOutputWindow();
-	afx_msg void OnUpdateViewOutputWindow(CCmdUI* pCmdUI);
+	
+	
 	afx_msg void OnViewPropertiesWindow();
 	afx_msg void OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI);
-	afx_msg void OnViewCaptionBar();
-	afx_msg void OnUpdateViewCaptionBar(CCmdUI* pCmdUI);
 	afx_msg void OnOptions();
 	afx_msg void OnFilePrint();
 	afx_msg void OnFilePrintPreview();
@@ -104,7 +100,6 @@ protected:
 
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
-	BOOL CreateCaptionBar();
 
 };
 

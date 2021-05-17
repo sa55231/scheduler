@@ -455,20 +455,6 @@
                 <INDEX_LARGE>-1</INDEX_LARGE>
                 <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               </ELEMENT>
-              <ELEMENT>
-                <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
-                <ID>
-                  <NAME>ID_VIEW_CAPTION_BAR</NAME>
-                  <VALUE>221</VALUE>
-                </ID>
-                <TEXT>Caption Bar</TEXT>
-                <KEYS>P</KEYS>
-                <PALETTE_TOP>FALSE</PALETTE_TOP>
-                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
-                <INDEX_SMALL>-1</INDEX_SMALL>
-                <INDEX_LARGE>-1</INDEX_LARGE>
-                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
-              </ELEMENT>
             </ELEMENTS>
           </PANEL>
           <PANEL>
