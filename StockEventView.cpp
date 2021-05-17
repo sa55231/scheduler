@@ -26,7 +26,7 @@ static char THIS_FILE[]=__FILE__;
 // CStockEventView
 
 CStockEventView::CStockEventView() noexcept
-{
+{	
 }
 
 CStockEventView::~CStockEventView()
@@ -148,10 +148,9 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 		if (addingItemIndex > -1)
 		{
 			m_wndEventListView.DeleteItem(addingItemIndex);
-			addingItemIndex = -1;
 		}
 	}
-
+	addingItemIndex = -1;
 	*pResult = 0;
 }
 

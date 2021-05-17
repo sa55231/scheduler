@@ -10,7 +10,7 @@
 #include "CScheduleTrack.h"
 #include "CScheduleStockEvent.h"
 
-
+#include <random>
 
 class CSchedulerDoc : public CDocument
 {
@@ -68,6 +68,8 @@ private:
 	std::vector<CScheduleStockEventPtr> stockEvents;
 	std::chrono::system_clock::time_point startTime;
 	int utcOffsetMinutes = 0;
+	std::default_random_engine generator;
+	std::uniform_int_distribution<int> color_distribution{ 0x0000FF, 0xCCCCFF };
 
 // Generated message map functions
 protected:

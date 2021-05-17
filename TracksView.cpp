@@ -356,11 +356,10 @@ void CTracksView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		if (addingItemIndex > -1)
 		{
-			m_wndClassView.DeleteItem(addingItemIndex);
-			addingItemIndex = -1;
+			m_wndClassView.DeleteItem(addingItemIndex);			
 		}
 	}
-
+	addingItemIndex = -1;
 	*pResult = 0;
 
 }

@@ -26,14 +26,14 @@ class CFileViewToolBar : public CMFCToolBar
 class CStockEventView : public CViewDockingPane
 {
 	DECLARE_DYNAMIC(CStockEventView)
-// Construction
+	// Construction
 public:
 	CStockEventView() noexcept;
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
 
-// Attributes
+	// Attributes
 protected:
 
 	CListCtrl m_wndEventListView;
@@ -42,6 +42,7 @@ protected:
 	int addingItemIndex = -1;
 	bool updatingEventsSelection = false;
 	bool addingEvent = false;
+
 protected:
 	void FillFileView();
 	virtual void OnInitialUpdate();

@@ -45,6 +45,7 @@ END_MESSAGE_MAP()
 
 CSchedulerDoc::CSchedulerDoc() noexcept
 {
+	generator.seed((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
 }
 
 CSchedulerDoc::~CSchedulerDoc()
@@ -72,35 +73,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 	{
 		utcOffsetMinutes += timezoneInfo.StandardBias;
 	}
-	std::default_random_engine generator;
-	generator.seed((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
-	std::uniform_int_distribution<int> duration_distribution(60,5*3600);
-	std::uniform_int_distribution<int> color_distribution(0x0000FF, 0xCCCCFF);
-	for (int i = 0; i < 20; i++)
-	{
-		CString name;
-		name.Format(_T("Event #%d"),i);
-		std::chrono::seconds duration(duration_distribution(generator));
-		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(i,std::move(name),std::move(duration), color_distribution(generator)));
-	}
-
-	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size()-1);
-	std::uniform_int_distribution<int> event_count_distribution(0, 20);
-
-	for (int i = 0; i < 20; i++)
-	{
-		CString name(_T("Track: "));
-		name.AppendFormat(_T("%d"),i);
-		std::vector<CScheduleEventPtr> events;
-		int event_count = event_count_distribution(generator);
-		for (int j = 0; j < event_count; j++)
-		{
-			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get()));
-		}
-
-		tracks.emplace_back(std::make_unique<CScheduleTrack>(i,name,std::move(events)));
-	}
-
+	
 	AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
 	return TRUE;
 }
@@ -269,8 +242,9 @@ void CSchedulerDoc::UpdateStockEventName(int index, const CString& newName, LPAR
 	ASSERT(index>=0 && index<stockEvents.size()  + 1);
 	if (index == stockEvents.size())
 	{
+		
 		std::chrono::seconds duration(3600);
-		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(index, newName, std::move(duration), 0x0000FF));
+		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(index, newName, std::move(duration), color_distribution(generator)));
 	}
 	else
 	{

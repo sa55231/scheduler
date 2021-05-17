@@ -88,8 +88,8 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	std::chrono::minutes utcOffset(doc->GetUTCOffsetMinutes());
 	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
 
-	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH - margin) / DURATION_COLUMN_WIDTH;
-	if (columnsCount > 1.f)
+	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH) / DURATION_COLUMN_WIDTH;
+	if ((int)columnsCount > 0)
 	{
 		auto secondsInColumnCount = maxDuration.count() / static_cast<std::chrono::seconds::rep>(columnsCount);
 		std::chrono::seconds secondsInColumn(secondsInColumnCount);
