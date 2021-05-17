@@ -204,7 +204,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="calendarbar.h" />
-    <ClInclude Include="ClassView.h" />
+    <ClInclude Include="TracksView.h" />
     <ClInclude Include="CScheduleEvent.h" />
     <ClInclude Include="CScheduleStockEvent.h" />
     <ClInclude Include="CScheduleTrack.h" />
@@ -229,7 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="calendarbar.cpp" />
-    <ClCompile Include="ClassView.cpp" />
+    <ClCompile Include="TracksView.cpp" />
     <ClCompile Include="CScheduleEvent.cpp" />
     <ClCompile Include="CScheduleStockEvent.cpp" />
     <ClCompile Include="CScheduleTrack.cpp" />
@@ -265,6 +265,7 @@
   <ItemGroup>
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\bitmap2.bmp" />
+    <Image Include="res\bmp00001.bmp" />
     <Image Include="res\buttons.bmp" />
     <Image Include="res\classview.bmp" />
     <Image Include="res\classview_hc.bmp" />

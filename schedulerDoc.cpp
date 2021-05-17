@@ -193,6 +193,14 @@ void CSchedulerDoc::RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* 
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, -1);
 }
+CScheduleTrack* CSchedulerDoc::GetTrackAtIndex(int index) const
+{
+	if (index >= 0 && index < tracks.size())
+	{
+		return tracks.at(index).get();
+	}
+	return nullptr;
+}
 CScheduleStockEvent* CSchedulerDoc::GetStockEventAtIndex(int index) const
 {
 	if (index >= 0 && index < stockEvents.size())
@@ -233,6 +241,29 @@ void CSchedulerDoc::DeleteStockEvent(int index, LPARAM lHint)
 	UpdateAllViews(nullptr, lHint);
 }
 
+void CSchedulerDoc::DeleteTrack(int index, LPARAM lHint)
+{
+	ASSERT(index >= 0 && index < tracks.size());
+	tracks.erase(tracks.begin() + index);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+
+void CSchedulerDoc::UpdateTrackName(int index, const CString& newName, LPARAM lHint)
+{
+	ASSERT(index >= 0 && index < tracks.size() + 1);
+	if (index == tracks.size())
+	{
+		std::vector<CScheduleEventPtr> events;
+		tracks.emplace_back(std::make_unique<CScheduleTrack>(index, newName, std::move(events)));
+	}
+	else
+	{
+		tracks.at(index)->SetName(newName);
+	}
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
 void CSchedulerDoc::UpdateStockEventName(int index, const CString& newName, LPARAM lHint)
 {
 	ASSERT(index>=0 && index<stockEvents.size()  + 1);

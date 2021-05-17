@@ -39,7 +39,7 @@
     <ClInclude Include="StockEventView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClassView.h">
+    <ClInclude Include="TracksView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ViewTree.h">
@@ -101,7 +101,7 @@
     <ClCompile Include="StockEventView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClassView.cpp">
+    <ClCompile Include="TracksView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ViewTree.cpp">
@@ -295,6 +295,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\remove_scheduled_event.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bmp00001.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

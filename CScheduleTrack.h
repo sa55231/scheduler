@@ -13,6 +13,7 @@ public:
 	void RemoveEvent(CScheduleEvent* event);
 	void RemoveAllEvents();
 	CString GetName() const;
+	void SetName(const CString& name);
 	int GetId() const;
 	const std::vector<CScheduleEventPtr>& GetEvents() const;
 	void AddEvent(CScheduleEventPtr event);

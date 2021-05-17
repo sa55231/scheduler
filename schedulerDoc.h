@@ -27,11 +27,14 @@ public:
 	const std::vector<CScheduleTrackPtr>& GetTracks() const;
 	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
 	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
+	void UpdateTrackName(int index, const CString& newName, LPARAM lHint);
 	void DeleteStockEvent(int index, LPARAM lHint);
+	void DeleteTrack(int index, LPARAM lHint);
 	int GetStockEventIndex(int id) const;
 	CScheduleTrack* GetTrack(int id) const;
 	CScheduleStockEvent* GetStockEvent(int id) const;
 	CScheduleStockEvent* GetStockEventAtIndex(int index) const;
+	CScheduleTrack* GetTrackAtIndex(int index) const;
 	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint);
 	void AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint);
 	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);

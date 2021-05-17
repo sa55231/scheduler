@@ -193,10 +193,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_wndStockEventView.EnableDocking(CBRS_ALIGN_ANY);
-	m_wndTrackView.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndTracksView.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndStockEventView);
 	CDockablePane* pTabbedBar = nullptr;
-	m_wndTrackView.AttachToTabWnd(&m_wndStockEventView, DM_SHOW, TRUE, &pTabbedBar);
+	m_wndTracksView.AttachToTabWnd(&m_wndStockEventView, DM_SHOW, TRUE, &pTabbedBar);
 	
 	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndProperties);
@@ -235,7 +235,7 @@ BOOL CMainFrame::CreateDockingWindows()
 	CString strClassView;
 	bNameValid = strClassView.LoadString(IDS_TRACKS_VIEW);
 	ASSERT(bNameValid);
-	if (!m_wndTrackView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_TRACKVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
+	if (!m_wndTracksView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_TRACKVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
 	{
 		TRACE0("Failed to create Class View window\n");
 		return FALSE; // failed to create
@@ -292,8 +292,8 @@ void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 	HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_EVENT_ICON_HC : IDI_EVENT_ICON), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndStockEventView.SetIcon(hFileViewIcon, FALSE);
 
-	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_CLASS_VIEW_HC : IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-	m_wndTrackView.SetIcon(hClassViewIcon, FALSE);
+	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_TRACKS_ICON), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	m_wndTracksView.SetIcon(hClassViewIcon, FALSE);
 
 	HICON hOutputBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndOutput.SetIcon(hOutputBarIcon, FALSE);
@@ -352,6 +352,7 @@ void CMainFrame::Dump(CDumpContext& dc) const
 void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
 {
 	m_wndStockEventView.Initialize(doc);
+	m_wndTracksView.Initialize(doc);
 	m_wndProperties.Initialize(doc);
 	m_wndTrackEventsListView.Initialize(doc);
 }
@@ -359,6 +360,7 @@ void CMainFrame::InitializeSecondaryViews(CSchedulerDoc* doc)
 void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
 {
 	m_wndStockEventView.Update(lHint);
+	m_wndTracksView.Update(lHint);
 	m_wndProperties.Update(lHint);
 	m_wndTrackEventsListView.Update(lHint);
 }
@@ -371,9 +373,6 @@ void CMainFrame::StartDraggingStockEvent(int dragItemIndex, CImageList* imageLis
 	dragImageList->DragEnter(GetDesktopWindow(), point);
 	this->dragItemIndex = dragItemIndex;
 	dragging = true;	//we are in a drag and drop operation
-	//m_nDropIndex = -1;	//we don't have a drop index yet
-	//m_pDragList = &m_listL; //make note of which list we are dragging from
-	//m_pDropWnd = &m_listL;	//at present the drag list is the drop list
 
 	// Capture all mouse messages
 	SetCapture();
@@ -560,8 +559,8 @@ void CMainFrame::OnViewTrackView()
 {
 	// Show or activate the pane, depending on current state.  The
 	// pane can only be closed via the [x] button on the pane frame.
-	m_wndTrackView.ShowPane(TRUE, FALSE, TRUE);
-	m_wndTrackView.SetFocus();
+	m_wndTracksView.ShowPane(TRUE, FALSE, TRUE);
+	m_wndTracksView.SetFocus();
 }
 
 void CMainFrame::OnUpdateViewTrackView(CCmdUI* pCmdUI)
@@ -633,6 +632,7 @@ LRESULT CMainFrame::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 LRESULT CMainFrame::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndTrackEventsListView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
+	m_wndTracksView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
 	return 0;
 }
 

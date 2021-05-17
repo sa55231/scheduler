@@ -14,7 +14,7 @@
 
 #pragma once
 #include "StockEventView.h"
-#include "ClassView.h"
+#include "TracksView.h"
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
 #include "CalendarBar.h"
@@ -59,7 +59,7 @@ protected:  // control bar embedded members
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	CStockEventView         m_wndStockEventView;
-	CClassView        m_wndTrackView;
+	CTracksView        m_wndTracksView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
 	CMFCCaptionBar    m_wndCaptionBar;

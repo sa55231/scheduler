@@ -244,6 +244,7 @@ void CSchedulerApp::PreLoadState()
 	bNameValid = strName.LoadString(IDS_REMOVE_EVENT);
 	ASSERT(bNameValid);
 	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_REMOVE_SCHEDULED_EVENT);	
+	GetContextMenuManager()->AddMenu(_T("Tracks"), IDR_POPUP_TRACKS);
 }
 
 void CSchedulerApp::LoadCustomState()

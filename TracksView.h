@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include "ViewTree.h"
+#include "ViewDockingPane.h"
 
-class CClassToolBar : public CMFCToolBar
+class CTracksToolBar : public CMFCToolBar
 {
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
 	{
@@ -23,22 +23,29 @@ class CClassToolBar : public CMFCToolBar
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
-class CClassView : public CDockablePane
+class CTracksView : public CViewDockingPane
 {
+	DECLARE_DYNAMIC(CTracksView)
 public:
-	CClassView() noexcept;
-	virtual ~CClassView();
+	CTracksView() noexcept;
+	virtual ~CTracksView();
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
 
 protected:
-	CClassToolBar m_wndToolBar;
-	CViewTree m_wndClassView;
+	CTracksToolBar m_wndToolBar;
+	CListCtrl m_wndClassView;
 	CImageList m_ClassViewImages;
 	UINT m_nCurrSort;
+	int addingItemIndex = -1;
+	bool updatingTracksSelection = false;
+	bool addingTrack = false;
 
 	void FillClassView();
+	virtual void OnInitialUpdate();
+	virtual void OnUpdate(const LPARAM lHint);
+	void ReloadTracksList(CSchedulerDoc* pDoc);
 
 // Overrides
 public:
@@ -48,17 +55,17 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	afx_msg void OnClassAddMemberFunction();
-	afx_msg void OnClassAddMemberVariable();
-	afx_msg void OnClassDefinition();
-	afx_msg void OnClassProperties();
-	afx_msg void OnNewFolder();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg LRESULT OnChangeActiveTab(WPARAM, LPARAM);
-	afx_msg void OnSort(UINT id);
-	afx_msg void OnUpdateSort(CCmdUI* pCmdUI);
-
+	afx_msg void OnAddTrack();
+	afx_msg void OnRemoveTrack();
+	afx_msg void OnEditTrack();
+	afx_msg void OnUpdateOtherCommandToolbarButtons(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateAddTrackCommand(CCmdUI* pCmdUI);
+	afx_msg void OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg LRESULT OnTrackObjectSelected(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnTrackListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };
 

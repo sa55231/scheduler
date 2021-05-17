@@ -7,6 +7,10 @@ CScheduleTrack::CScheduleTrack(int id, CString name, std::vector<CScheduleEventP
 	id(id),name(std::move(name)),events(std::move(events)), totalDuration(0), maxEventDuration(0)
 {
 }
+void CScheduleTrack::SetName(const CString& name)
+{
+	this->name = name;
+}
 CString CScheduleTrack::GetName() const
 {
 	return name;
