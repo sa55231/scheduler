@@ -189,6 +189,8 @@ void CSchedulerView::HandleEventSelection(CPoint point)
 	pos.y += point.y;
 
 	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+	auto zoomLevel = docRenderer.GetZoomLevel();
+	dipPosition = D2D1::Point2F(dipPosition.x / zoomLevel.width, dipPosition.y / zoomLevel.height);
 	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
 	if (track != nullptr)
 	{
@@ -442,7 +444,8 @@ void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
 		dropTargetTrack->SetDropTarget(false);
 		dropTargetTrack = nullptr;
 	}
-
+	auto zoomLevel = docRenderer.GetZoomLevel();
+	dipPosition = D2D1::Point2F(dipPosition.x / zoomLevel.width, dipPosition.y / zoomLevel.height);
 	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
 	if (track != nullptr)
 	{
@@ -472,6 +475,8 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 	pos.y += point.y;
 
 	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+	auto zoomLevel = docRenderer.GetZoomLevel();
+	dipPosition = D2D1::Point2F(dipPosition.x / zoomLevel.width, dipPosition.y / zoomLevel.height);
 	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
 	if (track != nullptr)
 	{

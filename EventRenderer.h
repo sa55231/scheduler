@@ -12,7 +12,6 @@ public:
 		ID2D1StrokeStyle* dropTargetStrokeStyle);
 	void Render(CRenderTarget* renderTarget);
 	void Render(CRenderTarget* renderTarget, CD2DSolidColorBrush* backgroundColorBrush, CD2DSolidColorBrush* foregroundColorBrush, CD2DTextFormat* textFormat);
-	float GetWidth() const;
 	D2D1_SIZE_F GetSize() const;
 	bool IsSelected() const;
 	void SetSelected(bool flag);
@@ -29,7 +28,6 @@ private:
 	CString name;
 	int eventId = -1;
 	CD2DTextFormat* textFormat = nullptr;
-	float eventWidth = 0;
 	CD2DSolidColorBrush* backgroundColorBrush = nullptr;
 	CD2DSolidColorBrush* foregroundColorBrush = nullptr;
 	ID2D1StrokeStyle* dropTargetStrokeStyle = nullptr;

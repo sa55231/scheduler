@@ -58,7 +58,16 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnSetUTCOffset)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnUpdateRemoveAllEvents)
 	ON_COMMAND(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnRemoveAllEvents)
+	ON_UPDATE_COMMAND_UI(ID_TIMESCALE_SLIDER, &CMainFrame::OnUpdateTimescaleSlider)
+	ON_COMMAND(ID_TIMESCALE_SLIDER, &CMainFrame::OnChangeTimescaleSlider)
+	
 	//ON_REGISTERED_MESSAGE(AFX_WM_ON_RIBBON_CUSTOMIZE, OnRibbonCustomize)
+	ON_COMMAND(ID_ZOOM_IN_BUTTON, &CMainFrame::OnZoomInButton)
+	ON_COMMAND(ID_ZOOM_OUT_BUTTON, &CMainFrame::OnZoomOutButton)
+	ON_UPDATE_COMMAND_UI(ID_ZOOM_IN_BUTTON, &CMainFrame::OnUpdateZoomInButton)
+	ON_UPDATE_COMMAND_UI(ID_ZOOM_OUT_BUTTON, &CMainFrame::OnUpdateZoomOutButton)
+	ON_UPDATE_COMMAND_UI(ID_ZOOM_RESET_BUTTON, &CMainFrame::OnUpdateZoomResetButton)
+	ON_COMMAND(ID_ZOOM_RESET_BUTTON, &CMainFrame::OnZoomResetButton)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -600,7 +609,9 @@ LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 			break;
 		}
 	}
-	
+
+	CMFCRibbonSlider* timeScaleSlider = DYNAMIC_DOWNCAST(CMFCRibbonSlider, GetRibbonBar()->FindByID(ID_TIMESCALE_SLIDER));
+	timeScaleSlider->SetPos((int)pDoc->GetTimeScale());	
 
 	return (LRESULT)TRUE;
 }
@@ -678,4 +689,64 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	}
 
 	UpdateFrameTitleForDocument(csText);
+}
+
+void CMainFrame::OnUpdateTimescaleSlider(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable();
+}
+void CMainFrame::OnChangeTimescaleSlider()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	CMFCRibbonSlider* timeScaleSlider = DYNAMIC_DOWNCAST(CMFCRibbonSlider, GetRibbonBar()->FindByID(ID_TIMESCALE_SLIDER));
+	pDoc->SetTimeScale(timeScaleSlider->GetPos(), 0);
+}
+
+
+void CMainFrame::OnZoomInButton()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pDoc->SetZoomLevel(pDoc->GetZoomLevel() + 0.1f, 0);
+}
+
+
+void CMainFrame::OnZoomOutButton()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pDoc->SetZoomLevel(pDoc->GetZoomLevel() - 0.1f, 0);
+}
+
+void CMainFrame::OnUpdateZoomInButton(CCmdUI* pCmdUI)
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pCmdUI->Enable(pDoc->GetZoomLevel() < 2.5f);
+}
+void CMainFrame::OnUpdateZoomOutButton(CCmdUI* pCmdUI)
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pCmdUI->Enable(pDoc->GetZoomLevel() > 0.2f);
+}
+void CMainFrame::OnUpdateZoomResetButton(CCmdUI* pCmdUI)
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pCmdUI->Enable(pDoc->GetZoomLevel() != 1.f);
+}
+void CMainFrame::OnZoomResetButton()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	pDoc->SetZoomLevel(1.0f, 0);
 }

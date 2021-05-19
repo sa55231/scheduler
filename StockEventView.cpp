@@ -50,8 +50,6 @@ BEGIN_MESSAGE_MAP(CStockEventView, CViewDockingPane)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_EVENT, OnUpdateCommandToolbarButtons)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_EVENT_LIST, OnEventListItemChanged)
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
-	//ON_WM_QUERYDRAGICON()
-	ON_COMMAND(ID_REMOVE_SCHEDULED_EVENT, &CStockEventView::OnRemoveScheduledEventKey)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -150,6 +148,13 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			m_wndEventListView.DeleteItem(addingItemIndex);
 		}
 	}
+	WPARAM eventIdParam = -1;
+	auto event = GetDocument()->GetStockEventAtIndex(listInfo->item.iItem);
+	if (event)
+	{
+		eventIdParam = (WPARAM)event->GetId();
+	}
+	AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
 	addingItemIndex = -1;
 	*pResult = 0;
 }
@@ -279,6 +284,7 @@ void CStockEventView::OnRemoveEvent()
 		{
 			GetDocument()->DeleteStockEvent(index, reinterpret_cast<LPARAM>(this));
 			m_wndEventListView.DeleteItem(index);
+			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)-1, (LPARAM)this);
 		}		
 	}
 }
@@ -315,11 +321,13 @@ void CStockEventView::OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		if (pNMListView->uNewState & LVIS_SELECTED)
 		{
+			WPARAM eventIdParam = -1;
 			auto event = GetDocument()->GetStockEventAtIndex(pNMListView->iItem);
 			if (event)
 			{
-				AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)event->GetId(), (LPARAM)this);
+				eventIdParam = (WPARAM)event->GetId();
 			}
+			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
 		}
 		else
 		{
@@ -399,12 +407,4 @@ void CStockEventView::OnChangeVisualStyle()
 	m_EventListImages.Add(&bmp, RGB(255, 0, 255));
 
 	m_wndEventListView.SetImageList(&m_EventListImages, LVSIL_SMALL);
-}
-
-
-
-
-void CStockEventView::OnRemoveScheduledEventKey()
-{
-	// TODO: Add your command handler code here
 }

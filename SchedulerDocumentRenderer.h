@@ -15,7 +15,8 @@ public:
 	void Resize(int cx, int cy);
 	D2D1_SIZE_F UpdateLayout(CSchedulerDoc* doc, CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, 
 		ID2D1Factory* factory);
-	CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point);
+	D2D1_SIZE_F GetZoomLevel() const;
+	//CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point);
 	CTrackRenderer* GetTrackAtPoint(const D2D1_POINT_2F& point);
 	D2D1_COLOR_F GetEventForegroundColor() const;
 private:	

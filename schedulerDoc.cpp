@@ -31,7 +31,7 @@
 #endif
 
 static constexpr uint32_t MAGIC = 0x3F3D72CB;
-static constexpr uint32_t VERSION = 1;
+static constexpr uint32_t VERSION = 2;
 
 // CSchedulerDoc
 
@@ -74,8 +74,47 @@ BOOL CSchedulerDoc::OnNewDocument()
 		utcOffsetMinutes += timezoneInfo.StandardBias;
 	}
 	
+#ifdef _DEBUG
+	std::uniform_int_distribution<int> duration_distribution(60, 5 * 3600);
+	for (int i = 0; i < 20; i++)
+	{
+		CString name;
+		name.Format(_T("Event #%d"), i);
+		std::chrono::seconds duration(duration_distribution(generator));
+		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(i, std::move(name), std::move(duration), color_distribution(generator)));
+	}
+
+	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size() - 1);
+	std::uniform_int_distribution<int> event_count_distribution(0, 20);
+	for (int i = 0; i < 20; i++)
+	{
+		CString name(_T("Track: "));
+		name.AppendFormat(_T("%d"), i);
+		std::vector<CScheduleEventPtr> events;
+		int event_count = event_count_distribution(generator);
+		for (int j = 0; j < event_count; j++)
+		{
+			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get()));
+		}
+
+		tracks.emplace_back(std::make_unique<CScheduleTrack>(i, name, std::move(events)));
+	}
+	
+#endif //_DEBUG
+
 	AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
 	return TRUE;
+}
+
+double CSchedulerDoc::GetTimeScale() const
+{
+	return timeScale;
+}
+void CSchedulerDoc::SetTimeScale(double scale, LPARAM lHint)
+{
+	timeScale = scale;
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
 }
 
 int CSchedulerDoc::GetUTCOffsetMinutes() const
@@ -85,6 +124,16 @@ int CSchedulerDoc::GetUTCOffsetMinutes() const
 void CSchedulerDoc::SetUTCOffsetMinutes(int offset, LPARAM lHint)
 {
 	utcOffsetMinutes = offset;
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+float CSchedulerDoc::GetZoomLevel() const
+{
+	return zoomLevel;
+}
+void CSchedulerDoc::SetZoomLevel(float zoom, LPARAM lHint)
+{
+	zoomLevel = zoom;
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
@@ -289,6 +338,8 @@ TRY
 				ar << ev->GetStockId();
 			}
 		}
+		ar << timeScale;
+		ar << zoomLevel;
 	}
 	else
 	{
@@ -296,17 +347,12 @@ TRY
 		ar >> magic;
 		if (magic != MAGIC)
 		{
-			UpdateAllViews(nullptr, 0);
 			throw new CArchiveException(CArchiveException::badClass,_T("Bad file opened"));
 		}
 		uint32_t version = 0;
 		ar >> version;
-		if (version != VERSION)
+		if (version < 1 || version > VERSION)
 		{
-			//we're loading a different version than the current one
-			// TODO:: Add version handling code here, for now we just yell,
-			// since we are only at version 1
-			UpdateAllViews(nullptr, 0);
 			throw new CArchiveException(CArchiveException::badSchema, _T("Document is corrupted"));
 		}
 
@@ -359,6 +405,12 @@ TRY
 				events.emplace_back(std::make_unique<CScheduleEvent>(it->get()));
 			}
 			newTracks.emplace_back(std::make_unique<CScheduleTrack>(id, name, std::move(events)));
+		}
+
+		if (version > 1)
+		{
+			ar >> timeScale;
+			ar >> zoomLevel;
 		}
 
 		tracks.clear();

@@ -305,6 +305,9 @@
     <Image Include="res\sort_hc.bmp" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />
+    <Image Include="res\tracks.bmp" />
+    <Image Include="res\tracks.ico" />
+    <Image Include="res\tracks_hc.bmp" />
     <Image Include="res\track_event_list.bmp" />
     <Image Include="res\track_event_list_hc.bmp" />
     <Image Include="res\writelarge.bmp" />

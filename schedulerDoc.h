@@ -40,6 +40,10 @@ public:
 	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);
 	bool AreScheduledEvents() const;
 	void RemoveAllScheduledEvents();
+	double GetTimeScale() const;
+	void SetTimeScale(double scale, LPARAM lHint);
+	float GetZoomLevel() const;
+	void SetZoomLevel(float zoom, LPARAM lHint);
 // Operations
 public:
 
@@ -70,6 +74,9 @@ private:
 	int utcOffsetMinutes = 0;
 	std::default_random_engine generator;
 	std::uniform_int_distribution<int> color_distribution{ 0x0000FF, 0xCCCCFF };
+	//how many seconds are per pixel displayed
+	double timeScale = 60.0;
+	float zoomLevel = 1.f;
 
 // Generated message map functions
 protected:

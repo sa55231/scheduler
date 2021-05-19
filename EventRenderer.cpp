@@ -14,16 +14,12 @@ CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat
 	eventBounds(D2D1::RectF()),
 	eventBoundsRoundedRect(D2D1::RoundedRect(eventBounds,0.f,0.f))
 {
-	eventWidth = (float)std::chrono::duration_cast<std::chrono::minutes>(event->GetDuration()).count();
+	
 }
 
 bool CEventRenderer::ContainsPoint(const D2D1_POINT_2F& point) const
 {
 	return (point.x >= eventBounds.left && point.x <= eventBounds.right && point.y >= eventBounds.top && point.y <= eventBounds.bottom);
-}
-float CEventRenderer::GetWidth() const
-{
-	return eventWidth;
 }
 D2D1_SIZE_F CEventRenderer::GetSize() const
 {

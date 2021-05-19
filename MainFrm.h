@@ -75,7 +75,6 @@ protected:
 	afx_msg void OnViewTrackView();
 	afx_msg void OnUpdateViewTrackView(CCmdUI* pCmdUI);
 	
-	
 	afx_msg void OnViewPropertiesWindow();
 	afx_msg void OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI);
 	afx_msg void OnOptions();
@@ -95,12 +94,18 @@ protected:
 	afx_msg void OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnSetUTCOffset();
 	afx_msg void OnRemoveAllEvents();
-	
+	afx_msg void OnUpdateTimescaleSlider(CCmdUI* pCmdUI);
+	afx_msg void OnChangeTimescaleSlider();
+	afx_msg void OnZoomInButton();
+	afx_msg void OnZoomOutButton();
+	afx_msg void OnUpdateZoomInButton(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateZoomOutButton(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateZoomResetButton(CCmdUI* pCmdUI);
+	afx_msg void OnZoomResetButton();
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
-
 };
 
 

@@ -9,8 +9,6 @@ namespace
 	constexpr float TRACK_LABEL_WIDTH = 50.f;
 	constexpr float HEADER_HEIGHT = 50.f;
 	constexpr float DURATION_COLUMN_WIDTH = 100.f;
-
-
 }
 
 CSchedulerDocumentRenderer::CSchedulerDocumentRenderer() : zoomLevel(D2D1::SizeF(1.0f, 1.0f))
@@ -22,7 +20,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	CreateD2D1Resources(renderTarget, directWriteFactory,factory);
-
+	zoomLevel = D2D1::SizeF(doc->GetZoomLevel(),doc->GetZoomLevel());
 	tracks.clear();
 	trackSeparationLines.clear();
 	headerTimelineItems.clear();
@@ -50,7 +48,8 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 			auto eventRenderer = std::make_unique<CEventRenderer>(event.get(), eventTextFormat, 
 				eventBackgroundColorBrushes[color], eventForegroundColorBrush, dropTargetStrokeStyle.p);
 			eventRenderer->SetMinimumTextRenderingWidth(minEventRenderWidth);
-			auto eventWidth = eventRenderer->GetWidth() + margin;
+			auto eventDurationInSeconds = event->GetDuration().count();
+			auto eventWidth = (float)eventDurationInSeconds/(float)doc->GetTimeScale() + margin;
 			eventRenderer->SetEventBounds(D2D1::RectF(xOffset, surfaceSize.height,xOffset+eventWidth, surfaceSize.height+trackHeight));
 			trackWidth += eventWidth;
 			xOffset += eventWidth;
@@ -105,9 +104,11 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 			headerTimelineItems.push_back(std::move(item));
 		}
 	}
-
+	TRACE("Zoom level: %f\n", doc->GetZoomLevel());
+	TRACE("Timescale: %f\n", doc->GetTimeScale());
 	TRACE("Surface size : %fx%f\n", surfaceSize.width , surfaceSize.height);
-	return surfaceSize;
+	TRACE("Zoomed surface size : %fx%f\n", surfaceSize.width * zoomLevel.width, surfaceSize.height * zoomLevel.height);
+	return D2D1::SizeF(surfaceSize.width * zoomLevel.width, surfaceSize.height * zoomLevel.height);
 }
 
 D2D1_COLOR_F CSchedulerDocumentRenderer::GetEventForegroundColor() const
@@ -237,8 +238,12 @@ void CSchedulerDocumentRenderer::Render(CHwndRenderTarget* renderTarget, const D
 	}
 }
 
-CTrackRenderer* CSchedulerDocumentRenderer::GetTrackAtPoint(const D2D1_POINT_2F& point)
+D2D1_SIZE_F CSchedulerDocumentRenderer::GetZoomLevel() const
 {
+	return zoomLevel;
+}
+CTrackRenderer* CSchedulerDocumentRenderer::GetTrackAtPoint(const D2D1_POINT_2F& point)
+{	
 	for (const auto& track : tracks)
 	{
 		if (track->ContainsPoint(point)) return track.get();
@@ -246,16 +251,17 @@ CTrackRenderer* CSchedulerDocumentRenderer::GetTrackAtPoint(const D2D1_POINT_2F&
 	return nullptr;
 }
 
-CEventRenderer* CSchedulerDocumentRenderer::GetEventAtPoint(const D2D1_POINT_2F& point)
+/*CEventRenderer* CSchedulerDocumentRenderer::GetEventAtPoint(const D2D1_POINT_2F& point)
 {
+	D2D1_POINT_2F zoomedPoint = D2D1::Point2F(point.x / zoomLevel.width, point.y / zoomLevel.height);
 	for (const auto& track : tracks)
 	{
-		CEventRenderer* event = track->GetEventAtPoint(point);
+		CEventRenderer* event = track->GetEventAtPoint(zoomedPoint);
 		if (event != nullptr) return event;
 	}
 	return nullptr;
 }
-
+*/
 void CSchedulerDocumentRenderer::Resize(int cx, int cy)
 {	
 	{

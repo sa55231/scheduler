@@ -564,7 +564,7 @@
                 <ELEMENT_NAME>Button</ELEMENT_NAME>
                 <ID>
                   <NAME>ID_REMOVE_ALL_EVENTS_BUTTON</NAME>
-                  <VALUE>32773</VALUE>
+                  <VALUE>32774</VALUE>
                 </ID>
                 <TEXT>Remove All</TEXT>
                 <PALETTE_TOP>FALSE</PALETTE_TOP>
@@ -573,6 +573,72 @@
                 <INDEX_LARGE>4</INDEX_LARGE>
                 <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
                 <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+            </ELEMENTS>
+          </PANEL>
+          <PANEL>
+            <ELEMENT_NAME>Panel</ELEMENT_NAME>
+            <NAME>Zoom &amp; Scale</NAME>
+            <INDEX>-1</INDEX>
+            <JUSTIFY_COLUMNS>FALSE</JUSTIFY_COLUMNS>
+            <CENTER_COLUMN_VERT>FALSE</CENTER_COLUMN_VERT>
+            <ELEMENTS>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_ZOOM_IN_BUTTON</NAME>
+                  <VALUE>32775</VALUE>
+                </ID>
+                <TEXT>Zoom In</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>9</INDEX_SMALL>
+                <INDEX_LARGE>5</INDEX_LARGE>
+                <DEFAULT_COMMAND>FALSE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_ZOOM_OUT_BUTTON</NAME>
+                  <VALUE>32779</VALUE>
+                </ID>
+                <TEXT>Zoom Out</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>10</INDEX_SMALL>
+                <INDEX_LARGE>6</INDEX_LARGE>
+                <DEFAULT_COMMAND>FALSE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_ZOOM_RESET_BUTTON</NAME>
+                  <VALUE>32780</VALUE>
+                </ID>
+                <TEXT>Zoom Reset</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>11</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>FALSE</DEFAULT_COMMAND>
+                <ALWAYS_DESCRIPTION>FALSE</ALWAYS_DESCRIPTION>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Slider</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_TIMESCALE_SLIDER</NAME>
+                  <VALUE>32776</VALUE>
+                </ID>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <STYLE>0</STYLE>
+                <WIDTH>100</WIDTH>
+                <MIN>1</MIN>
+                <MAX>420</MAX>
+                <POS>60</POS>
+                <ZOOM_BUTTONS>TRUE</ZOOM_BUTTONS>
               </ELEMENT>
             </ELEMENTS>
           </PANEL>

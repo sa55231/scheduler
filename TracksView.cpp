@@ -236,6 +236,7 @@ void CTracksView::OnRemoveTrack()
 		{
 			GetDocument()->DeleteTrack(index, reinterpret_cast<LPARAM>(this));
 			m_wndClassView.DeleteItem(index);
+			AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, -1, (LPARAM)this);
 		}
 	}
 
@@ -280,11 +281,13 @@ void CTracksView::OnTrackListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		if (pNMListView->uNewState & LVIS_SELECTED)
 		{
+			WPARAM trackIdParam = -1;
 			auto track = GetDocument()->GetTrackAtIndex(pNMListView->iItem);
 			if (track)
 			{
-				AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)track->GetId(), (LPARAM)this);
+				trackIdParam = (WPARAM)track->GetId();
 			}
+			AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, trackIdParam, (LPARAM)this);
 		}
 		else
 		{
@@ -351,6 +354,13 @@ void CTracksView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		m_wndClassView.SetItemText(listInfo->item.iItem, 0, listInfo->item.pszText);
 		GetDocument()->UpdateTrackName(listInfo->item.iItem, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
+		WPARAM trackIdParam = -1;
+		auto track = GetDocument()->GetTrackAtIndex(listInfo->item.iItem);
+		if (track)
+		{
+			trackIdParam = (WPARAM)track->GetId();
+		}
+		AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, trackIdParam, (LPARAM)this);
 	}
 	else
 	{

@@ -300,5 +300,14 @@
     <Image Include="res\bmp00001.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\tracks.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\tracks.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\tracks_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
