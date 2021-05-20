@@ -43,8 +43,8 @@ protected:
 // Implementation
 public:
 	virtual ~CSchedulerView();
-	void AddEventAtPoint(int stockEventIndex, CPoint point);
-	void DraggingEventAtPoint(int stockEventIndex, CPoint point);
+	void AddEventAtPoint(int stockEventId, CPoint point);
+	void DraggingEventAtPoint(int stockEventId, CPoint point);
 	void OnRemoveScheduledEvent();
 #ifdef _DEBUG
 	virtual void AssertValid() const;

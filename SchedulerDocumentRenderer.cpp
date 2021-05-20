@@ -113,7 +113,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	TRACE("Timescale: %f\n", doc->GetTimeScale());
 	TRACE("Surface size : %fx%f\n", surfaceSize.width , surfaceSize.height);
 	TRACE("Zoomed surface size : %fx%f\n", surfaceSize.width * zoomLevel.width, surfaceSize.height * zoomLevel.height);
-	return D2D1::SizeF(surfaceSize.width * zoomLevel.width, surfaceSize.height * zoomLevel.height);
+	return surfaceSize;// D2D1::SizeF(surfaceSize.width * zoomLevel.width, surfaceSize.height * zoomLevel.height);
 }
 
 D2D1_COLOR_F CSchedulerDocumentRenderer::GetEventForegroundColor() const
@@ -213,8 +213,7 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTa
 void CSchedulerDocumentRenderer::Render(CHwndRenderTarget* renderTarget, const D2D1_POINT_2F& scrollPosition)
 {	
 	if (renderTarget && renderTarget->IsValid() && resourcesCreated)
-	{
-		TRACE("scroll pos %d %d\n", scrollPosition.x, scrollPosition.y);
+	{		
 		renderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
 		D2D1_MATRIX_3X2_F matrix = D2D1::Matrix3x2F::Identity() *

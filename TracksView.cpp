@@ -216,7 +216,7 @@ void CTracksView::AdjustLayout()
 	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndClassView.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 
-	auto c = m_wndClassView.GetColumnWidth(0);
+	
 	if (m_wndClassView.GetColumnWidth(0) < 20)
 	{
 		m_wndClassView.SetColumnWidth(0, rectClient.Width() / 2);

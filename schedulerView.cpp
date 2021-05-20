@@ -250,7 +250,7 @@ void CSchedulerView::OnLButtonUp(UINT nFlags, CPoint point)
 
 		if (selectedEvent != nullptr && pDropWnd == this && selectedEvent != dropTargetEvent)
 		{
-			int stockEventIndex = pDoc->GetStockEventIndex(selectedEvent->GetEventId());
+			int stockEventId = selectedEvent->GetEvent()->GetStockId();
 			// This is kinda a bug and kinda not
 			// When dropping on an event in a different track, it inserts in front of the dropped event
 			// When dropping on an event on the same track it inserts it after the dropped event
@@ -258,7 +258,7 @@ void CSchedulerView::OnLButtonUp(UINT nFlags, CPoint point)
 			// But, it has the weird effect of actually being quite intuitive on its behaviour
 			// So, at least for now, i'm leaving it in.
 			selectedTrack->GetTrack()->RemoveEvent(selectedEvent->GetEvent());
-			AddEventAtPoint(stockEventIndex, pt);
+			AddEventAtPoint(stockEventId, pt);
 		}		
 		if (dropTargetTrack != nullptr)
 		{
@@ -398,7 +398,7 @@ void CSchedulerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 	OnContextMenu(this, point);
 }
 
-void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
+void CSchedulerView::DraggingEventAtPoint(int stockEventId, CPoint point)
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -462,7 +462,7 @@ void CSchedulerView::DraggingEventAtPoint(int stockEventIndex, CPoint point)
 	RedrawWindow();
 }
 
-void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
+void CSchedulerView::AddEventAtPoint(int stockEventId, CPoint point)
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -484,18 +484,18 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 		if (event != nullptr)
 		{
 			int index = track->GetEventRenderIndex(event);
-			pDoc->AddTrackEventAtIndex(stockEventIndex,track->GetName(),index, reinterpret_cast<LPARAM>(this));
+			pDoc->AddTrackEventAtIndex(stockEventId,track->GetName(),index, reinterpret_cast<LPARAM>(this));
 		}
 		else
 		{
 			auto trackLabelBounds = track->GetTrackLabelBounds();
 			if (point.x >= trackLabelBounds.left && point.x <= trackLabelBounds.right)
 			{
-				pDoc->AddTrackEventAtIndex(stockEventIndex, track->GetName(), 0, reinterpret_cast<LPARAM>(this));
+				pDoc->AddTrackEventAtIndex(stockEventId, track->GetName(), 0, reinterpret_cast<LPARAM>(this));
 			}
 			else
 			{
-				pDoc->AddTrackEvent(stockEventIndex, track->GetName(), reinterpret_cast<LPARAM>(this));
+				pDoc->AddTrackEvent(stockEventId, track->GetName(), reinterpret_cast<LPARAM>(this));
 			}
 		}
 	}

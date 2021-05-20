@@ -320,13 +320,13 @@ void CMainFrame::UpdateSecondaryViews(LPARAM lHint)
 	m_wndTrackEventsListView.Update(lHint);
 }
 
-void CMainFrame::StartDraggingStockEvent(int dragItemIndex, CImageList* imageList, CPoint point)
+void CMainFrame::StartDraggingStockEvent(int dragItemId, CImageList* imageList, CPoint point)
 {
 	int nOffset = -10; //offset in pixels for drag image (positive is up and to the left; neg is down and to the right)
 	dragImageList = imageList;
 	dragImageList->BeginDrag(0, CPoint(nOffset, nOffset - 4));
 	dragImageList->DragEnter(GetDesktopWindow(), point);
-	this->dragItemIndex = dragItemIndex;
+	this->dragItemId = dragItemId;
 	dragging = true;	//we are in a drag and drop operation
 
 	// Capture all mouse messages
@@ -351,7 +351,7 @@ void CMainFrame::OnMouseMove(UINT nFlags, CPoint point)
 		{
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			CSchedulerView* view = (CSchedulerView*)pDropWnd;
-			view->DraggingEventAtPoint(dragItemIndex, pt);
+			view->DraggingEventAtPoint(dragItemId, pt);
 		}
 		else
 		{
@@ -381,14 +381,14 @@ void CMainFrame::OnLButtonUp(UINT nFlags, CPoint point)
 		if (pDropWnd->IsKindOf(RUNTIME_CLASS(CSchedulerView)))
 		{
 			CSchedulerView* view = (CSchedulerView*)pDropWnd;
-			view->AddEventAtPoint(dragItemIndex, pt);
+			view->AddEventAtPoint(dragItemId, pt);
 			//m_pDropList = (CListCtrl*)pDropWnd; //Set pointer to the list we are dropping on
 			//DropItemOnList(m_pDragList, m_pDropList); //Call routine to perform the actual drop
 
 		}
 
 	}
-	dragItemIndex = -1;
+	dragItemId = -1;
 	dragging = false;
 }
 // CMainFrame message handlers

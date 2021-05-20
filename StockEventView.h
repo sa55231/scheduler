@@ -42,7 +42,8 @@ protected:
 	int addingItemIndex = -1;
 	bool updatingEventsSelection = false;
 	bool addingEvent = false;
-
+	int sortedColumn = 0;
+	bool sortAscending = true;
 protected:
 	void FillFileView();
 	virtual void OnInitialUpdate();
@@ -50,7 +51,8 @@ protected:
 
 private:
 	void ReloadEventsList(CSchedulerDoc* pDoc);
-
+	CString FormatDuration(std::chrono::seconds seconds);
+	
 // Implementation
 public:
 	virtual ~CStockEventView();
@@ -68,6 +70,7 @@ protected:
 	afx_msg void OnBeginDragEvent(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI);
 	afx_msg void OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEventListColumnClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wParam, LPARAM lParam);
 	//afx_msg HCURSOR OnQueryDragIcon();
 

@@ -25,22 +25,22 @@ public:
 	std::chrono::system_clock::time_point GetStartTime() const;
 	const std::vector<CScheduleTrackPtr>& GetTracks() const;
 	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
-	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
+	void UpdateStockEventName(CScheduleStockEvent* event, const CString& newName, LPARAM lHint);
 	CScheduleTrack* AddTrack(const CString& newName, LPARAM lHint);
 	void UpdateTrackName(CScheduleTrack* track, const CString& newName, LPARAM lHint);
 	void UpdateTrackStartTime(CScheduleTrack* track, const std::chrono::system_clock::time_point& time, LPARAM lHint);
 	void DeleteTrack(CScheduleTrack* track, LPARAM lHint);
-
-	void DeleteStockEvent(int index, LPARAM lHint);
-	
-	int GetStockEventIndex(int id) const;
+	void DeleteStockEvent(CScheduleStockEvent*, LPARAM lHint);
+	CScheduleStockEvent* AddEvent(const CString& newName, LPARAM lHint);
+	//int GetStockEventIndex(int id) const;
 	CScheduleTrack* GetTrack(int id) const;
 	CScheduleEvent* GetEvent(int id) const;
 	CScheduleStockEvent* GetStockEvent(int id) const;
-	CScheduleStockEvent* GetStockEventAtIndex(int index) const;
+	void SortStockEvents(int sortedColumn, bool sortAscending);
+	//CScheduleStockEvent* GetStockEventAtIndex(int index) const;
 
-	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint);
-	void AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint);
+	void AddTrackEventAtIndex(int stockEventId, const CString& trackName, int index, LPARAM lHint);
+	void AddTrackEvent(int stockEventId, const CString& trackName, LPARAM lHint);
 
 	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);
 	bool AreScheduledEvents() const;

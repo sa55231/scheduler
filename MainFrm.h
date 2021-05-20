@@ -48,7 +48,7 @@ public:
 #endif
 	void InitializeSecondaryViews(CSchedulerDoc* doc);
 	void UpdateSecondaryViews(LPARAM lHint);
-	void StartDraggingStockEvent(int dragItemIndex, CImageList* dragImageList, CPoint point);
+	void StartDraggingStockEvent(int dragItemId, CImageList* dragImageList, CPoint point);
 
 private:
 	BOOL IsPrintPreviewMode();
@@ -62,7 +62,7 @@ protected:  // control bar embedded members
 	CTracksView        m_wndTracksView;
 	CPropertiesWnd    m_wndProperties;
 	CTrackEventsListView m_wndTrackEventsListView;
-	int dragItemIndex = -1;
+	int dragItemId = -1;
 	CImageList* dragImageList = nullptr;
 	bool dragging = false;
 // Generated message map functions
