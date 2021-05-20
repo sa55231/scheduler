@@ -71,7 +71,7 @@ int CTrackEventsListView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// All commands will be routed via this control , not via the parent frame:
 	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
-	// Fill in some static tree view data (dummy code, nothing magic here)	
+	
 	AdjustLayout();
 
 	return 0;

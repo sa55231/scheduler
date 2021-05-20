@@ -497,8 +497,10 @@ void CSchedulerView::AddEventAtPoint(int stockEventIndex, CPoint point)
 			{
 				pDoc->AddTrackEvent(stockEventIndex, track->GetName(), reinterpret_cast<LPARAM>(this));
 			}
-		}		
+		}
 	}
+
+	HandleEventSelection(point);
 }
 
 

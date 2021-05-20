@@ -68,6 +68,15 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_OUT_BUTTON, &CMainFrame::OnUpdateZoomOutButton)
 	ON_UPDATE_COMMAND_UI(ID_ZOOM_RESET_BUTTON, &CMainFrame::OnUpdateZoomResetButton)
 	ON_COMMAND(ID_ZOOM_RESET_BUTTON, &CMainFrame::OnZoomResetButton)
+
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TRACK_EVENTS, &CMainFrame::OnUpdateViewTrackEvents)
+	ON_COMMAND(ID_VIEW_TRACK_EVENTS, &CMainFrame::OnViewTrackEvents)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TRACKS, &CMainFrame::OnUpdateViewTracks)
+	ON_COMMAND(ID_VIEW_TRACKS, &CMainFrame::OnViewTracks)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_EVENTS, &CMainFrame::OnUpdateViewEvents)
+	ON_COMMAND(ID_VIEW_EVENTS, &CMainFrame::OnViewEvents)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_PROPERTIES, &CMainFrame::OnUpdateViewProperties)
+	ON_COMMAND(ID_VIEW_PROPERTIES, &CMainFrame::OnViewProperties)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -124,6 +133,7 @@ namespace
 CMainFrame::CMainFrame() noexcept
 {
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLUE);
+
 }
 
 CMainFrame::~CMainFrame()
@@ -203,6 +213,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndTrackEventsListView.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndTrackEventsListView);
+		
 
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
@@ -523,7 +534,6 @@ void CMainFrame::OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI)
 	pCmdUI->Enable(TRUE);
 }
 
-
 void CMainFrame::OnFilePrint()
 {
 	if (IsPrintPreview())
@@ -749,4 +759,57 @@ void CMainFrame::OnZoomResetButton()
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return;
 	pDoc->SetZoomLevel(1.0f, 0);
+}
+
+void CMainFrame::OnUpdateViewTrackEvents(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_wndTrackEventsListView.IsVisible());
+	pCmdUI->Enable(!IsPrintPreviewMode());
+}
+void CMainFrame::OnViewTrackEvents()
+{
+	ShowPane(&m_wndTrackEventsListView,
+		!(m_wndTrackEventsListView.IsVisible()),
+		FALSE, TRUE);
+	RecalcLayout();
+}
+void CMainFrame::OnUpdateViewTracks(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_wndTracksView.IsVisible());
+	pCmdUI->Enable(!IsPrintPreviewMode());
+}
+void CMainFrame::OnViewTracks()
+{
+	ShowPane(&m_wndTracksView,
+		!(m_wndTracksView.IsVisible()),
+		FALSE, TRUE);
+	RecalcLayout();
+}
+void CMainFrame::OnUpdateViewEvents(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_wndStockEventView.IsVisible());
+	pCmdUI->Enable(!IsPrintPreviewMode());
+}
+void CMainFrame::OnViewEvents()
+{
+	ShowPane(&m_wndStockEventView,
+		!(m_wndStockEventView.IsVisible()),
+		FALSE, TRUE);
+	RecalcLayout();
+}
+void CMainFrame::OnUpdateViewProperties(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_wndProperties.IsVisible());
+	pCmdUI->Enable(!IsPrintPreviewMode());
+}
+void CMainFrame::OnViewProperties()
+{
+	ShowPane(&m_wndProperties,
+		!(m_wndProperties.IsVisible()),
+		FALSE, TRUE);
+	RecalcLayout();
+}
+BOOL CMainFrame::IsPrintPreviewMode()
+{
+	return GetDockingManager()->IsPrintPreviewValid();
 }

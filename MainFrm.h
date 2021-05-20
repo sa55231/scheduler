@@ -51,7 +51,7 @@ public:
 	void StartDraggingStockEvent(int dragItemIndex, CImageList* dragImageList, CPoint point);
 
 private:
-	
+	BOOL IsPrintPreviewMode();
 
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
@@ -102,6 +102,16 @@ protected:
 	afx_msg void OnUpdateZoomOutButton(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateZoomResetButton(CCmdUI* pCmdUI);
 	afx_msg void OnZoomResetButton();
+
+	afx_msg void OnUpdateViewTrackEvents(CCmdUI* pCmdUI);
+	afx_msg void OnViewTrackEvents();
+	afx_msg void OnUpdateViewTracks(CCmdUI* pCmdUI);
+	afx_msg void OnViewTracks();
+	afx_msg void OnUpdateViewEvents(CCmdUI* pCmdUI);
+	afx_msg void OnViewEvents();
+	afx_msg void OnUpdateViewProperties(CCmdUI* pCmdUI);
+	afx_msg void OnViewProperties();
+
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

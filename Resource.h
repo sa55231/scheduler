@@ -154,7 +154,10 @@
 #define ID_ADD_TRACK                    32783
 #define ID_EDIT_TRACK                   32784
 #define ID_REMOVE_TRACK                 32785
-
+#define ID_VIEW_TRACK_EVENTS			32786
+#define ID_VIEW_TRACKS					32787
+#define ID_VIEW_EVENTS					32788
+#define ID_VIEW_PROPERTIES				32789
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

@@ -455,6 +455,59 @@
                 <INDEX_LARGE>-1</INDEX_LARGE>
                 <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
               </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_VIEW_TRACK_EVENTS</NAME>
+                  <VALUE>32786</VALUE>
+                </ID>
+                <TEXT>Events Schedule</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_VIEW_TRACKS</NAME>
+                  <VALUE>32787</VALUE>
+                </ID>
+                <TEXT>Tracks</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_VIEW_EVENTS</NAME>
+                  <VALUE>32788</VALUE>
+                </ID>
+                <TEXT>Events</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              </ELEMENT>
+              <ELEMENT>
+                <ELEMENT_NAME>Button_Check</ELEMENT_NAME>
+                <ID>
+                  <NAME>ID_VIEW_PROPERTIES</NAME>
+                  <VALUE>32789</VALUE>
+                </ID>
+                <TEXT>Properties</TEXT>
+                <PALETTE_TOP>FALSE</PALETTE_TOP>
+                <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+                <INDEX_SMALL>-1</INDEX_SMALL>
+                <INDEX_LARGE>-1</INDEX_LARGE>
+                <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+              </ELEMENT>
+
             </ELEMENTS>
           </PANEL>
           <PANEL>
