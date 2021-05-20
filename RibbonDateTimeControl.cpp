@@ -174,7 +174,7 @@ void CRibbonDateTimeControl::OnAfterChangeRect(CDC* pDC)
 	}
 
 
-	if (!dateTimeCtrl->IsWindowVisible())
+	//if (!dateTimeCtrl->IsWindowVisible())
 	{
 		CRect rectEdit = m_rect;
 
