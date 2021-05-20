@@ -7,13 +7,17 @@
 class CScheduleEvent
 {
 public:
-	CScheduleEvent(CScheduleStockEvent* eventSource);
+	CScheduleEvent(CScheduleStockEvent* eventSource, int id, int trackId);
+	int GetId() const;
+	int GetTrackId() const;
 	int GetStockId() const;
 	CString GetName() const;
 	std::chrono::seconds GetDuration() const;
 	UINT32 GetColor() const;
 private:
 	const CScheduleStockEvent* stockEvent;
+	int id = 0;
+	int trackId = 0;
 };
 
 using CScheduleEventPtr = std::unique_ptr<CScheduleEvent>;

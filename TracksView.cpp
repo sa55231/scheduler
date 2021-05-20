@@ -71,7 +71,7 @@ BEGIN_MESSAGE_MAP(CTracksView, CViewDockingPane)
 	ON_UPDATE_COMMAND_UI(ID_ADD_TRACK, OnUpdateAddTrackCommand)
 	ON_NOTIFY(LVN_ENDLABELEDIT, IDC_TRACKS_LIST, OnEndLabelEdit)
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, OnTrackObjectSelected)
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_TRACKS_LIST, OnTrackListItemChanged)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_TRACKS_LIST, OnTrackListItemChanged)	
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -86,13 +86,21 @@ int CTracksView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rectDummy.SetRectEmpty();
 
 	// Create views:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | LVS_LIST | LVS_EDITLABELS | LVS_SHOWSELALWAYS | LVS_SINGLESEL;
+	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_EDITLABELS | LVS_SHOWSELALWAYS | LVS_SINGLESEL;
 
 	if (!m_wndClassView.Create(dwViewStyle, rectDummy, this, IDC_TRACKS_LIST))
 	{
 		TRACE0("Failed to create Class View\n");
 		return -1;      // fail to create
 	}
+
+	CString strTemp;
+	BOOL bNameValid = strTemp.LoadString(IDS_TRACK_NAME);
+	ASSERT(bNameValid);
+	m_wndClassView.InsertColumn(0, strTemp, LVCFMT_LEFT);
+	bNameValid = strTemp.LoadString(IDS_TRACK_START_DATE);
+	ASSERT(bNameValid);
+	m_wndClassView.InsertColumn(1, strTemp, LVCFMT_LEFT);
 
 	// Load images:
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_TRACKS_TOOLBAR);
@@ -142,12 +150,19 @@ void CTracksView::ReloadTracksList(CSchedulerDoc* pDoc)
 {
 	m_wndClassView.SetRedraw(FALSE);
 	m_wndClassView.DeleteAllItems();
-	int index = 0;
-	for (const auto& ev : pDoc->GetTracks())
-	{
-		//LVITEM item;
+	
+	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
 
-		m_wndClassView.InsertItem(index++, ev->GetName(), 0);
+	int index = 0;
+	for (const auto& track : pDoc->GetTracks())
+	{
+		auto insertedIndex = m_wndClassView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM ,index++, 
+			track->GetName(),0,0,0, (LPARAM)track.get());
+		auto startTime = track->GetStartTime();
+		date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+		CString startText(date::format("%Y %b %d %R", start).c_str());
+
+		m_wndClassView.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
 	}
 
 	m_wndClassView.SetRedraw(TRUE);
@@ -200,6 +215,17 @@ void CTracksView::AdjustLayout()
 
 	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndClassView.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
+
+	auto c = m_wndClassView.GetColumnWidth(0);
+	if (m_wndClassView.GetColumnWidth(0) < 20)
+	{
+		m_wndClassView.SetColumnWidth(0, rectClient.Width() / 2);
+	}
+	if (m_wndClassView.GetColumnWidth(1) < 20)
+	{
+		m_wndClassView.SetColumnWidth(1, rectClient.Width() / 2);
+	}
+
 }
 
 BOOL CTracksView::PreTranslateMessage(MSG* pMsg)
@@ -209,9 +235,16 @@ BOOL CTracksView::PreTranslateMessage(MSG* pMsg)
 
 void CTracksView::OnAddTrack()
 {
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
 	int index = m_wndClassView.GetItemCount();
 	CString newEventName(_T("New Track"));
-	m_wndClassView.InsertItem(index, newEventName, 0);
+	auto insertedIndex = m_wndClassView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index, newEventName, 0, 0, 0, 0);
+	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()) - utcOffset };
+	CString startText(date::format("%Y %b %d %R", start).c_str());
+	m_wndClassView.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
+
 	addingItemIndex = index;
 	auto editControl = m_wndClassView.EditLabel(index);
 	if (editControl)
@@ -227,14 +260,14 @@ void CTracksView::OnRemoveTrack()
 	POSITION pos = m_wndClassView.GetFirstSelectedItemPosition();
 	if (pos)
 	{
-		int index = m_wndClassView.GetNextSelectedItem(pos);
-		auto text = m_wndClassView.GetItemText(index, 0);
+		int index = m_wndClassView.GetNextSelectedItem(pos);		
+		CScheduleTrack * track = (CScheduleTrack*)m_wndClassView.GetItemData(index);
 		CString message;
-		message.Format(_T("Are you sure you want to delete track %s?"), text.GetString());
+		message.Format(_T("Are you sure you want to delete track %s?"), track->GetName().GetString());
 		const int result = MessageBox(message, _T("Are you sure?"), MB_YESNO | MB_ICONWARNING);
 		if (result == IDYES)
 		{
-			GetDocument()->DeleteTrack(index, reinterpret_cast<LPARAM>(this));
+			GetDocument()->DeleteTrack(track, reinterpret_cast<LPARAM>(this));
 			m_wndClassView.DeleteItem(index);
 			AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, -1, (LPARAM)this);
 		}
@@ -282,11 +315,13 @@ void CTracksView::OnTrackListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 		if (pNMListView->uNewState & LVIS_SELECTED)
 		{
 			WPARAM trackIdParam = -1;
-			auto track = GetDocument()->GetTrackAtIndex(pNMListView->iItem);
-			if (track)
+
+			if (pNMListView->lParam != 0)
 			{
+				CScheduleTrack* track = (CScheduleTrack*)pNMListView->lParam;
 				trackIdParam = (WPARAM)track->GetId();
 			}
+			
 			AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, trackIdParam, (LPARAM)this);
 		}
 		else
@@ -353,13 +388,20 @@ void CTracksView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 	if (NULL != listInfo->item.pszText)
 	{
 		m_wndClassView.SetItemText(listInfo->item.iItem, 0, listInfo->item.pszText);
-		GetDocument()->UpdateTrackName(listInfo->item.iItem, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
 		WPARAM trackIdParam = -1;
-		auto track = GetDocument()->GetTrackAtIndex(listInfo->item.iItem);
-		if (track)
+		if (listInfo->item.lParam == 0)
 		{
+			CScheduleTrack* track = GetDocument()->AddTrack(listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
 			trackIdParam = (WPARAM)track->GetId();
+			m_wndClassView.SetItemData(listInfo->item.iItem, (LPARAM)track);
 		}
+		else
+		{
+			CScheduleTrack* track = (CScheduleTrack*)listInfo->item.lParam;
+			trackIdParam = (WPARAM)track->GetId();
+			GetDocument()->UpdateTrackName(track, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
+		}
+		
 		AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, trackIdParam, (LPARAM)this);
 	}
 	else

@@ -25,6 +25,7 @@ BEGIN_MESSAGE_MAP(CTrackEventsListView, CViewDockingPane)
 	ON_WM_PAINT()
 	ON_WM_SETFOCUS()
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, OnTrackObjectSelected)
+	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
 	ON_UPDATE_COMMAND_UI(ID_EXPORT_EVENTS_CSV, OnUpdateCommandToolbarButtons)
 	ON_COMMAND(ID_EXPORT_EVENTS_CSV, OnExportToCSV)
 END_MESSAGE_MAP()
@@ -92,8 +93,48 @@ void CTrackEventsListView::OnUpdate(const LPARAM lHint)
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+	auto track = pDoc->GetTrack(trackId);
+	if (track)
+	{
+		m_wndEventsList.DeleteAllItems();
+		FillEventsList(track);
+	}
 }
 
+LRESULT CTrackEventsListView::OnEventObjectSelected(WPARAM wParam, LPARAM lParam)
+{
+	CTrackEventsListView* sender = reinterpret_cast<CTrackEventsListView*>(lParam);
+	if (sender && sender == this) return (LRESULT)FALSE;
+	m_wndEventsList.DeleteAllItems();
+	int eventId = (int)wParam;
+	CSchedulerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	auto event = pDoc->GetEvent(eventId);
+	if(!event) return (LRESULT)FALSE;
+	auto track = pDoc->GetTrack(event->GetTrackId());
+	if (!track) return (LRESULT)FALSE;
+	trackId = track->GetId();
+	FillEventsList(track);
+	return (LRESULT)TRUE;
+}
+void CTrackEventsListView::FillEventsList(CScheduleTrack* track)
+{
+	CSchedulerDoc* pDoc = GetDocument();
+	auto startTime = track->GetStartTime();
+	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
+	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+	int index = 0;
+	for (const auto& ev : track->GetEvents())
+	{
+		CString startText(date::format("%Y %b %d %R", start).c_str());
+		auto end = start + ev->GetDuration();
+		CString endText(date::format("%Y %b %d %R", end).c_str());
+		start = end;
+		auto insertedIndex = m_wndEventsList.InsertItem(index++, ev->GetName());
+		m_wndEventsList.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
+		m_wndEventsList.SetItem(insertedIndex, 2, LVIF_TEXT, endText, 0, 0, 0, 0);
+	}
+}
 LRESULT CTrackEventsListView::OnTrackObjectSelected(WPARAM wParam, LPARAM lParam)
 {
 	CTrackEventsListView* sender = reinterpret_cast<CTrackEventsListView*>(lParam);
@@ -107,22 +148,7 @@ LRESULT CTrackEventsListView::OnTrackObjectSelected(WPARAM wParam, LPARAM lParam
 	auto track = pDoc->GetTrack(trackId);
 	if (!track) return (LRESULT)FALSE;
 
-
-	auto startTime = pDoc->GetStartTime();
-	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
-	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };	
-	int index = 0;
-	for (const auto& ev : track->GetEvents())
-	{
-		CString startText(date::format("%Y %b %d %R", start).c_str());
-		auto end = start + ev->GetDuration();
-		CString endText(date::format("%Y %b %d %R", end).c_str());
-		start = end;
-		auto insertedIndex = m_wndEventsList.InsertItem(index++, ev->GetName());
-		m_wndEventsList.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
-		m_wndEventsList.SetItem(insertedIndex, 2, LVIF_TEXT, endText, 0, 0, 0, 0);
-		
-	}
+	FillEventsList(track);
 
 	return (LRESULT)TRUE;
 }

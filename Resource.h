@@ -131,6 +131,8 @@
 #define IDR_POPUP_TRACKS                319
 #define IDB_TRACKS_TOOLBAR_24           320
 #define IDI_TRACKS_ICON                 321
+#define IDS_TRACK_NAME					322
+#define IDS_TRACK_START_DATE			323
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
@@ -162,7 +164,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        322
+#define _APS_NEXT_RESOURCE_VALUE        324
 #define _APS_NEXT_COMMAND_VALUE         32786
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           310

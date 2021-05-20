@@ -6,7 +6,7 @@ CEventRenderer::CEventRenderer(CScheduleEvent* event, CD2DTextFormat* textFormat
 	ID2D1StrokeStyle* dropTargetStrokeStyle) :
 	event(event),
 	name(event->GetName()),
-	eventId(event->GetStockId()),
+	eventId(event->GetId()),
 	textFormat(textFormat),
 	backgroundColorBrush(backgroundColorBrush),
 	foregroundColorBrush(foregroundColorBrush),

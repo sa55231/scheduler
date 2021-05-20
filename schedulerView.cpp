@@ -208,8 +208,8 @@ void CSchedulerView::HandleEventSelection(CPoint point)
 		else
 		{
 			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)(-1), (LPARAM)this);
-		}
-		AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)(track->GetTrackId()), (LPARAM)this);
+			AfxGetMainWnd()->PostMessage(WM_TRACK_OBJECT_SELECTED, (WPARAM)(track->GetTrackId()), (LPARAM)this);
+		}		
 	}
 	else
 	{

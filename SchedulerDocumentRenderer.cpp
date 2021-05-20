@@ -28,14 +28,19 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRe
 	FLOAT maxWidth = 0.f;
 	std::chrono::seconds maxDuration = std::chrono::seconds::min();
 	trackSeparationLines.emplace_back(D2D1::Point2F(0.f, surfaceSize.height - margin / 2.f), D2D1::Point2F(maxWidth, surfaceSize.height - margin / 2.f));
-
+	auto earliestStartTime = doc->GetStartTime();
 	for (const auto& track : doc->GetTracks())
 	{
+		auto trackStartTime = track->GetStartTime();
+		auto startTimeDiffSeconds = std::chrono::duration_cast<std::chrono::seconds>(trackStartTime - earliestStartTime);
+		auto startEventsWidth = (float)startTimeDiffSeconds.count() / (float)doc->GetTimeScale();
 		auto trackRenderer = std::make_unique<CTrackRenderer>(track.get(), trackTextFormat, trackBackgroundColorBrush,
 			trackForegroundColorBrush, dropTargetStrokeStyle.p);
+
 		float trackWidth = TRACK_LABEL_WIDTH + margin;
 		trackRenderer->SetTrackLabelBounds(D2D1::RectF(0.f, surfaceSize.height,trackWidth, surfaceSize.height+trackHeight));
 		std::vector<std::unique_ptr<CEventRenderer>> eventRenderers;
+		trackWidth += startEventsWidth;
 		auto xOffset = trackWidth;
 		std::chrono::seconds trackDuration = std::chrono::seconds::zero();
 		for (const auto& event : track->GetEvents())

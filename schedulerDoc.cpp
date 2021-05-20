@@ -31,7 +31,7 @@
 #endif
 
 static constexpr uint32_t MAGIC = 0x3F3D72CB;
-static constexpr uint32_t VERSION = 2;
+static constexpr uint32_t VERSION = 3;
 
 // CSchedulerDoc
 
@@ -51,7 +51,10 @@ CSchedulerDoc::CSchedulerDoc() noexcept
 CSchedulerDoc::~CSchedulerDoc()
 {
 }
-
+int CSchedulerDoc::GetNextEventId()
+{
+	return nextEventId++;
+}
 BOOL CSchedulerDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
@@ -61,7 +64,6 @@ BOOL CSchedulerDoc::OnNewDocument()
 	// (SDI documents will reuse this document)
 	tracks.clear();
 	stockEvents.clear();
-	startTime = std::chrono::system_clock::now();
 	DYNAMIC_TIME_ZONE_INFORMATION timezoneInfo = { 0 };
 	auto tzInfo = GetDynamicTimeZoneInformation(&timezoneInfo);
 	utcOffsetMinutes = timezoneInfo.Bias;
@@ -86,6 +88,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 
 	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size() - 1);
 	std::uniform_int_distribution<int> event_count_distribution(0, 20);
+
 	for (int i = 0; i < 20; i++)
 	{
 		CString name(_T("Track: "));
@@ -94,7 +97,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 		int event_count = event_count_distribution(generator);
 		for (int j = 0; j < event_count; j++)
 		{
-			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get()));
+			events.emplace_back(std::make_unique<CScheduleEvent>(stockEvents.at(stock_distribution(generator)).get(),GetNextEventId(),i));
 		}
 
 		tracks.emplace_back(std::make_unique<CScheduleTrack>(i, name, std::move(events)));
@@ -140,19 +143,22 @@ void CSchedulerDoc::SetZoomLevel(float zoom, LPARAM lHint)
 
 std::chrono::system_clock::time_point CSchedulerDoc::GetStartTime() const
 {
-	return startTime;
+	std::chrono::system_clock::time_point min = std::chrono::system_clock::time_point::max();
+	for (const auto& track : tracks)
+	{
+		if (track->GetStartTime() < min)
+		{
+			min = track->GetStartTime();
+		}
+	}
+	return min;
 }
-void CSchedulerDoc::SetStartTime(const std::chrono::system_clock::time_point& time, LPARAM lHint)
-{
-	startTime = time;
-	SetModifiedFlag(TRUE);
-	UpdateAllViews(nullptr, lHint);
-}
+
 CScheduleTrack* CSchedulerDoc::GetTrack(int id) const
 {
 	auto it = std::find_if(tracks.begin(), tracks.end(), [id](const auto& track) {
 		return track->GetId() == id;
-		});
+	});
 	if (it == tracks.end()) return nullptr;
 	return it->get();
 }
@@ -190,7 +196,7 @@ void CSchedulerDoc::AddTrackEventAtIndex(int stockEventIndex, const CString& tra
 	});
 	if (trackIt != tracks.end())
 	{
-		(*trackIt)->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
+		(*trackIt)->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get(), GetNextEventId(), (*trackIt)->GetId()));
 	}
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
@@ -204,7 +210,7 @@ void CSchedulerDoc::AddTrackEvent(int stockEventIndex, const CString& trackName,
 	});
 	if (trackIt != tracks.end())
 	{
-		(*trackIt)->AddEvent(std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get()));
+		(*trackIt)->AddEvent(std::make_unique<CScheduleEvent>(stockEvents.at(stockEventIndex).get(), GetNextEventId(), (*trackIt)->GetId()));
 	}
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
@@ -215,19 +221,22 @@ void CSchedulerDoc::RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* 
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, -1);
 }
-CScheduleTrack* CSchedulerDoc::GetTrackAtIndex(int index) const
-{
-	if (index >= 0 && index < tracks.size())
-	{
-		return tracks.at(index).get();
-	}
-	return nullptr;
-}
+
 CScheduleStockEvent* CSchedulerDoc::GetStockEventAtIndex(int index) const
 {
 	if (index >= 0 && index < stockEvents.size())
 	{
 		return stockEvents.at(index).get();
+	}
+	return nullptr;
+}
+
+CScheduleEvent* CSchedulerDoc::GetEvent(int id) const
+{
+	for (const auto& track : tracks)
+	{
+		auto event = track->GetEvent(id);
+		if (event) return event;
 	}
 	return nullptr;
 }
@@ -263,26 +272,37 @@ void CSchedulerDoc::DeleteStockEvent(int index, LPARAM lHint)
 	UpdateAllViews(nullptr, lHint);
 }
 
-void CSchedulerDoc::DeleteTrack(int index, LPARAM lHint)
+CScheduleTrack* CSchedulerDoc::AddTrack(const CString& newName, LPARAM lHint)
 {
-	ASSERT(index >= 0 && index < tracks.size());
-	tracks.erase(tracks.begin() + index);
+	std::vector<CScheduleEventPtr> events;
+	auto maxIt = std::max_element(tracks.begin(), tracks.end(), [](const auto& tr1,const auto& tr2) -> bool {
+		return tr1->GetId() < tr2->GetId();
+	});
+	tracks.emplace_back(std::make_unique<CScheduleTrack>((*maxIt)->GetId()+1,newName,std::move(events),std::chrono::system_clock::now()));
+	return tracks.back().get();
+}
+
+void CSchedulerDoc::DeleteTrack(CScheduleTrack* track, LPARAM lHint)
+{
+	auto it = std::find_if(tracks.begin(), tracks.end(), [track](const auto& ev) {
+		return ev.get() == track;
+	});
+	if (it != tracks.end())
+	{
+		tracks.erase(it);
+		SetModifiedFlag(TRUE);
+		UpdateAllViews(nullptr, lHint);
+	}
+}
+void CSchedulerDoc::UpdateTrackStartTime(CScheduleTrack* track, const std::chrono::system_clock::time_point& time, LPARAM lHint)
+{
+	track->SetStartTime(time);
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
-
-void CSchedulerDoc::UpdateTrackName(int index, const CString& newName, LPARAM lHint)
+void CSchedulerDoc::UpdateTrackName(CScheduleTrack* track, const CString& newName, LPARAM lHint)
 {
-	ASSERT(index >= 0 && index < tracks.size() + 1);
-	if (index == tracks.size())
-	{
-		std::vector<CScheduleEventPtr> events;
-		tracks.emplace_back(std::make_unique<CScheduleTrack>(index, newName, std::move(events)));
-	}
-	else
-	{
-		tracks.at(index)->SetName(newName);
-	}
+	track->SetName(newName);
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
@@ -318,7 +338,6 @@ TRY
 		ar << MAGIC;
 		ar << VERSION;
 		ar << utcOffsetMinutes;
-		ar << startTime.time_since_epoch().count();
 		ar << stockEvents.size();
 		for (const auto& ev : stockEvents)
 		{
@@ -332,10 +351,12 @@ TRY
 		{
 			ar << tr->GetId();
 			ar << tr->GetName();
+			ar << tr->GetStartTime().time_since_epoch().count();
 			ar << tr->GetEvents().size();
 			for (const auto& ev : tr->GetEvents())
 			{
 				ar << ev->GetStockId();
+				ar << ev->GetId();
 			}
 		}
 		ar << timeScale;
@@ -358,8 +379,14 @@ TRY
 
 		int utcOffset;
 		ar >> utcOffset;
-		std::chrono::system_clock::time_point::duration::rep rep;
-		ar >> rep;		
+
+		//first 2 versions had the start time document wide
+		std::chrono::system_clock::time_point::duration::rep documentStartTime;
+		if (version < 3)
+		{
+			ar >> documentStartTime;
+		}
+
 		size_t stockEventsSize = 0;
 		ar >> stockEventsSize;
 
@@ -386,8 +413,17 @@ TRY
 			int id;
 			CString name;
 			size_t eventsSize = 0;
+			std::chrono::system_clock::time_point::duration::rep trackStartTime;
 			ar >> id;
 			ar >> name;
+			if (version >= 3)
+			{
+				ar >> trackStartTime;
+			}
+			else
+			{
+				trackStartTime = documentStartTime;
+			}
 			ar >> eventsSize;			
 			std::vector<CScheduleEventPtr> events;
 			for (size_t j = 0; j < eventsSize; j++)
@@ -397,14 +433,28 @@ TRY
 				auto it = std::find_if(newStockEvents.begin(), newStockEvents.end(), [stockId](const auto& ev) {
 					return ev->GetId() == stockId;
 				});
+				int eventId;
+				if (version >= 3)
+				{
+					ar >> eventId;
+					if (nextEventId < eventId)
+					{
+						nextEventId = eventId + 1;
+					}
+				}
+				else
+				{
+					eventId = GetNextEventId();
+				}
 				if (it == newStockEvents.end())
 				{
 					throw new CArchiveException(CArchiveException::badSchema, _T("The document is corrupted"));
 				}
 
-				events.emplace_back(std::make_unique<CScheduleEvent>(it->get()));
+				events.emplace_back(std::make_unique<CScheduleEvent>(it->get(),eventId,id));
 			}
-			newTracks.emplace_back(std::make_unique<CScheduleTrack>(id, name, std::move(events)));
+			newTracks.emplace_back(std::make_unique<CScheduleTrack>(id, name, std::move(events), 
+				std::chrono::system_clock::time_point(std::chrono::system_clock::time_point::duration(trackStartTime))));
 		}
 
 		if (version > 1)
@@ -415,7 +465,6 @@ TRY
 
 		tracks.clear();
 		stockEvents.clear();
-		startTime = std::chrono::system_clock::time_point(std::chrono::system_clock::time_point::duration(rep));
 		utcOffsetMinutes = utcOffset;
 		tracks = std::move(newTracks);
 		stockEvents = std::move(newStockEvents);

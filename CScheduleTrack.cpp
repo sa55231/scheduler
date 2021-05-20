@@ -4,8 +4,15 @@
 CScheduleTrack::CScheduleTrack():totalDuration(0), maxEventDuration(0)
 {}
 CScheduleTrack::CScheduleTrack(int id, CString name, std::vector<CScheduleEventPtr> events):
-	id(id),name(std::move(name)),events(std::move(events)), totalDuration(0), maxEventDuration(0)
+	id(id),name(std::move(name)),events(std::move(events)), totalDuration(0), maxEventDuration(0),
+	startTime(std::chrono::system_clock::now())
 {
+}
+CScheduleTrack::CScheduleTrack(int id, CString name, std::vector<CScheduleEventPtr> events, std::chrono::system_clock::time_point time):
+	id(id), name(std::move(name)), events(std::move(events)), totalDuration(0), maxEventDuration(0),
+	startTime(std::move(time))
+{
+
 }
 void CScheduleTrack::SetName(const CString& name)
 {
@@ -19,6 +26,15 @@ int CScheduleTrack::GetId() const
 {
 	return id;
 }
+std::chrono::system_clock::time_point CScheduleTrack::GetStartTime() const
+{
+	return startTime;
+}
+void CScheduleTrack::SetStartTime(const std::chrono::system_clock::time_point& time)
+{
+	startTime = time;
+}
+
 const std::vector<CScheduleEventPtr>& CScheduleTrack::GetEvents() const
 {
 	return events;
@@ -71,4 +87,15 @@ void CScheduleTrack::RemoveEvent(CScheduleEvent* event)
 void CScheduleTrack::RemoveAllEvents()
 {
 	events.clear();
+}
+CScheduleEvent* CScheduleTrack::GetEvent(int id) const
+{
+	auto it = std::find_if(events.begin(), events.end(), [id](const auto& ev) {
+		return ev->GetId() == id;
+	});
+	if (it != events.end())
+	{
+		return it->get();
+	}
+	return nullptr;
 }

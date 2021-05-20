@@ -17,6 +17,7 @@
 #include "MainFrm.h"
 #include "scheduler.h"
 #include "CScheduleEvent.h"
+#include "PropertyGridDateProperty.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -24,8 +25,26 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CResourceViewBar
+
+IMPLEMENT_DYNAMIC(CCustomPropertyGrid, CMFCPropertyGridCtrl)
+
+BEGIN_MESSAGE_MAP(CCustomPropertyGrid, CMFCPropertyGridCtrl)
+	ON_NOTIFY(DTN_DATETIMECHANGE, AFX_PROPLIST_ID_INPLACE, &CCustomPropertyGrid::OnTimeChange)
+END_MESSAGE_MAP()
+
+void CCustomPropertyGrid::OnTimeChange(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	ASSERT_VALID(this);
+
+	if (m_pSel == NULL)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	m_pSel->OnUpdateValue();
+//	EndEditItem();
+}
 
 CPropertiesWnd::CPropertiesWnd() noexcept
 {
@@ -43,7 +62,9 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CViewDockingPane)
 	ON_WM_SIZE()
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
+	ON_MESSAGE(WM_STOCK_EVENT_OBJECT_SELECTED, OnStockEventObjectSelected)
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
+	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, OnTrackObjectSelected)
 	ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
 END_MESSAGE_MAP()
 
@@ -183,10 +204,64 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
 	}
 		break;
+	case IDTrackName:
+	{
+		CString newName = (LPCTSTR)(_bstr_t)property->GetValue();
+		if (track)
+		{
+			GetDocument()->UpdateTrackName(track, newName, (LPARAM)this);
+		}
+	}
+		break;
+	case IDTrackStartTime:
+		[[fallthrough]];
+	case IDTrackStartDate:
+	{
+		auto trackPropertyGroup = m_wndPropList.GetProperty(0);		
+		CPropertyGridDateProperty* dateProperty = (CPropertyGridDateProperty*)trackPropertyGroup->GetSubItem(1);
+		CPropertyGridDateProperty* timeProperty = (CPropertyGridDateProperty*)trackPropertyGroup->GetSubItem(2);
+		auto date = dateProperty->GetTime();
+		auto time = timeProperty->GetTime();
+		if (track)
+		{
+			auto hour = std::chrono::hours(time.GetHour());
+			auto minute = std::chrono::minutes(time.GetMinute());
+			auto seconds = std::chrono::seconds(time.GetSecond());
+			auto year = date.GetYear();
+			auto month = date.GetMonth();
+			auto day = date.GetDay();
+			std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
+			auto local_time = date::make_time(hour + minute + seconds);
+			auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
+			std::chrono::system_clock::time_point tp(((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
+
+			GetDocument()->UpdateTrackStartTime(track, tp,(LPARAM)this);
+		}
+	}
+	break;
 	}
 	return (LRESULT)TRUE;
 }
 
+void CPropertiesWnd::SetupTrackPropertyControls(CScheduleTrack* track)
+{
+	auto trackPropertyGroup = new CMFCPropertyGridProperty(_T("Track"));
+	auto trackNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)track->GetName(), 
+		_T("Specifies the name of the track"), IDTrackName);
+	trackPropertyGroup->AddSubItem(trackNameProperty);
+	std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
+	COleDateTime time((__time64_t)std::chrono::duration_cast<std::chrono::seconds>(track->GetStartTime().time_since_epoch()).count());
+	ASSERT(time.GetStatus() == COleDateTime::valid);
+	auto trackStartDateProperty = new CPropertyGridDateProperty(_T("Start Date"), time,
+		_T("Specifies the start date of the track"), IDTrackStartDate, false);
+	trackPropertyGroup->AddSubItem(trackStartDateProperty);
+	auto trackStartTimeProperty = new CPropertyGridDateProperty(_T("Start Time"), time,
+		_T("Specifies the start time of the track"), IDTrackStartTime, true);
+	trackPropertyGroup->AddSubItem(trackStartTimeProperty);
+
+	m_wndPropList.AddProperty(trackPropertyGroup);
+	m_wndPropList.ExpandAll();
+}
 void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
 {	
 	D2D1::ColorF color(event->GetColor());
@@ -225,8 +300,6 @@ void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
 	eventPropertyGroup->AddSubItem(eventDurationPropertyGroup);
 
 	m_wndPropList.AddProperty(eventPropertyGroup);
-	
-
 	m_wndPropList.ExpandAll();
 }
 
@@ -351,10 +424,43 @@ LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndPropList.RemoveAll();
 	m_wndPropList.RedrawWindow();
+
+	int eventId = (int)wparam;
+	auto scheduledEvent = GetDocument()->GetEvent(eventId);
+	if (!scheduledEvent) return 0;
+	event = GetDocument()->GetStockEvent(scheduledEvent->GetStockId());
+	track = nullptr;
+
+	SetupEventPropertyControls(event);
+
+	return 0;
+}
+
+
+LRESULT CPropertiesWnd::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	m_wndPropList.RemoveAll();
+	m_wndPropList.RedrawWindow();
+
+	int trackId = (int)wparam;
+	track = GetDocument()->GetTrack(trackId);
+	if (!track) return 0;
+	event = nullptr;
+
+	SetupTrackPropertyControls(track);
+
+	return 0;
+}
+
+afx_msg LRESULT CPropertiesWnd::OnStockEventObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	m_wndPropList.RemoveAll();
+	m_wndPropList.RedrawWindow();
 	int eventId = (int)wparam;
 	event = GetDocument()->GetStockEvent(eventId);
 	if (!event) return 0;
-	
+	track = nullptr;
+
 	SetupEventPropertyControls(event);
 
 	return 0;

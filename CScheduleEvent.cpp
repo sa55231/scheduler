@@ -1,11 +1,18 @@
 #include "pch.h"
 #include "CScheduleEvent.h"
 
-CScheduleEvent::CScheduleEvent(CScheduleStockEvent* eventSource):
-	stockEvent(eventSource)
+CScheduleEvent::CScheduleEvent(CScheduleStockEvent* eventSource,int id, int trackId):
+	stockEvent(eventSource),id(id),trackId(trackId)
 {
 }
-
+int CScheduleEvent::GetTrackId() const
+{
+	return trackId;
+}
+int CScheduleEvent::GetId() const
+{
+	return id;
+}
 int CScheduleEvent::GetStockId() const
 {
 	return stockEvent->GetId();

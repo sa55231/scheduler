@@ -23,20 +23,25 @@ public:
 	int GetUTCOffsetMinutes() const;
 	void SetUTCOffsetMinutes(int offset, LPARAM lHint);
 	std::chrono::system_clock::time_point GetStartTime() const;
-	void SetStartTime(const std::chrono::system_clock::time_point& time, LPARAM lHint);
 	const std::vector<CScheduleTrackPtr>& GetTracks() const;
 	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
 	void UpdateStockEventName(int index, const CString& newName, LPARAM lHint);
-	void UpdateTrackName(int index, const CString& newName, LPARAM lHint);
+	CScheduleTrack* AddTrack(const CString& newName, LPARAM lHint);
+	void UpdateTrackName(CScheduleTrack* track, const CString& newName, LPARAM lHint);
+	void UpdateTrackStartTime(CScheduleTrack* track, const std::chrono::system_clock::time_point& time, LPARAM lHint);
+	void DeleteTrack(CScheduleTrack* track, LPARAM lHint);
+
 	void DeleteStockEvent(int index, LPARAM lHint);
-	void DeleteTrack(int index, LPARAM lHint);
+	
 	int GetStockEventIndex(int id) const;
 	CScheduleTrack* GetTrack(int id) const;
+	CScheduleEvent* GetEvent(int id) const;
 	CScheduleStockEvent* GetStockEvent(int id) const;
 	CScheduleStockEvent* GetStockEventAtIndex(int index) const;
-	CScheduleTrack* GetTrackAtIndex(int index) const;
+
 	void AddTrackEventAtIndex(int stockEventIndex, const CString& trackName, int index, LPARAM lHint);
 	void AddTrackEvent(int stockEventIndex, const CString& trackName, LPARAM lHint);
+
 	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);
 	bool AreScheduledEvents() const;
 	void RemoveAllScheduledEvents();
@@ -44,6 +49,7 @@ public:
 	void SetTimeScale(double scale, LPARAM lHint);
 	float GetZoomLevel() const;
 	void SetZoomLevel(float zoom, LPARAM lHint);
+	int GetNextEventId();
 // Operations
 public:
 
@@ -70,13 +76,14 @@ protected:
 private:
 	std::vector<CScheduleTrackPtr> tracks;
 	std::vector<CScheduleStockEventPtr> stockEvents;
-	std::chrono::system_clock::time_point startTime;
+	
 	int utcOffsetMinutes = 0;
 	std::default_random_engine generator;
 	std::uniform_int_distribution<int> color_distribution{ 0x0000FF, 0xCCCCFF };
 	//how many seconds are per pixel displayed
 	double timeScale = 60.0;
 	float zoomLevel = 1.f;
+	int nextEventId = 0;
 
 // Generated message map functions
 protected:

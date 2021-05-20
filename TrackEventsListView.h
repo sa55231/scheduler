@@ -28,6 +28,7 @@ public:
 protected:
 	virtual void OnInitialUpdate();
 	virtual void OnUpdate(const LPARAM lHint);
+	void FillEventsList(CScheduleTrack* track);
 protected:
 	CListCtrl m_wndEventsList;
 	CImageList m_TrackEventsListImages;
@@ -42,6 +43,7 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnPaint();
 	afx_msg LRESULT OnTrackObjectSelected(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnEventObjectSelected(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI);
 	afx_msg void OnExportToCSV();
 	DECLARE_MESSAGE_MAP()

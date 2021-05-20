@@ -23,6 +23,8 @@ class CTracksToolBar : public CMFCToolBar
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
+
+
 class CTracksView : public CViewDockingPane
 {
 	DECLARE_DYNAMIC(CTracksView)
@@ -65,7 +67,7 @@ protected:
 	afx_msg void OnUpdateAddTrackCommand(CCmdUI* pCmdUI);
 	afx_msg void OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LRESULT OnTrackObjectSelected(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnTrackListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnTrackListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);	
 	DECLARE_MESSAGE_MAP()
 };
 

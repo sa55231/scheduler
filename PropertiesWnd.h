@@ -16,6 +16,16 @@
 
 #include <chrono>
 
+
+class CCustomPropertyGrid : public CMFCPropertyGridCtrl
+{
+	DECLARE_DYNAMIC(CCustomPropertyGrid)
+
+protected:
+	afx_msg void OnTimeChange(NMHDR* pNMHDR, LRESULT* pResult);
+	DECLARE_MESSAGE_MAP()
+};
+
 class CPropertiesWnd : public CViewDockingPane
 {
 	DECLARE_DYNAMIC(CPropertiesWnd)
@@ -38,7 +48,7 @@ protected:
 
 protected:
 	CFont m_fntPropList;
-	CMFCPropertyGridCtrl m_wndPropList;
+	CCustomPropertyGrid m_wndPropList;
 	enum PropertyControlsID
 	{
 		IDEventName = 0,
@@ -48,6 +58,9 @@ protected:
 		IDEventDurationHours,
 		IDEventDurationMinutes,
 		IDEventDurationSeconds,
+		IDTrackName,
+		IDTrackStartDate,
+		IDTrackStartTime
 	};
 // Implementation
 public:
@@ -59,17 +72,21 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
+	afx_msg LRESULT OnTrackObjectSelected(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnPropertyChanged(WPARAM wparam, LPARAM lparam);
+	afx_msg LRESULT OnStockEventObjectSelected(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
 private:
 	void InitPropList();
 	void SetPropListFont();
 	void SetupEventPropertyControls(CScheduleStockEvent* event);
+	void SetupTrackPropertyControls(CScheduleTrack* event);
 	std::chrono::seconds GetDurationFromPropertyParent(CMFCPropertyGridProperty* property);
 
 private:
 	CScheduleStockEvent* event = nullptr;
+	CScheduleTrack* track = nullptr;
 	int m_nComboHeight;
 };
 

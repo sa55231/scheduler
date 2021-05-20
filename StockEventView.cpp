@@ -285,6 +285,7 @@ void CStockEventView::OnRemoveEvent()
 			GetDocument()->DeleteStockEvent(index, reinterpret_cast<LPARAM>(this));
 			m_wndEventListView.DeleteItem(index);
 			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, (WPARAM)-1, (LPARAM)this);
+			AfxGetMainWnd()->PostMessage(WM_STOCK_EVENT_OBJECT_SELECTED, (WPARAM)-1, (LPARAM)this);
 		}		
 	}
 }
@@ -327,7 +328,7 @@ void CStockEventView::OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 			{
 				eventIdParam = (WPARAM)event->GetId();
 			}
-			AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
+			AfxGetMainWnd()->PostMessage(WM_STOCK_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
 		}
 		else
 		{
@@ -351,7 +352,10 @@ LRESULT CStockEventView::OnEventObjectSelected(WPARAM wParam, LPARAM lParam)
 	}
 
 	int eventId = (int)wParam;
-	int index = GetDocument()->GetStockEventIndex(eventId);
+	auto scheduledEvent = GetDocument()->GetEvent(eventId);
+	if (!scheduledEvent) return (LRESULT)FALSE;
+
+	int index = GetDocument()->GetStockEventIndex(scheduledEvent->GetStockId());
 	if (index >= 0 && index < m_wndEventListView.GetItemCount())
 	{
 		updatingEventsSelection = true;

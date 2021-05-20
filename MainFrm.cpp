@@ -47,14 +47,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, &CMainFrame::OnEventObjectSelected)
 	ON_MESSAGE(WM_TRACK_OBJECT_SELECTED, &CMainFrame::OnTrackObjectSelected)
+	ON_MESSAGE(WM_STOCK_EVENT_OBJECT_SELECTED, &CMainFrame::OnStockEventObjectSelected)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
-	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START_DATE, &CMainFrame::OnUpdateSetStartDate)
-	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_START_TIME, &CMainFrame::OnUpdateSetStartTime)
 	ON_UPDATE_COMMAND_UI(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnUpdateSetUTCOffset)
 	ON_MESSAGE(WM_DOCUMENT_LOADED, &CMainFrame::OnDocumentLoaded)
-	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_DATE, &CMainFrame::OnStartTimeChange)
-	ON_NOTIFY(DTN_DATETIMECHANGE, ID_DOCUMENT_SETTINGS_START_TIME, &CMainFrame::OnStartTimeChange)
 	ON_COMMAND(ID_DOCUMENT_SETTINGS_UTC_OFFFSET, &CMainFrame::OnSetUTCOffset)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnUpdateRemoveAllEvents)
 	ON_COMMAND(ID_REMOVE_ALL_EVENTS_BUTTON, &CMainFrame::OnRemoveAllEvents)
@@ -151,16 +148,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 
 	auto homeCategory = m_wndRibbonBar.GetCategory(1);
-	CMFCRibbonPanel* documentTimePanel = homeCategory->AddPanel(_T("Start Time\nzc"));
-	auto startDateButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START_DATE, _T("Start date:"));
-	auto startTimeButton = new CRibbonDateTimeControl(ID_DOCUMENT_SETTINGS_START_TIME, _T("Start time:"), true);
+	CMFCRibbonPanel* documentTimePanel = homeCategory->AddPanel(_T("Time\nzc"));
 	auto utcOffsetsCombo = new CMFCRibbonComboBox(ID_DOCUMENT_SETTINGS_UTC_OFFFSET,FALSE,-1,_T("UTC Offset:"));
 	for (const auto& offset : utcOffsets)
 	{
 		utcOffsetsCombo->AddItem(offset.first,(DWORD_PTR)&offset.second);
 	}
-	documentTimePanel->Add(startDateButton);
-	documentTimePanel->Add(startTimeButton);
 	documentTimePanel->Add(utcOffsetsCombo);
 	
 	if (!m_wndStatusBar.Create(this))
@@ -559,11 +552,16 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CFrameWndEx::OnSettingChange(uFlags, lpszSection);
 }
-
+LRESULT CMainFrame::OnStockEventObjectSelected(WPARAM wparam, LPARAM lparam)
+{
+	m_wndProperties.PostMessage(WM_STOCK_EVENT_OBJECT_SELECTED, wparam, lparam);
+	return 0;
+}
 LRESULT CMainFrame::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndProperties.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
 	m_wndStockEventView.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
+	m_wndTrackEventsListView.PostMessage(WM_EVENT_OBJECT_SELECTED, wparam, lparam);
 	return 0;
 }
 
@@ -571,17 +569,10 @@ LRESULT CMainFrame::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 {
 	m_wndTrackEventsListView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
 	m_wndTracksView.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
+	m_wndProperties.PostMessage(WM_TRACK_OBJECT_SELECTED, wparam, lparam);
 	return 0;
 }
 
-void CMainFrame::OnUpdateSetStartTime(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable();
-}
-void CMainFrame::OnUpdateSetStartDate(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable();
-}
 void CMainFrame::OnUpdateSetUTCOffset(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable();
@@ -603,14 +594,8 @@ LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 
 	auto utcOffset  = pDoc->GetUTCOffsetMinutes();
 	auto startTime = pDoc->GetStartTime();
-	CTime time(std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()).count());
-
-	CRibbonDateTimeControl* startDateButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_DATE));
-	CRibbonDateTimeControl* startTimeButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_TIME));
 	CMFCRibbonComboBox* utcOffsetsCombo = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_UTC_OFFFSET));
 
-	startDateButton->SetTime(time);
-	startTimeButton->SetTime(time);
 	for (int i = 0; i < utcOffsets.size(); ++i)
 	{
 		if (utcOffsets.at(i).second == utcOffset)
@@ -634,7 +619,8 @@ void CMainFrame::OnSetUTCOffset()
 	auto data = (int*)utcOffsetsCombo->GetItemData(utcOffsetsCombo->GetCurSel());
 	pDoc->SetUTCOffsetMinutes(*data, 0);
 }
-void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
+
+/*void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
 {
 	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
 	ASSERT_VALID(pDoc);
@@ -656,7 +642,7 @@ void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
 	auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
 	std::chrono::system_clock::time_point tp (((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
 	pDoc->SetStartTime(tp,0);
-}
+}*/
 
 void CMainFrame::OnRemoveAllEvents()
 {

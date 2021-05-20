@@ -82,16 +82,14 @@ protected:
 	afx_msg void OnFilePrintPreview();
 	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg LRESULT OnStockEventObjectSelected(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnTrackObjectSelected(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnDocumentLoaded(WPARAM wparam, LPARAM lparam);
-	afx_msg void OnUpdateSetStartTime(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateSetStartDate(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateSetUTCOffset(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateRemoveAllEvents(CCmdUI* pCmdUI);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg void OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnSetUTCOffset();
 	afx_msg void OnRemoveAllEvents();
 	afx_msg void OnUpdateTimescaleSlider(CCmdUI* pCmdUI);
