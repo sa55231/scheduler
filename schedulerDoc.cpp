@@ -204,31 +204,19 @@ void CSchedulerDoc::RemoveAllScheduledEvents()
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, -1);
 }
-void CSchedulerDoc::AddTrackEventAtIndex(int stockEventId, const CString& trackName, int index, LPARAM lHint)
+void CSchedulerDoc::AddTrackEventAtIndex(int stockEventId, CScheduleTrack* track, int index, LPARAM lHint)
 {	
 	auto stockEvent = GetStockEvent(stockEventId);
 
-	auto trackIt = std::find_if(tracks.begin(), tracks.end(), [trackName](const auto& track) {
-		return track->GetName() == trackName;
-	});
-	if (trackIt != tracks.end())
-	{
-		(*trackIt)->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), (*trackIt)->GetId()));
-	}
+	track->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), track->GetId()));
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
-void CSchedulerDoc::AddTrackEvent(int stockEventId, const CString& trackName, LPARAM lHint)
+void CSchedulerDoc::AddTrackEvent(int stockEventId, CScheduleTrack* track, LPARAM lHint)
 {
 	auto stockEvent = GetStockEvent(stockEventId);
 
-	auto trackIt = std::find_if(tracks.begin(), tracks.end(), [trackName](const auto& track) {
-		return track->GetName() == trackName;
-	});
-	if (trackIt != tracks.end())
-	{
-		(*trackIt)->AddEvent(std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), (*trackIt)->GetId()));
-	}
+	track->AddEvent(std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), track->GetId()));
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
@@ -296,10 +284,16 @@ CScheduleStockEvent* CSchedulerDoc::AddEvent(const CString& newName, LPARAM lHin
 	auto maxIt = std::max_element(stockEvents.begin(), stockEvents.end(), [](const auto& tr1, const auto& tr2) -> bool {
 		return tr1->GetId() < tr2->GetId();
 		});
-
+	int id = 0;
+	if (maxIt != stockEvents.end())
+	{
+		id = (*maxIt)->GetId() + 1;
+	}
 	std::chrono::seconds duration(3600);
-	stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>((*maxIt)->GetId() + 1, newName, std::move(duration), color_distribution(generator)));
-	
+	stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, newName, std::move(duration), color_distribution(generator)));
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+
 	return stockEvents.back().get();
 }
 CScheduleTrack* CSchedulerDoc::AddTrack(const CString& newName, LPARAM lHint)
@@ -308,7 +302,14 @@ CScheduleTrack* CSchedulerDoc::AddTrack(const CString& newName, LPARAM lHint)
 	auto maxIt = std::max_element(tracks.begin(), tracks.end(), [](const auto& tr1,const auto& tr2) -> bool {
 		return tr1->GetId() < tr2->GetId();
 	});
-	tracks.emplace_back(std::make_unique<CScheduleTrack>((*maxIt)->GetId()+1,newName,std::move(events),std::chrono::system_clock::now()));
+	int id = 0;
+	if (maxIt != tracks.end())
+	{
+		id = (*maxIt)->GetId() + 1;
+	}
+	tracks.emplace_back(std::make_unique<CScheduleTrack>(id,newName,std::move(events),std::chrono::system_clock::now()));
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
 	return tracks.back().get();
 }
 

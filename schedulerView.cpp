@@ -484,18 +484,18 @@ void CSchedulerView::AddEventAtPoint(int stockEventId, CPoint point)
 		if (event != nullptr)
 		{
 			int index = track->GetEventRenderIndex(event);
-			pDoc->AddTrackEventAtIndex(stockEventId,track->GetName(),index, reinterpret_cast<LPARAM>(this));
+			pDoc->AddTrackEventAtIndex(stockEventId,track->GetTrack(),index, reinterpret_cast<LPARAM>(this));
 		}
 		else
 		{
 			auto trackLabelBounds = track->GetTrackLabelBounds();
 			if (point.x >= trackLabelBounds.left && point.x <= trackLabelBounds.right)
 			{
-				pDoc->AddTrackEventAtIndex(stockEventId, track->GetName(), 0, reinterpret_cast<LPARAM>(this));
+				pDoc->AddTrackEventAtIndex(stockEventId, track->GetTrack(), 0, reinterpret_cast<LPARAM>(this));
 			}
 			else
 			{
-				pDoc->AddTrackEvent(stockEventId, track->GetName(), reinterpret_cast<LPARAM>(this));
+				pDoc->AddTrackEvent(stockEventId, track->GetTrack(), reinterpret_cast<LPARAM>(this));
 			}
 		}
 	}

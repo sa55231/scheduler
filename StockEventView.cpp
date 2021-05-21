@@ -162,7 +162,11 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			CScheduleStockEvent* event = GetDocument()->AddEvent(listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
 			eventIdParam = (WPARAM)event->GetId();
 			m_wndEventListView.SetItemData(listInfo->item.iItem, (LPARAM)event);
-
+			CString color;
+			color.Format(_T("%x"), event->GetColor());
+			auto duration = FormatDuration(event->GetDuration());
+			m_wndEventListView.SetItem(listInfo->item.iItem, 1, LVIF_TEXT, duration, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(listInfo->item.iItem, 2, LVIF_TEXT, color, 0, 0, 0, 0);
 		}
 		else
 		{
@@ -171,7 +175,7 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			GetDocument()->UpdateStockEventName(event, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
 
 		}		
-		AfxGetMainWnd()->PostMessage(WM_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
+		AfxGetMainWnd()->PostMessage(WM_STOCK_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
 	}
 	else
 	{
@@ -346,7 +350,13 @@ void CStockEventView::OnAddEvent()
 {
 	int index = m_wndEventListView.GetItemCount();
 	CString newEventName(_T("New Event"));
-	m_wndEventListView.InsertItem(index, newEventName, 0);
+	auto insertedIndex = m_wndEventListView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index, newEventName, 0, 0, 0, 0);
+	CString color;
+	color.Format(_T("%x"), 0);
+	auto duration = FormatDuration(std::chrono::seconds(3600));
+	m_wndEventListView.SetItem(insertedIndex, 1, LVIF_TEXT, duration, 0, 0, 0, 0);
+	m_wndEventListView.SetItem(insertedIndex, 2, LVIF_TEXT, color, 0, 0, 0, 0);
+
 	addingItemIndex = index;
 	auto editControl = m_wndEventListView.EditLabel(index);
 	if (editControl)

@@ -39,8 +39,8 @@ public:
 	void SortStockEvents(int sortedColumn, bool sortAscending);
 	//CScheduleStockEvent* GetStockEventAtIndex(int index) const;
 
-	void AddTrackEventAtIndex(int stockEventId, const CString& trackName, int index, LPARAM lHint);
-	void AddTrackEvent(int stockEventId, const CString& trackName, LPARAM lHint);
+	void AddTrackEventAtIndex(int stockEventId, CScheduleTrack* track, int index, LPARAM lHint);
+	void AddTrackEvent(int stockEventId, CScheduleTrack* track, LPARAM lHint);
 
 	void RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event);
 	bool AreScheduledEvents() const;
