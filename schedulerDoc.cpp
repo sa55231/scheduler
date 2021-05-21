@@ -77,7 +77,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 	}
 	
 #ifdef _DEBUG
-	std::uniform_int_distribution<int> duration_distribution(60, 5 * 3600);
+	std::uniform_int_distribution<int> duration_distribution(2*3600, 20 * 3600);
 	for (int i = 0; i < 20; i++)
 	{
 		CString name;
@@ -289,7 +289,7 @@ CScheduleStockEvent* CSchedulerDoc::AddEvent(const CString& newName, LPARAM lHin
 	{
 		id = (*maxIt)->GetId() + 1;
 	}
-	std::chrono::seconds duration(3600);
+	std::chrono::seconds duration(2*3600);
 	stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, newName, std::move(duration), color_distribution(generator)));
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);

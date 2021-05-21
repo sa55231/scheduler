@@ -593,7 +593,7 @@
                 <STYLE>0</STYLE>
                 <WIDTH>100</WIDTH>
                 <MIN>1</MIN>
-                <MAX>420</MAX>
+                <MAX>1000</MAX>
                 <POS>60</POS>
                 <ZOOM_BUTTONS>TRUE</ZOOM_BUTTONS>
               </ELEMENT>
