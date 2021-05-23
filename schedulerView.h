@@ -38,6 +38,7 @@ protected:
 	virtual void OnInitialUpdate(); // called first time after construct
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	afx_msg void OnSize(UINT nType,int cx,int cy);
 // Implementation
@@ -50,12 +51,30 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
+	CBitmap* GetPrintingBitmap() const;
 protected:
 	void HandleEventSelection(CPoint point);
 	void UpdateRendererLayout(CSchedulerDoc* pDoc);
 	void CreateEventDraggingImageList();
-	CBitmap* ConvertIconToBitmap(HICON hIcon);
+	struct PrintingMetrics
+	{
+		int pageSizeX = 0;
+		int pageSizeY = 0;
+		int ppiX = 0;
+		int ppiY = 0;
+		float ratioX = 0.f;
+		float ratioY = 0.f;
+		float totalPrintingWidth = 0.f;
+		float totalPrintingHeight = 0.f;
+		int pagesCountPerWidth = 0;
+		int pagesCountPerHeight = 0;
+		int maxPages = 0;
+		float dipsPerPageWidth = 0.f;
+		float dipsPerPageHeight = 0.f;
+		D2D1_SIZE_F bitmapsDpi;
+	};
+
+	PrintingMetrics ComputeDCMetrics(CDC* pDC, D2D1_SIZE_F dpi);
 private:
 	CSchedulerDocumentRenderer docRenderer;
 	FLOAT dpiX = 0.f;
@@ -71,6 +90,10 @@ private:
 	CImageList* eventDraggingImageList = nullptr;
 	CImageList contextMenuImageList;
 	CBitmap removeSelectedEventBitmap;
+	CBitmap* printingBitmap = nullptr;
+	D2D1_SIZE_F renderingDipSize = {0,0};
+
+	PrintingMetrics printingMetrics;
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()

@@ -73,7 +73,7 @@ D2D1_RECT_F CTrackRenderer::GetTrackLabelBounds() const
 	return trackLabelBounds;
 }
 
-void CTrackRenderer::Render(CHwndRenderTarget* renderTarget)
+void CTrackRenderer::Render(CRenderTarget* renderTarget)
 {	
 	if (track == nullptr) return;
 	if (!renderTarget->IsValid()) return;

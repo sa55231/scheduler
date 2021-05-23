@@ -620,30 +620,6 @@ void CMainFrame::OnSetUTCOffset()
 	pDoc->SetUTCOffsetMinutes(*data, 0);
 }
 
-/*void CMainFrame::OnStartTimeChange(NMHDR* pNotifyStruct, LRESULT* pResult)
-{
-	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
-	ASSERT_VALID(pDoc);
-	if (!pDoc) return;
-	CRibbonDateTimeControl* startDateButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_DATE));
-	CRibbonDateTimeControl* startTimeButton = DYNAMIC_DOWNCAST(CRibbonDateTimeControl, GetRibbonBar()->FindByID(ID_DOCUMENT_SETTINGS_START_TIME));
-
-	auto date = startDateButton->GetTime();
-	auto time = startTimeButton->GetTime();
-	auto hour = std::chrono::hours(time.GetHour());
-	auto minute = std::chrono::minutes(time.GetMinute());
-	auto seconds = std::chrono::seconds(time.GetSecond());
-	auto year = date.GetYear();
-	auto month = date.GetMonth();
-	auto day = date.GetDay();
-
-	std::chrono::minutes utcOffset(pDoc->GetUTCOffsetMinutes());
-	auto local_time = date::make_time(hour+minute+seconds);
-	auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
-	std::chrono::system_clock::time_point tp (((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
-	pDoc->SetStartTime(tp,0);
-}*/
-
 void CMainFrame::OnRemoveAllEvents()
 {
 	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());

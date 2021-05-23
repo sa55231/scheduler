@@ -16,7 +16,7 @@ CSchedulerDocumentRenderer::CSchedulerDocumentRenderer() : zoomLevel(D2D1::SizeF
 	
 }
 
-D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CHwndRenderTarget* renderTarget, 
+D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CRenderTarget* renderTarget,
 	IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	CreateD2D1Resources(renderTarget, directWriteFactory,factory);
@@ -125,7 +125,7 @@ D2D1_COLOR_F CSchedulerDocumentRenderer::GetEventForegroundColor() const
 	return D2D1::ColorF(0.f,0.f,0.f);
 }
 
-void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
+void CSchedulerDocumentRenderer::CreateD2D1Resources(CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
 	if (!trackTextFormat)
 	{
@@ -210,7 +210,7 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CHwndRenderTarget* renderTa
 	resourcesCreated = true;
 }
 
-void CSchedulerDocumentRenderer::Render(CHwndRenderTarget* renderTarget, const D2D1_POINT_2F& scrollPosition)
+void CSchedulerDocumentRenderer::Render(CRenderTarget* renderTarget, const D2D1_POINT_2F& scrollPosition)
 {	
 	if (renderTarget && renderTarget->IsValid() && resourcesCreated)
 	{		

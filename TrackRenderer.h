@@ -12,7 +12,7 @@ public:
 	CTrackRenderer(CScheduleTrack* track, 
 		CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, 
 		CD2DSolidColorBrush* foregroundColorBrush, ID2D1StrokeStyle* dropTargetStrokeStyle);
-	void Render(CHwndRenderTarget* renderTarget);
+	void Render(CRenderTarget* renderTarget);
 	void SetTrackLabelBounds(D2D1_RECT_F& rect);
 	D2D1_RECT_F GetTrackLabelBounds() const;
 	void SetTrackBounds(D2D1_RECT_F& rect);

@@ -11,16 +11,16 @@ class CSchedulerDocumentRenderer
 {
 public:
 	CSchedulerDocumentRenderer();
-	void Render(CHwndRenderTarget* renderTarget, const D2D1_POINT_2F& scrollPosition);
+	void Render(CRenderTarget* renderTarget, const D2D1_POINT_2F& scrollPosition);
 	void Resize(int cx, int cy);
-	D2D1_SIZE_F UpdateLayout(CSchedulerDoc* doc, CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, 
+	D2D1_SIZE_F UpdateLayout(CSchedulerDoc* doc, CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory,
 		ID2D1Factory* factory);
 	D2D1_SIZE_F GetZoomLevel() const;
 	//CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point);
 	CTrackRenderer* GetTrackAtPoint(const D2D1_POINT_2F& point);
 	D2D1_COLOR_F GetEventForegroundColor() const;
 private:	
-	void CreateD2D1Resources(CHwndRenderTarget* renderTarget, IDWriteFactory* directWriteFactory ,ID2D1Factory* factory);
+	void CreateD2D1Resources(CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory ,ID2D1Factory* factory);
 	template <typename T> using Line = std::pair<T, T>;
 	template<typename T>
 	constexpr Line<T> makeLine(T t1, T t2) noexcept
