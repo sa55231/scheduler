@@ -37,6 +37,7 @@ public:
 	CScheduleEvent* GetEvent(int id) const;
 	CScheduleStockEvent* GetStockEvent(int id) const;
 	void SortStockEvents(int sortedColumn, bool sortAscending);
+	size_t GetScheduledEventsCount() const;
 	//CScheduleStockEvent* GetStockEventAtIndex(int index) const;
 
 	void AddTrackEventAtIndex(int stockEventId, CScheduleTrack* track, int index, LPARAM lHint);
@@ -50,7 +51,13 @@ public:
 	float GetZoomLevel() const;
 	void SetZoomLevel(float zoom, LPARAM lHint);
 	int GetNextEventId();
-// Operations
+	void SetEventsFont(LOGFONT font, LPARAM lHint);
+	LOGFONT GetEventsFont() const;
+	void SetTracksFont(LOGFONT font, LPARAM lHint);
+	LOGFONT GetTracksFont() const;
+	void SetHeadersFont(LOGFONT font, LPARAM lHint);
+	LOGFONT GetHeadersFont() const;
+	// Operations
 public:
 
 // Overrides
@@ -84,6 +91,9 @@ private:
 	double timeScale = 300;
 	float zoomLevel = 1.f;
 	int nextEventId = 0;
+	LOGFONT eventsFont = { 0 };
+	LOGFONT tracksFont = { 0 };
+	LOGFONT headersFont = { 0 };
 
 // Generated message map functions
 protected:

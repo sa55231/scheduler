@@ -31,7 +31,7 @@
 #endif
 
 static constexpr uint32_t MAGIC = 0x3F3D72CB;
-static constexpr uint32_t VERSION = 3;
+static constexpr uint32_t VERSION = 4;
 
 // CSchedulerDoc
 
@@ -75,6 +75,62 @@ BOOL CSchedulerDoc::OnNewDocument()
 	{
 		utcOffsetMinutes += timezoneInfo.StandardBias;
 	}
+
+	{
+		LOGFONT* font;
+		UINT length;
+		if (theApp.GetProfileBinary(_T("Settings"), _T("DefaultEventsFont"), (BYTE**)&font, &length))
+		{
+			eventsFont = *font;
+			delete font;
+		}
+		else
+		{
+			LOGFONT font = { 0 };
+			font.lfHeight = -20;
+			font.lfWeight = FW_NORMAL;
+			_tcscpy_s(font.lfFaceName, _T("Times New Roman"));
+			eventsFont = font;
+		}
+	}
+
+	{
+		LOGFONT* font;
+		UINT length;
+		if (theApp.GetProfileBinary(_T("Settings"), _T("DefaultTracksFont"), (BYTE**)&font, &length))
+		{
+			tracksFont = *font;
+			delete font;
+		}
+		else
+		{
+			LOGFONT font = { 0 };
+			font.lfHeight = -20;
+			font.lfWeight = FW_NORMAL;
+			_tcscpy_s(font.lfFaceName, _T("Times New Roman"));
+			tracksFont = font;
+		}
+	}
+
+	{
+		LOGFONT* font;
+		UINT length;
+		if (theApp.GetProfileBinary(_T("Settings"), _T("DefaultHeadersFont"), (BYTE**)&font, &length))
+		{
+			headersFont = *font;
+			delete font;
+		}
+		else
+		{
+			LOGFONT font = { 0 };
+			font.lfHeight = -17;
+			font.lfWeight = FW_NORMAL;
+			_tcscpy_s(font.lfFaceName, _T("Times New Roman"));
+			headersFont = font;
+		}
+	}
+
+
 	
 #ifdef _DEBUG
 	std::uniform_int_distribution<int> duration_distribution(2*3600, 20 * 3600);
@@ -169,6 +225,15 @@ const std::vector<CScheduleTrackPtr>& CSchedulerDoc::GetTracks() const
 const std::vector<CScheduleStockEventPtr>& CSchedulerDoc::GetStockEvents() const
 {
 	return stockEvents;
+}
+size_t CSchedulerDoc::GetScheduledEventsCount() const
+{
+	size_t count = 0;
+	for (const auto& track : tracks)
+	{
+		count += track->GetEvents().size();
+	}
+	return count;
 }
 bool CSchedulerDoc::AreScheduledEvents() const
 {
@@ -382,6 +447,9 @@ TRY
 		}
 		ar << timeScale;
 		ar << zoomLevel;
+		ar.Write(&eventsFont, sizeof(eventsFont));
+		ar.Write(&tracksFont, sizeof(tracksFont));
+		ar.Write(&headersFont, sizeof(headersFont));
 	}
 	else
 	{
@@ -483,6 +551,12 @@ TRY
 			ar >> timeScale;
 			ar >> zoomLevel;
 		}
+		if (version > 3)
+		{
+			ar.Read(&eventsFont, sizeof(eventsFont));
+			ar.Read(&tracksFont, sizeof(tracksFont));
+			ar.Read(&headersFont, sizeof(headersFont));
+		}
 
 		tracks.clear();
 		stockEvents.clear();
@@ -503,6 +577,38 @@ CATCH_ALL(e)
 END_CATCH_ALL
 
 }
+
+void CSchedulerDoc::SetEventsFont(LOGFONT font, LPARAM lHint)
+{
+	eventsFont = std::move(font);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+LOGFONT CSchedulerDoc::GetEventsFont() const
+{
+	return eventsFont;
+}
+void CSchedulerDoc::SetTracksFont(LOGFONT font, LPARAM lHint)
+{
+	tracksFont = std::move(font);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+LOGFONT CSchedulerDoc::GetTracksFont() const
+{
+	return tracksFont;
+}
+void CSchedulerDoc::SetHeadersFont(LOGFONT font, LPARAM lHint)
+{
+	headersFont = std::move(font);
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+LOGFONT CSchedulerDoc::GetHeadersFont() const
+{
+	return headersFont;
+}
+
 
 #ifdef SHARED_HANDLERS
 

@@ -72,9 +72,13 @@ protected:
 		float dipsPerPageWidth = 0.f;
 		float dipsPerPageHeight = 0.f;
 		D2D1_SIZE_F bitmapsDpi;
+		int textLineHeight = 0;
+		int textLinesPerPage = 0;
 	};
 
 	PrintingMetrics ComputeDCMetrics(CDC* pDC, D2D1_SIZE_F dpi);
+	D2D1_SIZE_F CreatePrintingBitmap();
+	D2D1_SIZE_F CalculatePrintingBitmapSize(ID2D1Factory* factory, IWICImagingFactory* wicFactory, IDWriteFactory* pDirectWriteFactory);
 private:
 	CSchedulerDocumentRenderer docRenderer;
 	FLOAT dpiX = 0.f;
@@ -92,8 +96,8 @@ private:
 	CBitmap removeSelectedEventBitmap;
 	CBitmap* printingBitmap = nullptr;
 	D2D1_SIZE_F renderingDipSize = {0,0};
-
 	PrintingMetrics printingMetrics;
+	std::vector<CString> textPrintingLines;
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -109,6 +113,7 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnUpdateCommandRemoveScheduledEvent(CCmdUI* pCmdUI);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg LRESULT RepaintView(WPARAM wParam, LPARAM lParam);
 };
 
 #ifndef _DEBUG  // debug version in schedulerView.cpp

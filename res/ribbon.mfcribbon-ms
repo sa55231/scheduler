@@ -193,6 +193,19 @@
         <ELEMENT>
           <ELEMENT_NAME>Button_Main_Panel</ELEMENT_NAME>
           <ID>
+            <NAME>ID_APP_OPTIONS</NAME>
+            <VALUE>32790</VALUE>
+          </ID>
+          <TEXT>Opt&amp;ions</TEXT>
+          <PALETTE_TOP>FALSE</PALETTE_TOP>
+          <ALWAYS_LARGE>FALSE</ALWAYS_LARGE>
+          <INDEX_SMALL>9</INDEX_SMALL>
+          <INDEX_LARGE>-1</INDEX_LARGE>
+          <DEFAULT_COMMAND>TRUE</DEFAULT_COMMAND>
+        </ELEMENT>      
+      <ELEMENT>
+          <ELEMENT_NAME>Button_Main_Panel</ELEMENT_NAME>
+          <ID>
             <NAME>ID_APP_EXIT</NAME>
             <VALUE>57665</VALUE>
           </ID>

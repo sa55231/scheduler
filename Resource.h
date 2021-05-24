@@ -131,11 +131,12 @@
 #define IDR_POPUP_TRACKS                319
 #define IDB_TRACKS_TOOLBAR_24           320
 #define IDI_TRACKS_ICON                 321
-#define IDS_TRACK_NAME					322
-#define IDS_TRACK_START_DATE			323
-#define IDS_STOCK_EVENT_NAME			324
-#define IDS_STOCK_EVENT_COLOR			325
-#define IDS_STOCK_EVENT_DURATION		326
+#define IDS_TRACK_NAME                  322
+#define IDS_TRACK_START_DATE            323
+#define IDS_STOCK_EVENT_NAME            324
+#define IDS_STOCK_EVENT_COLOR           325
+#define IDS_STOCK_EVENT_DURATION        326
+#define IDD_SCHEDULE_OPTIONS_DIALOG     327
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
@@ -147,6 +148,16 @@
 #define ID_REMOVE_SCHEDULED_EVENT1      1008
 #define ID_REMOVE_SCHEDULED_EVENT2      1009
 #define IDC_TRACKS_LIST                 1010
+#define IDC_EVENTS_FONT_PREVIEW_STATIC  1016
+#define IDC_EVENTS_FONT_SELECT_BUTTON   1017
+#define IDC_TRACKS_FONT_PREVIEW_STATIC  1018
+#define IDC_TRACKS_FONT_SELECT_BUTTON   1019
+#define IDC_HEADER_FONT_PREVIEW_STATIC  1020
+#define IDC_HEADER_FONT_SELECT_BUTTON   1021
+#define IDC_PRINT_GRAPHICAL_RADIO       1022
+#define IDC_PRINT_SCHEDULE_GRAPHICAL_RADIO 1022
+#define IDC_PRINT_SCHEDULE_TEXT_RADIO   1023
+#define IDC_PRINT_ONE_TRACK_PER_PAGE_CHECK 1024
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
@@ -155,21 +166,23 @@
 #define ID_ZOOM_IN_BUTTON               32775
 #define ID_TIMESCALE_SLIDER             32776
 #define ID_ZOOM_OUT_BUTTON              32779
-#define ID_ZOOM_RESET_BUTTON			32780
+#define ID_ZOOM_RESET_BUTTON            32780
 #define ID_ADD_TRACK                    32783
 #define ID_EDIT_TRACK                   32784
 #define ID_REMOVE_TRACK                 32785
-#define ID_VIEW_TRACK_EVENTS			32786
-#define ID_VIEW_TRACKS					32787
-#define ID_VIEW_EVENTS					32788
-#define ID_VIEW_PROPERTIES				32789
+#define ID_VIEW_TRACK_EVENTS            32786
+#define ID_VIEW_TRACKS                  32787
+#define ID_VIEW_EVENTS                  32788
+#define ID_VIEW_PROPERTIES              32789
+#define ID_APP_OPTIONS                  32790
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        327
-#define _APS_NEXT_COMMAND_VALUE         32786
-#define _APS_NEXT_CONTROL_VALUE         1011
+#define _APS_NEXT_RESOURCE_VALUE        330
+#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_CONTROL_VALUE         1025
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

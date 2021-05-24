@@ -20,7 +20,7 @@ public:
 	CTrackRenderer* GetTrackAtPoint(const D2D1_POINT_2F& point);
 	D2D1_COLOR_F GetEventForegroundColor() const;
 private:	
-	void CreateD2D1Resources(CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory ,ID2D1Factory* factory);
+	void CreateD2D1Resources(CSchedulerDoc* doc, CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory ,ID2D1Factory* factory);
 	template <typename T> using Line = std::pair<T, T>;
 	template<typename T>
 	constexpr Line<T> makeLine(T t1, T t2) noexcept
@@ -34,7 +34,6 @@ private:
 	FLOAT trackHeight = 16.f;
 	FLOAT minEventRenderWidth = 16.f;
 	CD2DSolidColorBrush* gridLinesColorBrush = nullptr;
-	CD2DTextLayout* trackNameStaticTextLayout = nullptr;
 	CD2DTextFormat* trackTextFormat = nullptr;
 	CD2DSolidColorBrush* trackBackgroundColorBrush = nullptr;
 	CD2DSolidColorBrush* trackForegroundColorBrush = nullptr;
@@ -46,12 +45,6 @@ private:
 	CComPtr<IDWriteInlineObject> trackTrimmingSign;
 	CComPtr<ID2D1StrokeStyle> dropTargetStrokeStyle;
 	std::unordered_map<UINT32,CD2DSolidColorBrush*> eventBackgroundColorBrushes;
-	CString trackFontName = { _T("Times New Roman") };
-	float trackFontSize = 16.f;
-	CString eventFontName = { _T("Times New Roman") };
-	float eventFontSize = 16.f;	
-	CString headerTimelineFontName = { _T("Times New Roman") };
-	float headerTimelineFontSize = 12.f;
 
 	D2D1_SIZE_F surfaceSize = {D2D1::SizeF()};
 	bool resourcesCreated = false;

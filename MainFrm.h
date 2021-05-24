@@ -65,6 +65,7 @@ protected:  // control bar embedded members
 	int dragItemId = -1;
 	CImageList* dragImageList = nullptr;
 	bool dragging = false;
+
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -109,6 +110,7 @@ protected:
 	afx_msg void OnViewEvents();
 	afx_msg void OnUpdateViewProperties(CCmdUI* pCmdUI);
 	afx_msg void OnViewProperties();
+	afx_msg void OnAppOptions();
 
 	DECLARE_MESSAGE_MAP()
 

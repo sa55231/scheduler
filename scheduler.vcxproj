@@ -204,6 +204,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="calendarbar.h" />
+    <ClInclude Include="CSchedulerOptionsPage.h" />
     <ClInclude Include="PropertyGridDateProperty.h" />
     <ClInclude Include="TracksView.h" />
     <ClInclude Include="CScheduleEvent.h" />
@@ -230,6 +231,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="calendarbar.cpp" />
+    <ClCompile Include="CSchedulerOptionsPage.cpp" />
     <ClCompile Include="PropertyGridDateProperty.cpp" />
     <ClCompile Include="TracksView.cpp" />
     <ClCompile Include="CScheduleEvent.cpp" />

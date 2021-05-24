@@ -17,7 +17,7 @@
 #include "scheduler.h"
 
 #include "MainFrm.h"
-
+#include "CSchedulerOptionsPage.h"
 #include "schedulerView.h"
 #include <vector>
 
@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_EVENTS, &CMainFrame::OnViewEvents)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_PROPERTIES, &CMainFrame::OnUpdateViewProperties)
 	ON_COMMAND(ID_VIEW_PROPERTIES, &CMainFrame::OnViewProperties)
+	ON_COMMAND(ID_APP_OPTIONS, &CMainFrame::OnAppOptions)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -774,4 +775,15 @@ void CMainFrame::OnViewProperties()
 BOOL CMainFrame::IsPrintPreviewMode()
 {
 	return GetDockingManager()->IsPrintPreviewValid();
+}
+void CMainFrame::OnAppOptions()
+{	
+	CMFCPropertySheet optionsDialog(_T("Options"), this, 0);
+	optionsDialog.m_psh.dwFlags |= PSH_RESIZABLE;
+	optionsDialog.SetLook(CMFCPropertySheet::PropSheetLook_List, 124 /* List width */);
+	
+	CSchedulerOptionsPage page;
+	optionsDialog.AddPage(&page);
+
+	optionsDialog.DoModal();
 }

@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CSchedulerView, CScrollView)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_SCHEDULED_EVENT, OnUpdateCommandRemoveScheduledEvent)
 	ON_COMMAND(ID_REMOVE_SCHEDULED_EVENT, OnRemoveScheduledEvent)
 	ON_WM_KEYDOWN()
+	ON_MESSAGE(WM_REPAINT_VIEW, &CSchedulerView::RepaintView)
 END_MESSAGE_MAP()
 
 // CSchedulerView construction/destruction
@@ -73,11 +74,11 @@ int CSchedulerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableD2DSupport();
 	dpiX = m_pRenderTarget->GetDpi().width;
 	dpiY = m_pRenderTarget->GetDpi().height;
+	auto pDC = GetDC();
 	dpiScaleX = dpiX / 96.f;
 	dpiScaleY = dpiY / 96.f;
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
 	CMFCToolBar::AddToolBarForImageCollection(IDR_REMOVE_SCHEDULED_EVENT, IDB_REMOVE_SCHEDULED_EVENT);
-	
 	
 	return 0;
 }
@@ -111,6 +112,7 @@ LRESULT CSchedulerView::OnAfxRecreated2DResources(WPARAM wParam, LPARAM lParam)
 {
 	CHwndRenderTarget* pRenderTarget = (CHwndRenderTarget*)lParam;
 	ASSERT_KINDOF(CHwndRenderTarget, pRenderTarget);
+	PostMessage(WM_REPAINT_VIEW, 0, 0);
 	return (LRESULT)TRUE;
 }
 
@@ -542,14 +544,69 @@ BOOL CSchedulerView::OnPreparePrinting(CPrintInfo* pInfo)
 
 void CSchedulerView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 {
-	_AFX_D2D_STATE* pD2DState = AfxGetD2DState();
-	ASSERT(NULL != pD2DState);
-	ID2D1Factory* factory = pD2DState->GetDirect2dFactory();
-	ASSERT(NULL != factory);
-	IWICImagingFactory* wicFactory = pD2DState->GetWICFactory();
-	ASSERT(NULL != wicFactory);
-	IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
-	ASSERT(NULL != pDirectWriteFactory);
+	textPrintingLines.clear();
+	auto printScheduleType = theApp.GetProfileInt(_T("Settings"), _T("PrintType"), CSchedulerApp::PrintTypeGraphical);
+	auto printTrackPerPage = theApp.GetProfileInt(_T("Settings"), _T("PrintTrackPerPage"), 0);
+
+	if (printScheduleType == CSchedulerApp::PrintTypeGraphical)
+	{
+		auto rendersTargetDpi = CreatePrintingBitmap();
+		printingMetrics = ComputeDCMetrics(pDC, rendersTargetDpi);
+		int nMaxPage = printingMetrics.maxPages;// m_nMaxRowCount / m_nRowsPerPage + 1;//Compute this again in case user changed printer
+		pInfo->SetMaxPage(nMaxPage);
+	}
+	else
+	{
+		//pDC->SetMapMode(MM_TEXT);
+		printingMetrics = ComputeDCMetrics(pDC, D2D1::SizeF((float)GetDC()->GetDeviceCaps(LOGPIXELSX), (float)GetDC()->GetDeviceCaps(LOGPIXELSY)));
+		TEXTMETRIC textMetrics = { 0 };
+		pDC->GetTextMetrics(&textMetrics);
+		printingMetrics.textLineHeight = textMetrics.tmHeight;
+		printingMetrics.textLinesPerPage = printingMetrics.pageSizeY / printingMetrics.textLineHeight;
+
+		for (const auto& track : GetDocument()->GetTracks())
+		{
+			textPrintingLines.emplace_back(track->GetName());
+			auto startTime = track->GetStartTime();
+			std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
+			date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+
+			for (const auto& ev : track->GetEvents())
+			{
+				CString startText(date::format("%Y %b %d %R", start).c_str());
+				auto end = start + ev->GetDuration();
+				CString endText(date::format("%Y %b %d %R", end).c_str());
+				start = end;
+				CString text;
+				text.Append(ev->GetName());
+				text.Append(_T("        "));
+				text.Append(startText);
+				text.Append(_T("        "));
+				text.Append(endText);
+				textPrintingLines.emplace_back(text);
+			}
+			if (printTrackPerPage == 1)
+			{	
+				int linesLeftPerLastPage = track->GetEvents().size() % printingMetrics.textLinesPerPage;
+				for (auto i = linesLeftPerLastPage; i < printingMetrics.textLinesPerPage-1; ++i)
+				{
+					textPrintingLines.emplace_back(_T("        "));
+				}
+			}
+			else
+			{
+				textPrintingLines.emplace_back(_T("        "));
+			}
+		}
+		
+		printingMetrics.maxPages = (int)std::ceil((double)textPrintingLines.size() / (double)printingMetrics.textLinesPerPage);
+		pInfo->SetMaxPage(printingMetrics.maxPages);
+	}
+	pInfo->m_nCurPage = 1;  // start printing at page# 1
+}
+
+D2D1_SIZE_F CSchedulerView::CalculatePrintingBitmapSize(ID2D1Factory* factory, IWICImagingFactory* wicFactory, IDWriteFactory* pDirectWriteFactory)
+{
 	CComPtr<IWICBitmap> wicBitmap;
 	HRESULT hr = wicFactory->CreateBitmap((UINT)renderingDipSize.width, (UINT)renderingDipSize.height,
 		GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &wicBitmap);
@@ -565,13 +622,43 @@ void CSchedulerView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 	CRenderTarget br;
 	br.Attach(bitmapRenderTarget);
 	CSchedulerDocumentRenderer renderer;
-	renderer.UpdateLayout(GetDocument(), &br, pDirectWriteFactory, factory);
+	return renderer.UpdateLayout(GetDocument(), &br, pDirectWriteFactory, factory);
+}
+D2D1_SIZE_F CSchedulerView::CreatePrintingBitmap()
+{
+	_AFX_D2D_STATE* pD2DState = AfxGetD2DState();
+	ASSERT(NULL != pD2DState);
+	ID2D1Factory* factory = pD2DState->GetDirect2dFactory();
+	ASSERT(NULL != factory);
+	IWICImagingFactory* wicFactory = pD2DState->GetWICFactory();
+	ASSERT(NULL != wicFactory);
+	IDWriteFactory* pDirectWriteFactory = pD2DState->GetWriteFactory();
+	ASSERT(NULL != pDirectWriteFactory);
+
+	auto bitmapSize = CalculatePrintingBitmapSize(factory,wicFactory,pDirectWriteFactory);
+
+	CComPtr<IWICBitmap> wicBitmap;
+	HRESULT hr = wicFactory->CreateBitmap((UINT)bitmapSize.width, (UINT)bitmapSize.height,
+		GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &wicBitmap);
+	ATLENSURE_SUCCEEDED(hr);
+
+	ID2D1RenderTarget* bitmapRenderTarget;
+	D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties();
+	rtProps.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	rtProps.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	rtProps.usage = D2D1_RENDER_TARGET_USAGE_NONE;
+	hr = factory->CreateWicBitmapRenderTarget(wicBitmap, rtProps, &bitmapRenderTarget);
+	ATLENSURE_SUCCEEDED(hr);
+	CRenderTarget br;
+	br.Attach(bitmapRenderTarget);
+	CSchedulerDocumentRenderer renderer;
+	auto newSize = renderer.UpdateLayout(GetDocument(), &br, pDirectWriteFactory, factory);
 	{
 		br.BeginDraw();
 		renderer.Render(&br, D2D1::Point2F());
 		br.EndDraw();
 	}
-
+	
 	CComPtr<IWICComponentInfo> componentInfo;
 	CComPtr <IWICPixelFormatInfo> pixelFormatInfo;
 	hr = wicFactory->CreateComponentInfo(GUID_WICPixelFormat32bppPBGRA, &componentInfo);
@@ -582,18 +669,14 @@ void CSchedulerView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 	hr = pixelFormatInfo->GetBitsPerPixel(&bitsPerPixel);
 	ATLENSURE_SUCCEEDED(hr);
 	UINT bytesPerPixel = bitsPerPixel / 8;
-	UINT stride = (UINT)renderingDipSize.width * bytesPerPixel;
-	UINT bufSize = stride * (UINT)renderingDipSize.height;
+	UINT stride = (UINT)bitmapSize.width * bytesPerPixel;
+	UINT bufSize = stride * (UINT)bitmapSize.height;
 	std::unique_ptr<BYTE[]> buf = std::make_unique<BYTE[]>(bufSize);
 	hr = wicBitmap->CopyPixels(nullptr, stride, bufSize, buf.get());
 	ATLENSURE_SUCCEEDED(hr);
 	printingBitmap = new CBitmap();
-	printingBitmap->CreateBitmap((int)renderingDipSize.width, (int)renderingDipSize.height, 1, bitsPerPixel, buf.get());
-	auto rendersTargetDpi = br.GetDpi();
-	printingMetrics = ComputeDCMetrics(pDC, rendersTargetDpi);
-	int nMaxPage = printingMetrics.maxPages;// m_nMaxRowCount / m_nRowsPerPage + 1;//Compute this again in case user changed printer
-	pInfo->SetMaxPage(nMaxPage);
-	pInfo->m_nCurPage = 1;  // start printing at page# 1
+	printingBitmap->CreateBitmap((int)bitmapSize.width, (int)bitmapSize.height, 1, bitsPerPixel, buf.get());
+	return br.GetDpi();
 }
 
 CSchedulerView::PrintingMetrics CSchedulerView::ComputeDCMetrics(CDC* pDC, D2D1_SIZE_F dpi)
@@ -613,8 +696,8 @@ CSchedulerView::PrintingMetrics CSchedulerView::ComputeDCMetrics(CDC* pDC, D2D1_
 	metrics.totalPrintingWidth = renderingDipSize.width * metrics.ratioX;
 	metrics.totalPrintingHeight = renderingDipSize.height * metrics.ratioY;
 
-	metrics.pagesCountPerWidth = std::ceilf(metrics.totalPrintingWidth / metrics.pageSizeX);
-	metrics.pagesCountPerHeight = std::ceilf(metrics.totalPrintingHeight / metrics.pageSizeY);
+	metrics.pagesCountPerWidth = (int)std::ceilf(metrics.totalPrintingWidth / (float)metrics.pageSizeX);
+	metrics.pagesCountPerHeight = (int)std::ceilf(metrics.totalPrintingHeight / (float)metrics.pageSizeY);
 	metrics.maxPages = metrics.pagesCountPerWidth * metrics.pagesCountPerHeight;
 	metrics.dipsPerPageWidth = metrics.pageSizeX / metrics.ratioX;
 	metrics.dipsPerPageHeight = metrics.pageSizeY / metrics.ratioY;
@@ -624,22 +707,41 @@ CSchedulerView::PrintingMetrics CSchedulerView::ComputeDCMetrics(CDC* pDC, D2D1_
 
 void CSchedulerView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 {	
-	CDC memDC;
-	memDC.CreateCompatibleDC(pDC);
-	CBitmap* pOldBit = memDC.SelectObject(printingBitmap);
-	
-	auto curPage = pInfo->m_nCurPage - 1;
+	auto printScheduleType = theApp.GetProfileInt(_T("Settings"), _T("PrintType"), CSchedulerApp::PrintTypeGraphical);
+	auto printTrackPerPage = theApp.GetProfileInt(_T("Settings"), _T("PrintTrackPerPage"), 0);
 
-	int bitmapX = (curPage % printingMetrics.pagesCountPerWidth) * printingMetrics.dipsPerPageWidth;
-	int bitmapY = (curPage / printingMetrics.pagesCountPerWidth) * printingMetrics.dipsPerPageHeight;
+	if (printScheduleType == CSchedulerApp::PrintTypeGraphical)
+	{
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+		CBitmap* pOldBit = memDC.SelectObject(printingBitmap);
 
-	pDC->StretchBlt(0, 0, std::min(pInfo->m_rectDraw.right, (long)printingMetrics.totalPrintingWidth), 
-		std::min(pInfo->m_rectDraw.bottom, (long)printingMetrics.totalPrintingHeight), &memDC,
-		bitmapX, bitmapY, printingMetrics.dipsPerPageWidth, printingMetrics.dipsPerPageHeight,
-		SRCCOPY);
+		auto curPage = pInfo->m_nCurPage - 1;
 
-	memDC.SelectObject(pOldBit);
-	memDC.DeleteDC();
+		int bitmapX = (curPage % printingMetrics.pagesCountPerWidth) * (int)printingMetrics.dipsPerPageWidth;
+		int bitmapY = (curPage / printingMetrics.pagesCountPerWidth) * (int)printingMetrics.dipsPerPageHeight;
+
+		pDC->StretchBlt(0, 0, std::min(pInfo->m_rectDraw.right, (long)printingMetrics.totalPrintingWidth),
+			std::min(pInfo->m_rectDraw.bottom, (long)printingMetrics.totalPrintingHeight), &memDC,
+			bitmapX, bitmapY, (int)printingMetrics.dipsPerPageWidth, (int)printingMetrics.dipsPerPageHeight,
+			SRCCOPY);
+
+		memDC.SelectObject(pOldBit);
+		memDC.DeleteDC();
+	}
+	else
+	{
+		auto curPage = pInfo->m_nCurPage - 1;
+		int startLine = printingMetrics.textLinesPerPage * curPage;
+		int endLine = std::min((int)textPrintingLines.size(), startLine + printingMetrics.textLinesPerPage);
+		int top = 0;
+		for (int i = startLine; i < endLine; ++i)
+		{
+			RECT r = {0,top,printingMetrics.pageSizeX,top + printingMetrics.textLineHeight};
+			pDC->DrawText(textPrintingLines.at(i), &r, DT_LEFT | DT_NOCLIP | DT_SINGLELINE| DT_NOPREFIX| DT_VCENTER);
+			top += printingMetrics.textLineHeight;
+		}
+	}
 }
 CBitmap* CSchedulerView::GetPrintingBitmap() const
 {
@@ -649,6 +751,7 @@ void CSchedulerView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	delete printingBitmap;
 	printingBitmap = nullptr;
+	textPrintingLines.clear();
 }
 
 // CSchedulerView diagnostics
@@ -699,4 +802,9 @@ void CSchedulerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	default:
 		CView::OnKeyDown(nChar, nRepCnt, nFlags);
 	}
+}
+LRESULT CSchedulerView::RepaintView(WPARAM wParam, LPARAM lParam)
+{
+	Invalidate();
+	return (LRESULT)TRUE;
 }

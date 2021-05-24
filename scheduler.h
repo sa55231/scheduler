@@ -29,6 +29,11 @@ class CSchedulerApp : public CWinAppEx
 public:
 	CSchedulerApp() noexcept;
 
+	enum PrintType
+	{
+		PrintTypeGraphical = 0,
+		PrintTypeText,
+	};
 
 // Overrides
 public:

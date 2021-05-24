@@ -19,11 +19,11 @@ CSchedulerDocumentRenderer::CSchedulerDocumentRenderer() : zoomLevel(D2D1::SizeF
 D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CRenderTarget* renderTarget,
 	IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
-	CreateD2D1Resources(renderTarget, directWriteFactory,factory);
-	zoomLevel = D2D1::SizeF(doc->GetZoomLevel(),doc->GetZoomLevel());
 	tracks.clear();
 	trackSeparationLines.clear();
 	headerTimelineItems.clear();
+	CreateD2D1Resources(doc,renderTarget, directWriteFactory,factory);
+	zoomLevel = D2D1::SizeF(doc->GetZoomLevel(),doc->GetZoomLevel());
 	surfaceSize = D2D1::SizeF(margin,margin+HEADER_HEIGHT);
 	FLOAT maxWidth = 0.f;
 	std::chrono::seconds maxDuration = std::chrono::seconds::min();
@@ -125,11 +125,19 @@ D2D1_COLOR_F CSchedulerDocumentRenderer::GetEventForegroundColor() const
 	return D2D1::ColorF(0.f,0.f,0.f);
 }
 
-void CSchedulerDocumentRenderer::CreateD2D1Resources(CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
+void CSchedulerDocumentRenderer::CreateD2D1Resources(CSchedulerDoc* doc, CRenderTarget* renderTarget, IDWriteFactory* directWriteFactory, ID2D1Factory* factory)
 {
-	if (!trackTextFormat)
+	if (trackTextFormat)
 	{
-		trackTextFormat = new CD2DTextFormat(renderTarget, trackFontName, trackFontSize);
+		delete trackTextFormat;
+		trackTextFormat = nullptr;
+		trackTrimmingSign.Release();
+	}
+	
+	{
+		auto font = doc->GetTracksFont();
+		FLOAT fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);
+		trackTextFormat = new CD2DTextFormat(renderTarget, font.lfFaceName, fontSize,(DWRITE_FONT_WEIGHT)font.lfWeight,font.lfItalic == 1 ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL);
 		trackTextFormat->Get()->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 		trackTextFormat->Get()->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 		trackTextFormat->Get()->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
@@ -149,17 +157,16 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CRenderTarget* renderTarget
 	{
 		gridLinesColorBrush = new CD2DSolidColorBrush(renderTarget, D2D1::ColorF(D2D1::ColorF::Black, 0.5f));
 	}
-	if (!trackNameStaticTextLayout)
+	if (eventTextFormat)
 	{
-		CD2DTextFormat trackNameStaticTextFormat(renderTarget, trackFontName, trackFontSize);
-		trackNameStaticTextFormat.Get()->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-		trackNameStaticTextFormat.Get()->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-		trackNameStaticTextFormat.Get()->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-		trackNameStaticTextLayout = new CD2DTextLayout(renderTarget,_T("Track"), trackNameStaticTextFormat,D2D1::SizeF(TRACK_LABEL_WIDTH + margin, HEADER_HEIGHT));
-	}
-	if (!eventTextFormat)
+		delete eventTextFormat;
+		eventTextFormat = nullptr;
+		eventTrimmingSign.Release();
+	}	
 	{
-		eventTextFormat = new CD2DTextFormat(renderTarget, eventFontName, eventFontSize);
+		auto font = doc->GetEventsFont();
+		FLOAT fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);
+		eventTextFormat = new CD2DTextFormat(renderTarget, font.lfFaceName, fontSize, (DWRITE_FONT_WEIGHT)font.lfWeight, font.lfItalic == 1 ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL);
 		eventTextFormat->Get()->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 		eventTextFormat->Get()->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 		eventTextFormat->Get()->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
@@ -172,9 +179,15 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CRenderTarget* renderTarget
 	{
 		eventForegroundColorBrush = new CD2DSolidColorBrush(renderTarget, D2D1::ColorF(D2D1::ColorF::Black));
 	}
-	if (!headerTimelineTextFormat)
+	if (headerTimelineTextFormat)
 	{
-		headerTimelineTextFormat = new CD2DTextFormat(renderTarget, headerTimelineFontName, headerTimelineFontSize);
+		delete headerTimelineTextFormat;
+		headerTimelineTextFormat = nullptr;	
+	}
+	{
+		auto font = doc->GetHeadersFont();
+		FLOAT fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);
+		headerTimelineTextFormat = new CD2DTextFormat(renderTarget, font.lfFaceName, fontSize, (DWRITE_FONT_WEIGHT)font.lfWeight, font.lfItalic == 1 ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL);
 		headerTimelineTextFormat->Get()->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 		headerTimelineTextFormat->Get()->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 		headerTimelineTextFormat->Get()->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
@@ -223,8 +236,6 @@ void CSchedulerDocumentRenderer::Render(CRenderTarget* renderTarget, const D2D1_
 		renderTarget->SetTransform(matrix);		
 		
 		renderTarget->FillRectangle(headerRect, trackBackgroundColorBrush);
-		//renderTarget->DrawTextLayout(startCorner, trackNameStaticTextLayout, trackForegroundColorBrush);
-		//renderTarget->DrawLine(headerSeparationLine[0], headerSeparationLine[1], gridLinesColorBrush,0.5f);
 		renderTarget->DrawRectangle(surfaceRect, gridLinesColorBrush, 1.f);
 		for (const auto& trackLine : trackSeparationLines)
 		{
