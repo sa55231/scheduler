@@ -688,7 +688,7 @@ void CMainFrame::UpdateFontsGroups(UINT fontsID, UINT fontsSizeID, const LOGFONT
 	int fontSize = 0;
 	if (font.lfHeight < 0)
 	{
-		fontSize = (int)std::abs(font.lfHeight * 96.f) / minDpi;
+		fontSize = (int)(std::abs((float)font.lfHeight * 96.f) / minDpi);
 	}
 	CString fontSizeText;
 	fontSizeText.Format(_T("%d"), fontSize);
