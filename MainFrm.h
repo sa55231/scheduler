@@ -52,7 +52,9 @@ public:
 
 private:
 	BOOL IsPrintPreviewMode();
-
+	CMFCRibbonButtonsGroup* CreateFontsGroup(UINT fontsID, UINT fontsSizeID);
+	void UpdateFontsGroups(UINT fontsID, UINT fontsSizeID,const LOGFONT& font, FLOAT minDpi);
+	LOGFONT GetFontFromGroups(UINT fontsID, UINT fontsSizeID);
 protected:  // control bar embedded members
 	CMFCRibbonBar     m_wndRibbonBar;
 	CMFCRibbonApplicationButton m_MainButton;
@@ -111,7 +113,10 @@ protected:
 	afx_msg void OnUpdateViewProperties(CCmdUI* pCmdUI);
 	afx_msg void OnViewProperties();
 	afx_msg void OnAppOptions();
-
+	afx_msg void OnUpdateDocFonts(CCmdUI* pCmdUI);
+	afx_msg void OnTracksDocFont();
+	afx_msg void OnEventsDocFont();
+	afx_msg void OnHeaderDocFont();
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

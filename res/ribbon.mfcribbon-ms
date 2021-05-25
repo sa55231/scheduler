@@ -614,6 +614,16 @@
           </PANEL>
         </PANELS>
       </CATEGORY>
+
+      <CATEGORY>
+        <ELEMENT_NAME>Category</ELEMENT_NAME>
+        <NAME>View</NAME>
+        <KEYS>V</KEYS>
+        <PANELS>
+          
+        </PANELS>
+      </CATEGORY>
+      
     </CATEGORIES>
   </RIBBON_BAR>
 </AFX_RIBBON>

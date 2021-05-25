@@ -73,8 +73,7 @@ int CSchedulerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	EnableD2DSupport();
 	dpiX = m_pRenderTarget->GetDpi().width;
-	dpiY = m_pRenderTarget->GetDpi().height;
-	auto pDC = GetDC();
+	dpiY = m_pRenderTarget->GetDpi().height;	
 	dpiScaleX = dpiX / 96.f;
 	dpiScaleY = dpiY / 96.f;
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
@@ -105,6 +104,8 @@ LRESULT CSchedulerView::OnAfxDraw2D(WPARAM wParam, LPARAM lParam)
 	auto pos = GetScrollPosition();
 	// The scroll position has to be converted to DIPs (device indipendent pixels)
 	auto dipScrollPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
+	auto zoomLevel = docRenderer.GetZoomLevel();
+	dipScrollPosition = D2D1::Point2F(dipScrollPosition.x / zoomLevel.width, dipScrollPosition.y / zoomLevel.height);
 	docRenderer.Render(pRenderTarget, dipScrollPosition);
 	return (LRESULT)TRUE;
 }
@@ -190,9 +191,8 @@ void CSchedulerView::HandleEventSelection(CPoint point)
 	// The scroll position has to be converted to DIPs (device indipendent pixels)
 	pos.x += point.x;
 	pos.y += point.y;
-
+	auto zoomLevel = docRenderer.GetZoomLevel();	
 	auto dipPosition = D2D1::Point2F((float)pos.x / dpiScaleX, (float)pos.y / dpiScaleY);
-	auto zoomLevel = docRenderer.GetZoomLevel();
 	dipPosition = D2D1::Point2F(dipPosition.x / zoomLevel.width, dipPosition.y / zoomLevel.height);
 	CTrackRenderer* track = docRenderer.GetTrackAtPoint(dipPosition);
 	if (track != nullptr)
@@ -652,7 +652,7 @@ D2D1_SIZE_F CSchedulerView::CreatePrintingBitmap()
 	CRenderTarget br;
 	br.Attach(bitmapRenderTarget);
 	CSchedulerDocumentRenderer renderer;
-	auto newSize = renderer.UpdateLayout(GetDocument(), &br, pDirectWriteFactory, factory);
+	renderer.UpdateLayout(GetDocument(), &br, pDirectWriteFactory, factory);
 	{
 		br.BeginDraw();
 		renderer.Render(&br, D2D1::Point2F());

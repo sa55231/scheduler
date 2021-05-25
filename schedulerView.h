@@ -47,6 +47,14 @@ public:
 	void AddEventAtPoint(int stockEventId, CPoint point);
 	void DraggingEventAtPoint(int stockEventId, CPoint point);
 	void OnRemoveScheduledEvent();
+	FLOAT GetRenderTargetDpiX() const
+	{
+		return dpiX;
+	}
+	FLOAT GetRenderTargetDpiY() const
+	{
+		return dpiY;
+	}
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

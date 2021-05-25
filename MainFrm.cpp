@@ -75,6 +75,20 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_PROPERTIES, &CMainFrame::OnUpdateViewProperties)
 	ON_COMMAND(ID_VIEW_PROPERTIES, &CMainFrame::OnViewProperties)
 	ON_COMMAND(ID_APP_OPTIONS, &CMainFrame::OnAppOptions)
+	ON_UPDATE_COMMAND_UI(ID_TRACKS_DOC_FONT,&CMainFrame::OnUpdateDocFonts)
+	ON_UPDATE_COMMAND_UI(ID_TRACKS_DOC_FONT_SIZE, &CMainFrame::OnUpdateDocFonts)
+	ON_UPDATE_COMMAND_UI(ID_EVENTS_DOC_FONT, &CMainFrame::OnUpdateDocFonts)
+	ON_UPDATE_COMMAND_UI(ID_EVENTS_DOC_FONT_SIZE, &CMainFrame::OnUpdateDocFonts)
+	ON_UPDATE_COMMAND_UI(ID_HEADER_DOC_FONT, &CMainFrame::OnUpdateDocFonts)
+	ON_UPDATE_COMMAND_UI(ID_HEADER_DOC_FONT_SIZE, &CMainFrame::OnUpdateDocFonts)
+
+	ON_COMMAND(ID_TRACKS_DOC_FONT, &CMainFrame::OnTracksDocFont)
+	ON_COMMAND(ID_TRACKS_DOC_FONT_SIZE, &CMainFrame::OnTracksDocFont)
+	ON_COMMAND(ID_EVENTS_DOC_FONT, &CMainFrame::OnEventsDocFont)
+	ON_COMMAND(ID_EVENTS_DOC_FONT_SIZE, &CMainFrame::OnEventsDocFont)
+	ON_COMMAND(ID_HEADER_DOC_FONT, &CMainFrame::OnHeaderDocFont)
+	ON_COMMAND(ID_HEADER_DOC_FONT_SIZE, &CMainFrame::OnHeaderDocFont)
+
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -156,7 +170,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		utcOffsetsCombo->AddItem(offset.first,(DWORD_PTR)&offset.second);
 	}
 	documentTimePanel->Add(utcOffsetsCombo);
+
+	auto viewCategory = m_wndRibbonBar.GetCategory(2);
+	auto documentTracksFontPanel = viewCategory->AddPanel(_T("Tracks Font\nzc"));	
+	documentTracksFontPanel->Add(CreateFontsGroup(ID_TRACKS_DOC_FONT, ID_TRACKS_DOC_FONT_SIZE));
+
+	auto documentEventFontPanel = viewCategory->AddPanel(_T("Events Font\nzc"));
+	documentEventFontPanel->Add(CreateFontsGroup(ID_EVENTS_DOC_FONT, ID_EVENTS_DOC_FONT_SIZE));
 	
+	auto documentHeaderFontPanel = viewCategory->AddPanel(_T("Header Font\nzc"));
+	documentHeaderFontPanel->Add(CreateFontsGroup(ID_HEADER_DOC_FONT, ID_HEADER_DOC_FONT_SIZE));
+
 	if (!m_wndStatusBar.Create(this))
 	{
 		TRACE0("Failed to create status bar\n");
@@ -214,7 +238,40 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	return 0;
 }
+CMFCRibbonButtonsGroup* CMainFrame::CreateFontsGroup(UINT fontsID, UINT fontsSizeID)
+{
+	auto apFontGroup = new CMFCRibbonButtonsGroup();
 
+	CMFCRibbonFontComboBox::m_bDrawUsingFont = TRUE;
+
+	CMFCRibbonFontComboBox* pFontCombo = new CMFCRibbonFontComboBox(fontsID);
+	pFontCombo->SetWidth(55, TRUE); // Width in "floaty" mode
+	pFontCombo->SelectItem(10);
+	apFontGroup->AddButton(pFontCombo);
+
+	CMFCRibbonComboBox* pFontSizeCombo = new CMFCRibbonComboBox(fontsSizeID, FALSE, 39);
+	pFontSizeCombo->AddItem(_T("8"));
+	pFontSizeCombo->AddItem(_T("9"));
+	pFontSizeCombo->AddItem(_T("10"));
+	pFontSizeCombo->AddItem(_T("11"));
+	pFontSizeCombo->AddItem(_T("12"));
+	pFontSizeCombo->AddItem(_T("14"));
+	pFontSizeCombo->AddItem(_T("16"));
+	pFontSizeCombo->AddItem(_T("18"));
+	pFontSizeCombo->AddItem(_T("20"));
+	pFontSizeCombo->AddItem(_T("22"));
+	pFontSizeCombo->AddItem(_T("24"));
+	pFontSizeCombo->AddItem(_T("26"));
+	pFontSizeCombo->AddItem(_T("28"));
+	pFontSizeCombo->AddItem(_T("36"));
+	pFontSizeCombo->AddItem(_T("48"));
+	pFontSizeCombo->AddItem(_T("72"));
+	pFontSizeCombo->SetWidth(20, TRUE); // Width in "floaty" mode
+	pFontSizeCombo->SelectItem(3);
+	
+	apFontGroup->AddButton(pFontSizeCombo);
+	return apFontGroup;
+}
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
@@ -592,6 +649,9 @@ LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(lparam);
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return (LRESULT)FALSE;
+	CSchedulerView* pView = reinterpret_cast<CSchedulerView*>(GetActiveView());
+	ASSERT_VALID(pView);
+	if (!pView) return (LRESULT)FALSE;
 
 	auto utcOffset  = pDoc->GetUTCOffsetMinutes();
 	auto startTime = pDoc->GetStartTime();
@@ -609,7 +669,33 @@ LRESULT CMainFrame::OnDocumentLoaded(WPARAM wparam, LPARAM lparam)
 	CMFCRibbonSlider* timeScaleSlider = DYNAMIC_DOWNCAST(CMFCRibbonSlider, GetRibbonBar()->FindByID(ID_TIMESCALE_SLIDER));
 	timeScaleSlider->SetPos((int)pDoc->GetTimeScale());	
 
+	float minDpi = std::min(pView->GetRenderTargetDpiX(), pView->GetRenderTargetDpiY());
+	UpdateFontsGroups(ID_TRACKS_DOC_FONT, ID_TRACKS_DOC_FONT_SIZE, pDoc->GetTracksFont(), minDpi);
+	UpdateFontsGroups(ID_EVENTS_DOC_FONT, ID_EVENTS_DOC_FONT_SIZE, pDoc->GetEventsFont(), minDpi);
+	UpdateFontsGroups(ID_HEADER_DOC_FONT, ID_HEADER_DOC_FONT_SIZE, pDoc->GetHeadersFont(), minDpi);
+
 	return (LRESULT)TRUE;
+}
+
+void CMainFrame::UpdateFontsGroups(UINT fontsID, UINT fontsSizeID, const LOGFONT& font, FLOAT minDpi)
+{
+	CMFCRibbonFontComboBox* fontCombo = DYNAMIC_DOWNCAST(CMFCRibbonFontComboBox, GetRibbonBar()->FindByID(fontsID));
+	CMFCRibbonComboBox* fontComboSize = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, GetRibbonBar()->FindByID(fontsSizeID));
+	if (!fontCombo->SelectItem(font.lfFaceName))
+	{
+		fontCombo->SelectItem(_T("Times New Roman"));
+	}
+	int fontSize = 0;
+	if (font.lfHeight < 0)
+	{
+		fontSize = (int)std::abs(font.lfHeight * 96.f) / minDpi;
+	}
+	CString fontSizeText;
+	fontSizeText.Format(_T("%d"), fontSize);
+	if (!fontComboSize->SelectItem(fontSizeText))
+	{
+		fontComboSize->SelectItem(-1);
+	}
 }
 void CMainFrame::OnSetUTCOffset()
 {
@@ -778,12 +864,87 @@ BOOL CMainFrame::IsPrintPreviewMode()
 }
 void CMainFrame::OnAppOptions()
 {	
-	CMFCPropertySheet optionsDialog(_T("Options"), this, 0);
-	optionsDialog.m_psh.dwFlags |= PSH_RESIZABLE;
-	optionsDialog.SetLook(CMFCPropertySheet::PropSheetLook_List, 124 /* List width */);
+	auto  optionsDialog = std::make_unique<CMFCPropertySheet>(_T("Options"), this, 0);
+	optionsDialog->m_psh.dwFlags |= PSH_RESIZABLE;
+	optionsDialog->SetLook(CMFCPropertySheet::PropSheetLook_List, 124 /* List width */);
 	
-	CSchedulerOptionsPage page;
-	optionsDialog.AddPage(&page);
+	auto page = std::make_unique< CSchedulerOptionsPage>();
+	optionsDialog->AddPage(page.get());
+	optionsDialog->DoModal();
+}
 
-	optionsDialog.DoModal();
+void CMainFrame::OnUpdateDocFonts(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable();
+}
+
+static int GetTwipSize(CString str)
+{
+	LPCTSTR lpszText = str;
+
+	while (*lpszText == ' ' || *lpszText == '\t')
+		lpszText++;
+
+	if (lpszText[0] == NULL)
+		return -1; // no text in control
+
+	double d = _tcstod(lpszText, (LPTSTR*)&lpszText);
+	while (*lpszText == ' ' || *lpszText == '\t')
+		lpszText++;
+
+	if (*lpszText != NULL)
+		return -2;   // not terminated properly
+
+	return(d < 0.) ? 0 : (int)(d );
+}
+LOGFONT CMainFrame::GetFontFromGroups(UINT fontsID, UINT fontsSizeID)
+{
+	CMFCRibbonFontComboBox* fontCombo = DYNAMIC_DOWNCAST(CMFCRibbonFontComboBox, GetRibbonBar()->FindByID(fontsID));
+	CMFCRibbonComboBox* fontComboSize = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, GetRibbonBar()->FindByID(fontsSizeID));
+	const CMFCFontInfo* pDesc = fontCombo->GetFontDesc();
+	ASSERT_VALID(pDesc);
+	ASSERT(pDesc->m_strName.GetLength() < LF_FACESIZE);
+
+	LOGFONT font = { 0 };
+	font.lfFaceName[0] = NULL;
+	ASSERT(lstrcpyn(font.lfFaceName, pDesc->m_strName, LF_FACESIZE) != NULL);
+	font.lfCharSet = pDesc->m_nCharSet;
+	font.lfPitchAndFamily = pDesc->m_nPitchAndFamily;
+	int nSize = GetTwipSize(fontComboSize->GetEditText());
+	if (nSize == -2 || nSize > 1000)
+	{
+		fontComboSize->SetEditText(_T("12"));
+		nSize = 12;
+		font.lfHeight = nSize;
+	}
+	else if (nSize > 0)
+	{
+		font.lfHeight = nSize;
+	}
+	font.lfWeight = FW_NORMAL;
+	return font;
+}
+void CMainFrame::OnTracksDocFont()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	auto tracksFont = GetFontFromGroups(ID_TRACKS_DOC_FONT, ID_TRACKS_DOC_FONT_SIZE);
+	pDoc->SetTracksFont(std::move(tracksFont), 0);	
+}
+void CMainFrame::OnEventsDocFont()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	auto eventsFont = GetFontFromGroups(ID_EVENTS_DOC_FONT, ID_EVENTS_DOC_FONT_SIZE);
+	pDoc->SetEventsFont(std::move(eventsFont), 0);
+}
+void CMainFrame::OnHeaderDocFont()
+{
+	CSchedulerDoc* pDoc = reinterpret_cast<CSchedulerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	if (!pDoc) return;
+	auto eventsFont = GetFontFromGroups(ID_HEADER_DOC_FONT, ID_HEADER_DOC_FONT_SIZE);
+	pDoc->SetHeadersFont(std::move(eventsFont), 0);
 }
