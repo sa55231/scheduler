@@ -136,7 +136,7 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CSchedulerDoc* doc, CRender
 	
 	{
 		auto font = doc->GetTracksFont();
-		FLOAT fontSize = font.lfHeight;
+		FLOAT fontSize = (FLOAT) font.lfHeight;
 		if (fontSize < 0)
 		{
 			fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);
@@ -169,7 +169,7 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CSchedulerDoc* doc, CRender
 	}	
 	{
 		auto font = doc->GetEventsFont();
-		FLOAT fontSize = font.lfHeight;
+		FLOAT fontSize = (FLOAT)font.lfHeight;
 		if (fontSize < 0)
 		{
 			fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);
@@ -194,7 +194,7 @@ void CSchedulerDocumentRenderer::CreateD2D1Resources(CSchedulerDoc* doc, CRender
 	}
 	{
 		auto font = doc->GetHeadersFont();
-		FLOAT fontSize = font.lfHeight;
+		FLOAT fontSize = (FLOAT)font.lfHeight;
 		if (fontSize < 0)
 		{
 			fontSize = std::abs(font.lfHeight * 96.f) / std::min(renderTarget->GetDpi().width, renderTarget->GetDpi().height);

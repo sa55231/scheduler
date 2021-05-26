@@ -47,6 +47,7 @@ int CTrackEventsListView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create file view\n");
 		return -1;      // fail to create
 	}
+	m_wndEventsList.SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 	CString strTemp;
 	BOOL bNameValid = strTemp.LoadString(IDS_TRACK_EVENT_NAME);
 	ASSERT(bNameValid);

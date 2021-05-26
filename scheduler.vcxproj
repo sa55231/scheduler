@@ -212,6 +212,8 @@
     <ClInclude Include="CScheduleTrack.h" />
     <ClInclude Include="RibbonDateTimeControl.h" />
     <ClInclude Include="TrackEventsListView.h" />
+    <ClInclude Include="UnsortedListCtrl.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="ViewDockingPane.h" />
     <ClInclude Include="EventRenderer.h" />
     <ClInclude Include="StockEventView.h" />
@@ -239,6 +241,7 @@
     <ClCompile Include="CScheduleTrack.cpp" />
     <ClCompile Include="RibbonDateTimeControl.cpp" />
     <ClCompile Include="TrackEventsListView.cpp" />
+    <ClCompile Include="UnsortedListCtrl.cpp" />
     <ClCompile Include="ViewDockingPane.cpp" />
     <ClCompile Include="EventRenderer.cpp" />
     <ClCompile Include="StockEventView.cpp" />

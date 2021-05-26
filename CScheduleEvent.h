@@ -8,6 +8,7 @@ class CScheduleEvent
 {
 public:
 	CScheduleEvent(CScheduleStockEvent* eventSource, int id, int trackId);
+	~CScheduleEvent();
 	int GetId() const;
 	int GetTrackId() const;
 	int GetStockId() const;
@@ -15,7 +16,7 @@ public:
 	std::chrono::seconds GetDuration() const;
 	UINT32 GetColor() const;
 private:
-	const CScheduleStockEvent* stockEvent;
+	CScheduleStockEvent* stockEvent;
 	int id = 0;
 	int trackId = 0;
 };

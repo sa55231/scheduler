@@ -93,7 +93,7 @@ int CTracksView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create Class View\n");
 		return -1;      // fail to create
 	}
-
+	m_wndClassView.SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 	CString strTemp;
 	BOOL bNameValid = strTemp.LoadString(IDS_TRACK_NAME);
 	ASSERT(bNameValid);

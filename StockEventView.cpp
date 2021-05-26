@@ -15,12 +15,46 @@
 #include "StockEventView.h"
 #include "Resource.h"
 #include "scheduler.h"
+#include "utils.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+IMPLEMENT_DYNAMIC(CStockEventsListCtrl, CMFCListCtrl)
+
+COLORREF CStockEventsListCtrl::OnGetCellBkColor(int nRow, int nColumn)
+{
+	CScheduleStockEvent* event = (CScheduleStockEvent*)GetItemData(nRow);
+	if (event != nullptr && nColumn == (int)EventsViewColumns::Color)
+	{		
+		D2D1::ColorF color(event->GetColor());
+		return RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f);
+	}
+	return CMFCListCtrl::OnGetCellBkColor(nRow,nColumn);
+}
+int CStockEventsListCtrl::OnCompareItems(LPARAM lParam1, LPARAM lParam2, int iColumn)
+{
+	CScheduleStockEvent* s1 = (CScheduleStockEvent*)lParam1;
+	CScheduleStockEvent* s2 = (CScheduleStockEvent*)lParam2;
+	EventsViewColumns col = (EventsViewColumns)iColumn;
+	switch (col)
+	{
+	case EventsViewColumns::Name:
+		return s1->GetName().CompareNoCase(s2->GetName());
+	case EventsViewColumns::Duration:
+		return (int)(s1->GetDuration() - s2->GetDuration()).count();
+	case EventsViewColumns::Color:
+		return (int)(s1->GetColor() - s2->GetColor());
+	case EventsViewColumns::Usage:
+		return s1->GetUsage() - s2->GetUsage();
+	default:
+		return 0;
+	}
+
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CStockEventView
@@ -49,7 +83,7 @@ BEGIN_MESSAGE_MAP(CStockEventView, CViewDockingPane)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_EVENT,OnUpdateCommandToolbarButtons)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_EVENT, OnUpdateCommandToolbarButtons)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_EVENT_LIST, OnEventListItemChanged)
-	ON_NOTIFY(LVN_COLUMNCLICK, IDC_EVENT_LIST, OnEventListColumnClick)
+	//ON_NOTIFY(LVN_COLUMNCLICK, IDC_EVENT_LIST, OnEventListColumnClick)
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
 END_MESSAGE_MAP()
 
@@ -72,17 +106,23 @@ int CStockEventView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create file view\n");
 		return -1;      // fail to create
 	}
+	m_wndEventListView.SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+	m_wndEventListView.EnableMarkSortedColumn();
+	m_wndEventListView.EnableMultipleSort(FALSE);
 
 	CString strTemp;
 	BOOL bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_NAME);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn(0, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.InsertColumn((int)EventsViewColumns::Name, strTemp, LVCFMT_LEFT);
 	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_DURATION);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn(1, strTemp, LVCFMT_LEFT);	
+	m_wndEventListView.InsertColumn((int)EventsViewColumns::Duration, strTemp, LVCFMT_LEFT);
+	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_USAGE);
+	ASSERT(bNameValid);
+	m_wndEventListView.InsertColumn((int)EventsViewColumns::Usage, strTemp, LVCFMT_LEFT);
 	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_COLOR);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn(2, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.InsertColumn((int)EventsViewColumns::Color, strTemp, LVCFMT_LEFT);
 
 	// Load view images:
 	m_EventListImages.Create(IDB_FILE_VIEW, 16, 0, RGB(255, 0, 255));
@@ -105,11 +145,7 @@ int CStockEventView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	AdjustLayout();
 
-	HDITEM headerItem;
-	headerItem.mask = HDI_FORMAT;
-	m_wndEventListView.GetHeaderCtrl()->GetItem(sortedColumn, &headerItem);
-	headerItem.fmt |= (sortAscending ? HDF_SORTUP : HDF_SORTDOWN);
-	m_wndEventListView.GetHeaderCtrl()->SetItem(sortedColumn, &headerItem);
+	m_wndEventListView.SetSortColumn((int)EventsViewColumns::Name, true);
 
 	return 0;
 }
@@ -123,31 +159,6 @@ void CStockEventView::OnSize(UINT nType, int cx, int cy)
 	AdjustLayout();
 }
 
-void CStockEventView::FillFileView()
-{
-	m_wndEventListView.InsertItem(0,_T("FakeApp files"), 0);
-	//m_wndEventListView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-
-	m_wndEventListView.InsertItem(0,_T("FakeApp.cpp"), 1);
-	m_wndEventListView.InsertItem(0, _T("FakeApp.rc"), 1);
-	m_wndEventListView.InsertItem(0, _T("FakeAppDoc.cpp"), 1);
-	m_wndEventListView.InsertItem(0, _T("FakeAppView.cpp"), 1);
-	m_wndEventListView.InsertItem(0, _T("MainFrm.cpp"), 1);
-	m_wndEventListView.InsertItem(0, _T("pch.cpp"), 1);
-
-	m_wndEventListView.InsertItem(0, _T("FakeApp.h"), 2);
-	m_wndEventListView.InsertItem(0, _T("FakeAppDoc.h"), 2);
-	m_wndEventListView.InsertItem(0, _T("FakeAppView.h"), 2);
-	m_wndEventListView.InsertItem(0, _T("Resource.h"), 2);
-	m_wndEventListView.InsertItem(0, _T("MainFrm.h"), 2);
-	m_wndEventListView.InsertItem(0, _T("pch.h"), 2);
-
-	m_wndEventListView.InsertItem(0,_T("FakeApp.ico"), 2);
-	m_wndEventListView.InsertItem(0, _T("FakeApp.rc2"), 2);
-	m_wndEventListView.InsertItem(0, _T("FakeAppDoc.ico"), 2);
-	m_wndEventListView.InsertItem(0, _T("FakeToolbar.bmp"), 2);
-
-}
 
 void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 {
@@ -155,6 +166,9 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 	NMLVDISPINFO* listInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
 	if (NULL != listInfo->item.pszText)
 	{
+		int sortColumn = m_wndEventListView.GetHeaderCtrl().GetSortColumn();
+		bool ascending = m_wndEventListView.GetHeaderCtrl().IsAscending();
+
 		m_wndEventListView.SetItemText(listInfo->item.iItem, 0, listInfo->item.pszText);
 		WPARAM eventIdParam = -1;
 		if (listInfo->item.lParam == 0)
@@ -163,18 +177,25 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			eventIdParam = (WPARAM)event->GetId();
 			m_wndEventListView.SetItemData(listInfo->item.iItem, (LPARAM)event);
 			CString color;
-			color.Format(_T("%x"), event->GetColor());
+			//color.Format(_T("%x"), event->GetColor());
 			auto duration = FormatDuration(event->GetDuration());
-			m_wndEventListView.SetItem(listInfo->item.iItem, 1, LVIF_TEXT, duration, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(listInfo->item.iItem, 2, LVIF_TEXT, color, 0, 0, 0, 0);
+			CString usage;
+			usage.Format(_T("%d"), event->GetUsage());
+			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
 		}
 		else
 		{
 			CScheduleStockEvent* event = (CScheduleStockEvent*)listInfo->item.lParam;
 			eventIdParam = (WPARAM)event->GetId();
 			GetDocument()->UpdateStockEventName(event, listInfo->item.pszText, reinterpret_cast<LPARAM>(this));
+		}
+		if (sortColumn != -1)
+		{
+			m_wndEventListView.Sort(sortColumn, ascending);
+		}
 
-		}		
 		AfxGetMainWnd()->PostMessage(WM_STOCK_EVENT_OBJECT_SELECTED, eventIdParam, (LPARAM)this);
 	}
 	else
@@ -255,52 +276,50 @@ CString CStockEventView::FormatDuration(std::chrono::seconds seconds)
 }
 void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 {
-	m_wndEventListView.SetRedraw(FALSE);
-	m_wndEventListView.DeleteAllItems();
-	int index = 0;
-	pDoc->SortStockEvents(sortedColumn,sortAscending);
-	for (const auto& ev : pDoc->GetStockEvents())
-	{		
-		auto insertedIndex = m_wndEventListView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index++, ev->GetName(), 0,0,0,(LPARAM)ev.get());
-		CString color;
-		color.Format(_T("%x"), ev->GetColor());
-		auto duration = FormatDuration(ev->GetDuration());
-		m_wndEventListView.SetItem(insertedIndex, 1, LVIF_TEXT, duration, 0, 0, 0, 0);
-		m_wndEventListView.SetItem(insertedIndex, 2, LVIF_TEXT, color, 0, 0, 0, 0);
-	}
+	m_wndEventListView.SetRedraw(FALSE);	
+	int sortColumn = m_wndEventListView.GetHeaderCtrl().GetSortColumn();
+	bool ascending = m_wndEventListView.GetHeaderCtrl().IsAscending();
 
-	m_wndEventListView.SetRedraw(TRUE);
-}
-
-void CStockEventView::OnEventListColumnClick(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-	HDITEM headerItem;
-	headerItem.mask = HDI_FORMAT;
-	m_wndEventListView.GetHeaderCtrl()->GetItem(sortedColumn, &headerItem);
-
-	if (sortedColumn == pNMLV->iSubItem)
+	if (TRUE)//m_wndEventListView.GetItemCount() != pDoc->GetStockEvents().size()
 	{
-		headerItem.fmt &= ~(sortAscending ? HDF_SORTUP : HDF_SORTDOWN);
-		sortAscending = !sortAscending;
-		headerItem.fmt |= (sortAscending ? HDF_SORTUP :HDF_SORTDOWN);
-		m_wndEventListView.GetHeaderCtrl()->SetItem(sortedColumn, &headerItem);
+		m_wndEventListView.DeleteAllItems();
+		int index = 0;
+		for (const auto& ev : pDoc->GetStockEvents())
+		{
+			auto insertedIndex = m_wndEventListView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index++, ev->GetName(), 0, 0, 0, (LPARAM)ev.get());
+			CString color;
+			CString usage;
+			usage.Format(_T("%d"), ev->GetUsage());
+			auto duration = FormatDuration(ev->GetDuration());
+			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
+		}
 	}
 	else
 	{
-		headerItem.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP | HDF_BITMAP_ON_RIGHT);
-		m_wndEventListView.GetHeaderCtrl()->SetItem(sortedColumn, &headerItem);
-		sortedColumn = pNMLV->iSubItem;
-		sortAscending = true;
-		m_wndEventListView.GetHeaderCtrl()->GetItem(sortedColumn, &headerItem);
-		headerItem.fmt |= (sortAscending ? HDF_SORTUP : HDF_SORTDOWN);
-		m_wndEventListView.GetHeaderCtrl()->SetItem(sortedColumn, &headerItem);
+		for (int i = 0; i < m_wndEventListView.GetItemCount(); ++i)
+		{
+			CScheduleStockEvent* event = (CScheduleStockEvent*)m_wndEventListView.GetItemData(i);
+			CString color;
+			CString usage;
+			usage.Format(_T("%d"), event->GetUsage());
+			auto duration = FormatDuration(event->GetDuration());
+			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Name, LVIF_TEXT, event->GetName(), 0, 0, 0, 0);
+			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
+			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
+		}
+	}
+
+	if (sortColumn != -1)
+	{
+		m_wndEventListView.Sort(sortColumn,ascending);
 	}
 	
-	ReloadEventsList(GetDocument());
-
-	*pResult = 0;
+	m_wndEventListView.SetRedraw(TRUE);
 }
+
 
 void CStockEventView::AdjustLayout()
 {
@@ -316,18 +335,13 @@ void CStockEventView::AdjustLayout()
 
 	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndEventListView.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
-
-	if (m_wndEventListView.GetColumnWidth(0) < 20)
+	int colCount = m_wndEventListView.GetHeaderCtrl().GetItemCount();
+	for (int i = 0; i < colCount;++i)
 	{
-		m_wndEventListView.SetColumnWidth(0, rectClient.Width() / 3);
-	}
-	if (m_wndEventListView.GetColumnWidth(1) < 20)
-	{
-		m_wndEventListView.SetColumnWidth(1, rectClient.Width() / 3);
-	}
-	if (m_wndEventListView.GetColumnWidth(2) < 20)
-	{
-		m_wndEventListView.SetColumnWidth(2, rectClient.Width() / 3);
+		if (m_wndEventListView.GetColumnWidth(i) < 20)
+		{
+			m_wndEventListView.SetColumnWidth(i, rectClient.Width() / colCount);
+		}
 	}
 }
 
@@ -375,7 +389,7 @@ void CStockEventView::OnRemoveEvent()
 		int index = m_wndEventListView.GetNextSelectedItem(pos);
 		CScheduleStockEvent* event = (CScheduleStockEvent*)m_wndEventListView.GetItemData(index);
 		CString message;
-		message.Format(_T("Are you sure you want to delete event %s? All scheduled events from it will be removed."), event->GetName());
+		message.Format(_T("Are you sure you want to delete event %s? All scheduled events from it will be removed."), event->GetName().GetString());
 		const int result = MessageBox(message, _T("Are you sure?"), MB_YESNO|MB_ICONWARNING);
 		if (result == IDYES)
 		{

@@ -40,3 +40,19 @@ void CScheduleStockEvent::SetDuration(const std::chrono::seconds& newDuration)
 {
 	duration = newDuration;
 }
+int CScheduleStockEvent::GetUsage() const
+{
+	return usage;
+}
+void CScheduleStockEvent::IncrementUsage()
+{
+	++usage;
+}
+void CScheduleStockEvent::DecrementUsage()
+{
+	--usage;
+}
+void CScheduleStockEvent::SetUsage(int usage)
+{
+	this->usage = usage;
+}

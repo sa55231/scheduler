@@ -1,5 +1,6 @@
 #pragma once
 #include "ViewDockingPane.h"
+#include "UnsortedListCtrl.h"
 
 
 class CTrackEventsListToolBar : public CMFCToolBar
@@ -30,7 +31,7 @@ protected:
 	virtual void OnUpdate(const LPARAM lHint);
 	void FillEventsList(CScheduleTrack* track);
 protected:
-	CListCtrl m_wndEventsList;
+	CUnsortedListCtrl m_wndEventsList;
 	CImageList m_TrackEventsListImages;
 	CTrackEventsListToolBar m_wndToolBar;
 	int trackId = -1;

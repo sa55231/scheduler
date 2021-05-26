@@ -4,6 +4,11 @@
 CScheduleEvent::CScheduleEvent(CScheduleStockEvent* eventSource,int id, int trackId):
 	stockEvent(eventSource),id(id),trackId(trackId)
 {
+	eventSource->IncrementUsage();
+}
+CScheduleEvent::~CScheduleEvent()
+{
+	stockEvent->DecrementUsage();
 }
 int CScheduleEvent::GetTrackId() const
 {

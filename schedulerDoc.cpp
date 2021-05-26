@@ -21,6 +21,7 @@
 #endif
 
 #include "schedulerDoc.h"
+#include "utils.h"
 
 #include <propkey.h>
 
@@ -245,16 +246,19 @@ bool CSchedulerDoc::AreScheduledEvents() const
 }
 void CSchedulerDoc::SortStockEvents(int sortedColumn, bool sortAscending)
 {
-	// sortedColumn: 0 - name, 1 - duration, 2 - color
 	std::sort(stockEvents.begin(), stockEvents.end(), [sortedColumn, sortAscending](auto& s1, auto& s2) -> bool {
-		switch (sortedColumn)
+		EventsViewColumns col = (EventsViewColumns)sortedColumn;
+
+		switch (col)
 		{
-		case 0:
+		case EventsViewColumns::Name:
 			return sortAscending ? s1->GetName() < s2->GetName() : s1->GetName() > s2->GetName();
-		case 1:
+		case EventsViewColumns::Duration:
 			return sortAscending ? s1->GetDuration() < s2->GetDuration() : s1->GetDuration() > s2->GetDuration();
-		case 2:
+		case EventsViewColumns::Color:
 			return sortAscending ? s1->GetColor() < s2->GetColor() : s1->GetColor() > s2->GetColor();
+		case EventsViewColumns::Usage:
+			return sortAscending ? s1->GetUsage() < s2->GetUsage() : s1->GetUsage() > s2->GetUsage();
 		default:
 			return true;
 		}
@@ -335,11 +339,11 @@ void CSchedulerDoc::DeleteStockEvent(CScheduleStockEvent* event, LPARAM lHint)
 	});
 	if (it != stockEvents.end())
 	{
-		stockEvents.erase(it);
 		for (auto&& track : tracks)
 		{
 			track->RemoveEvents(eventId);
 		}
+		stockEvents.erase(it);
 		SetModifiedFlag(TRUE);
 		UpdateAllViews(nullptr, lHint);
 	}
@@ -560,6 +564,7 @@ TRY
 
 		tracks.clear();
 		stockEvents.clear();
+		
 		utcOffsetMinutes = utcOffset;
 		tracks = std::move(newTracks);
 		stockEvents = std::move(newStockEvents);

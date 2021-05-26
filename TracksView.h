@@ -12,6 +12,7 @@
 #pragma once
 
 #include "ViewDockingPane.h"
+#include "UnsortedListCtrl.h"
 
 class CTracksToolBar : public CMFCToolBar
 {
@@ -37,7 +38,7 @@ public:
 
 protected:
 	CTracksToolBar m_wndToolBar;
-	CListCtrl m_wndClassView;
+	CUnsortedListCtrl m_wndClassView;
 	CImageList m_ClassViewImages;
 	UINT m_nCurrSort;
 	int addingItemIndex = -1;

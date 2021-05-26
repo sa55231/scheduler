@@ -23,6 +23,14 @@ class CFileViewToolBar : public CMFCToolBar
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
+class CStockEventsListCtrl : public CMFCListCtrl
+{
+	DECLARE_DYNAMIC(CStockEventsListCtrl)
+public:
+	virtual COLORREF OnGetCellBkColor(int nRow, int nColumn) override;
+	virtual int OnCompareItems(LPARAM lParam1,LPARAM lParam2,int iColumn) override;
+};
+
 class CStockEventView : public CViewDockingPane
 {
 	DECLARE_DYNAMIC(CStockEventView)
@@ -36,16 +44,13 @@ public:
 	// Attributes
 protected:
 
-	CListCtrl m_wndEventListView;
+	CStockEventsListCtrl m_wndEventListView;
 	CImageList m_EventListImages;
 	CFileViewToolBar m_wndToolBar;
 	int addingItemIndex = -1;
 	bool updatingEventsSelection = false;
 	bool addingEvent = false;
-	int sortedColumn = 0;
-	bool sortAscending = true;
 protected:
-	void FillFileView();
 	virtual void OnInitialUpdate();
 	virtual void OnUpdate(const LPARAM lHint);
 
@@ -70,7 +75,6 @@ protected:
 	afx_msg void OnBeginDragEvent(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI);
 	afx_msg void OnEventListItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnEventListColumnClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LRESULT OnEventObjectSelected(WPARAM wParam, LPARAM lParam);
 	//afx_msg HCURSOR OnQueryDragIcon();
 

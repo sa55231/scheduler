@@ -118,6 +118,9 @@ void CPropertiesWnd::OnInitialUpdate()
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);	
+	m_wndPropList.RemoveAll();
+	m_wndPropList.RedrawWindow();
+
 }
 void CPropertiesWnd::OnUpdate(const LPARAM lHint)
 {
