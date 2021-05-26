@@ -685,7 +685,7 @@ void CMainFrame::UpdateFontsGroups(UINT fontsID, UINT fontsSizeID, const LOGFONT
 	{
 		fontCombo->SelectItem(_T("Times New Roman"));
 	}
-	int fontSize = 0;
+	int fontSize = (int)font.lfHeight;
 	if (font.lfHeight < 0)
 	{
 		fontSize = (int)(std::abs((float)font.lfHeight * 96.f) / minDpi);

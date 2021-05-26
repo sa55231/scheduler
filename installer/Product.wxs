@@ -11,7 +11,7 @@
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
   
-<?define MyProductVersion = "1.0.10.0" ?>
+<?define MyProductVersion = "1.0.11.0" ?>
 <?define MyUpgradeCode = "465f37e9-e953-4c95-bd5f-6d09e00229a7" ?>
 
 	<Product Id="*" Name="Events Scheduler $(var.bitness)" Language="1033" 
