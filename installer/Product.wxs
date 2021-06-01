@@ -11,7 +11,7 @@
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
   
-<?define MyProductVersion = "1.0.11.0" ?>
+<?define MyProductVersion = "1.0.12.0" ?>
 <?define MyUpgradeCode = "465f37e9-e953-4c95-bd5f-6d09e00229a7" ?>
 
 	<Product Id="*" Name="Events Scheduler $(var.bitness)" Language="1033" 
@@ -21,9 +21,10 @@
     <MediaTemplate EmbedCab="yes" />
 
     <MajorUpgrade      
+      
        Schedule="afterInstallValidate"
       DowngradeErrorMessage="A newer version of [ProductName] is already installed."
-     AllowSameVersionUpgrades="yes"/>
+     />
 
     <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf" />
 

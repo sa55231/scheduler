@@ -96,6 +96,12 @@
     <ClInclude Include="UnsortedListCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CScheduleEventConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CScheduleEventConstraintFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scheduler.cpp">
@@ -165,6 +171,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UnsortedListCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CScheduleEventConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CScheduleEventConstraintFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "CScheduleEvent.h"
 
+#include "CScheduleStockEvent.h"
+
 CScheduleEvent::CScheduleEvent(CScheduleStockEvent* eventSource,int id, int trackId):
 	stockEvent(eventSource),id(id),trackId(trackId)
 {

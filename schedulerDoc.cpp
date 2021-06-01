@@ -22,6 +22,7 @@
 
 #include "schedulerDoc.h"
 #include "utils.h"
+#include "CScheduleEventConstraintFactory.h"
 
 #include <propkey.h>
 
@@ -32,7 +33,7 @@
 #endif
 
 static constexpr uint32_t MAGIC = 0x3F3D72CB;
-static constexpr uint32_t VERSION = 4;
+static constexpr uint32_t VERSION = 5;
 
 // CSchedulerDoc
 
@@ -159,7 +160,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 
 		tracks.emplace_back(std::make_unique<CScheduleTrack>(i, name, std::move(events)));
 	}
-	
+	RefreshEventsSchedulingCapabilities();
 #endif //_DEBUG
 
 	AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
@@ -270,6 +271,7 @@ void CSchedulerDoc::RemoveAllScheduledEvents()
 	{
 		track->RemoveAllEvents();
 	}
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, -1);
 }
@@ -278,6 +280,7 @@ void CSchedulerDoc::AddTrackEventAtIndex(int stockEventId, CScheduleTrack* track
 	auto stockEvent = GetStockEvent(stockEventId);
 
 	track->InsertEventAtIndex(index, std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), track->GetId()));
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
@@ -286,12 +289,14 @@ void CSchedulerDoc::AddTrackEvent(int stockEventId, CScheduleTrack* track, LPARA
 	auto stockEvent = GetStockEvent(stockEventId);
 
 	track->AddEvent(std::make_unique<CScheduleEvent>(stockEvent, GetNextEventId(), track->GetId()));
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
 void CSchedulerDoc::RemoveEventFromTrack(CScheduleTrack* track, CScheduleEvent* event)
 {
 	track->RemoveEvent(event);
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, -1);
 }
@@ -365,6 +370,13 @@ CScheduleStockEvent* CSchedulerDoc::AddEvent(const CString& newName, LPARAM lHin
 
 	return stockEvents.back().get();
 }
+void CSchedulerDoc::RefreshEventsSchedulingCapabilities()
+{
+	for (auto&& event : stockEvents)
+	{
+		event->RefreshGlobalSchedulingCapabilities(tracks);
+	}
+}
 CScheduleTrack* CSchedulerDoc::AddTrack(const CString& newName, LPARAM lHint)
 {
 	std::vector<CScheduleEventPtr> events;
@@ -377,6 +389,8 @@ CScheduleTrack* CSchedulerDoc::AddTrack(const CString& newName, LPARAM lHint)
 		id = (*maxIt)->GetId() + 1;
 	}
 	tracks.emplace_back(std::make_unique<CScheduleTrack>(id,newName,std::move(events),std::chrono::system_clock::now()));
+
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 	return tracks.back().get();
@@ -390,6 +404,7 @@ void CSchedulerDoc::DeleteTrack(CScheduleTrack* track, LPARAM lHint)
 	if (it != tracks.end())
 	{
 		tracks.erase(it);
+		RefreshEventsSchedulingCapabilities();
 		SetModifiedFlag(TRUE);
 		UpdateAllViews(nullptr, lHint);
 	}
@@ -397,6 +412,7 @@ void CSchedulerDoc::DeleteTrack(CScheduleTrack* track, LPARAM lHint)
 void CSchedulerDoc::UpdateTrackStartTime(CScheduleTrack* track, const std::chrono::system_clock::time_point& time, LPARAM lHint)
 {
 	track->SetStartTime(time);
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
@@ -435,6 +451,11 @@ TRY
 			ar << ev->GetName();
 			ar << ev->GetDuration().count();
 			ar << ev->GetColor();
+			ar << ev->GetConstraints().size();
+			for (const auto& c : ev->GetConstraints())
+			{
+				c->Serialize(ar);
+			}
 		}
 		ar << tracks.size();
 		for (const auto& tr : tracks)
@@ -490,14 +511,31 @@ TRY
 		{
 			int id;
 			CString name;
-			long long secondsRaw;
+			std::chrono::seconds::rep secondsRaw;
 			UINT32 color;
 			ar >> id;
 			ar >> name;
 			ar >> secondsRaw;
 			ar >> color;
 			std::chrono::seconds duration(secondsRaw);
-			newStockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, std::move(name), std::move(duration), color));
+			auto event = std::make_unique<CScheduleStockEvent>(id, std::move(name), std::move(duration), color);
+			if (version >= 5)
+			{
+				size_t constraintsSize = 0;
+				ar >> constraintsSize;
+				for (size_t j = 0; j < constraintsSize; ++j)
+				{
+					int type;
+					ar >> type;
+					auto c = CScheduleEventConstraintFactory::Create((ConstraintType)type);
+					if (c)
+					{
+						c->Serialize(ar);
+						event->AddConstraint(std::move(c));
+					}
+				}
+			}
+			newStockEvents.push_back(std::move(event));
 		}
 		size_t tracksSize = 0;
 		ar >> tracksSize;

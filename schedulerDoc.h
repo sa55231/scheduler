@@ -79,7 +79,7 @@ public:
 #endif
 
 protected:
-
+	void RefreshEventsSchedulingCapabilities();
 private:
 	std::vector<CScheduleTrackPtr> tracks;
 	std::vector<CScheduleStockEventPtr> stockEvents;

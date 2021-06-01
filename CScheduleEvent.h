@@ -2,7 +2,8 @@
 
 #include <memory>
 #include <chrono>
-#include "CScheduleStockEvent.h"
+
+class CScheduleStockEvent;
 
 class CScheduleEvent
 {
