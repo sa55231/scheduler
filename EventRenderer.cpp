@@ -69,7 +69,7 @@ void CEventRenderer::SetMinimumTextRenderingWidth(FLOAT width)
 {
 	minEventRenderWidth = width;
 }
-void CEventRenderer::SetEventBounds(D2D1_RECT_F& rect)
+void CEventRenderer::SetEventBounds(const D2D1_RECT_F& rect)
 {
 	eventBounds = rect;
 	auto height = eventBounds.top - eventBounds.bottom;

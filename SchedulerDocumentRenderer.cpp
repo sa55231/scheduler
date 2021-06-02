@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <sstream>
 #include <type_traits>
+#include <chrono>
 
 namespace
 {
@@ -90,7 +91,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CRender
 		
 	auto startTime = doc->GetStartTime();
 	std::chrono::minutes utcOffset(doc->GetUTCOffsetMinutes());
-	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+	std::chrono::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
 
 	const auto columnsCount = (surfaceRect.right - TRACK_LABEL_WIDTH) / DURATION_COLUMN_WIDTH;
 	if ((int)columnsCount > 0)
@@ -101,7 +102,7 @@ D2D1_SIZE_F CSchedulerDocumentRenderer::UpdateLayout(CSchedulerDoc* doc, CRender
 		{
 			HeaderTimelineItem item;
 			item.textBounds = D2D1::RectF(i - 50.f, 0.f, i + 50.f, HEADER_HEIGHT);
-			CString text(date::format("%Y %b %d\n%R", start).c_str());
+			CString text(std::format("{:%Y %b %d%n%R}", start).c_str());
 			start += secondsInColumn;
 
 			item.text = text;

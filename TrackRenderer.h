@@ -13,9 +13,9 @@ public:
 		CD2DTextFormat* textFormat, CD2DSolidColorBrush* backgroundColorBrush, 
 		CD2DSolidColorBrush* foregroundColorBrush, ID2D1StrokeStyle* dropTargetStrokeStyle);
 	void Render(CRenderTarget* renderTarget);
-	void SetTrackLabelBounds(D2D1_RECT_F& rect);
+	void SetTrackLabelBounds(const D2D1_RECT_F& rect);
 	D2D1_RECT_F GetTrackLabelBounds() const;
-	void SetTrackBounds(D2D1_RECT_F& rect);
+	void SetTrackBounds(const D2D1_RECT_F& rect);
 	CEventRenderer* GetEventAtPoint(const D2D1_POINT_2F& point) const;
 	bool ContainsPoint(const D2D1_POINT_2F& point) const;
 	bool IsSelected() const;

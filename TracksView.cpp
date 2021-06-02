@@ -16,6 +16,8 @@
 #include "Resource.h"
 #include "scheduler.h"
 
+#include <chrono>
+
 class CTrackViewMenuButton : public CMFCToolBarMenuButton
 {
 	friend class CTracksToolBar;
@@ -159,8 +161,8 @@ void CTracksView::ReloadTracksList(CSchedulerDoc* pDoc)
 		auto insertedIndex = m_wndClassView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM ,index++, 
 			track->GetName(),0,0,0, (LPARAM)track.get());
 		auto startTime = track->GetStartTime();
-		date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
-		CString startText(date::format("%Y %b %d %R", start).c_str());
+		std::chrono::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+		CString startText(std::format("{:%Y %b %d %R}", start).c_str());
 
 		m_wndClassView.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
 	}
@@ -241,8 +243,8 @@ void CTracksView::OnAddTrack()
 	int index = m_wndClassView.GetItemCount();
 	CString newEventName(_T("New Track"));
 	auto insertedIndex = m_wndClassView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index, newEventName, 0, 0, 0, 0);
-	date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()) - utcOffset };
-	CString startText(date::format("%Y %b %d %R", start).c_str());
+	std::chrono::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()) - utcOffset };
+	CString startText(std::format("{:%Y %b %d %R}", start).c_str());
 	m_wndClassView.SetItem(insertedIndex, 1, LVIF_TEXT, startText, 0, 0, 0, 0);
 
 	addingItemIndex = index;

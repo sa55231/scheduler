@@ -20,12 +20,15 @@
 #include "scheduler.h"
 #endif
 
+#include <chrono>
+
 #include "schedulerDoc.h"
 #include "schedulerView.h"
 #include "MainFrm.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
 
 
 // CSchedulerView
@@ -569,13 +572,13 @@ void CSchedulerView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
 			textPrintingLines.emplace_back(track->GetName());
 			auto startTime = track->GetStartTime();
 			std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
-			date::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
+			std::chrono::local_seconds start{ std::chrono::duration_cast<std::chrono::seconds>(startTime.time_since_epoch()) - utcOffset };
 
 			for (const auto& ev : track->GetEvents())
 			{
-				CString startText(date::format("%Y %b %d %R", start).c_str());
+				CString startText(std::format("{:%Y %b %d %R}", start).c_str());
 				auto end = start + ev->GetDuration();
-				CString endText(date::format("%Y %b %d %R", end).c_str());
+				CString endText(std::format("{:%Y %b %d %R}", end).c_str());
 				start = end;
 				CString text;
 				text.Append(ev->GetName());

@@ -59,12 +59,12 @@ CString CTrackRenderer::GetName() const
 {
 	return name;
 }
-void CTrackRenderer::SetTrackBounds(D2D1_RECT_F& rect)
+void CTrackRenderer::SetTrackBounds(const D2D1_RECT_F& rect)
 {
 	trackBounds = rect;
 }
 
-void CTrackRenderer::SetTrackLabelBounds(D2D1_RECT_F& rect)
+void CTrackRenderer::SetTrackLabelBounds(const D2D1_RECT_F& rect)
 {
 	trackLabelBounds = rect;
 }

@@ -16,7 +16,7 @@ public:
 	bool IsSelected() const;
 	void SetSelected(bool flag);
 	bool ContainsPoint(const D2D1_POINT_2F& point) const;
-	void SetEventBounds(D2D1_RECT_F& rect);
+	void SetEventBounds(const D2D1_RECT_F& rect);
 	D2D1_RECT_F GetEventBounds() const;
 	void SetMinimumTextRenderingWidth(FLOAT width);
 	int GetEventId() const;

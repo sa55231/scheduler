@@ -88,7 +88,7 @@ BOOL CPropertyGridDateProperty::OnUpdateValue()
 	ASSERT(tmpTime.GetStatus() == COleDateTime::valid);
 	m_varValue = tmpTime;
 
-	if (oldTimePoint != m_varValue)
+	if (oldTimePoint != (COleDateTime)m_varValue)
 	{
 		m_pWndList->OnPropertyChanged(this);
 	}

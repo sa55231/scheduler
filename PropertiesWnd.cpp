@@ -19,6 +19,8 @@
 #include "CScheduleEvent.h"
 #include "PropertyGridDateProperty.h"
 
+#include <chrono>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -234,9 +236,9 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 			auto month = date.GetMonth();
 			auto day = date.GetDay();
 			std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
-			auto local_time = date::make_time(hour + minute + seconds);
-			auto local_date = date::year{ year } / date::month{ (unsigned int)month } / date::day{ (unsigned int)day };
-			std::chrono::system_clock::time_point tp(((date::sys_days)local_date).time_since_epoch() + local_time.to_duration() + utcOffset);
+			auto local_time = hour + minute + seconds;
+			auto local_date = std::chrono::year{ year } / std::chrono::month{ (unsigned int)month } / std::chrono::day{ (unsigned int)day };
+			std::chrono::system_clock::time_point tp(((std::chrono::sys_days)local_date).time_since_epoch() + local_time + utcOffset);
 
 			GetDocument()->UpdateTrackStartTime(track, tp,(LPARAM)this);
 		}
