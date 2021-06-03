@@ -15,7 +15,6 @@
 #include "StockEventView.h"
 #include "Resource.h"
 #include "scheduler.h"
-#include "utils.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -23,12 +22,44 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+namespace
+{
+	CString FormatDuration(std::chrono::seconds seconds)
+	{
+		CString str;
+		typedef std::chrono::duration<int, std::ratio<86400>> days;
+		const auto d = std::chrono::duration_cast<days>(seconds);
+		if (d.count() > 0)
+		{
+			str.AppendFormat(_T("%d days "), d.count());
+		}
+		seconds = seconds - d;
+		const auto h = std::chrono::duration_cast<std::chrono::hours>(seconds);
+		str.AppendFormat(_T("%02dh"), h.count());
+		seconds = seconds - h;
+		const auto m = std::chrono::duration_cast<std::chrono::minutes>(seconds);
+		str.AppendFormat(_T(":%02dm"), m.count());
+		seconds = seconds - m;
+		str.AppendFormat(_T(":%02ds"), (int)seconds.count());
+		return str;
+	}
+}
 IMPLEMENT_DYNAMIC(CStockEventsListCtrl, CMFCListCtrl)
 
 COLORREF CStockEventsListCtrl::OnGetCellBkColor(int nRow, int nColumn)
 {
 	CScheduleStockEvent* event = (CScheduleStockEvent*)GetItemData(nRow);
-	if (event != nullptr && nColumn == (int)EventsViewColumns::Color)
+	EventsViewColumns col = EventsViewColumns::ColumnsCount;
+	for (const auto& c : columnMappings)
+	{
+		if (c.second.colIndex == nColumn && c.second.visible)
+		{
+			col = c.first;
+			break;
+		}
+	}
+
+	if (event != nullptr && col == EventsViewColumns::Color)
 	{		
 		D2D1::ColorF color(event->GetColor());
 		return RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f);
@@ -39,7 +70,16 @@ int CStockEventsListCtrl::OnCompareItems(LPARAM lParam1, LPARAM lParam2, int iCo
 {
 	CScheduleStockEvent* s1 = (CScheduleStockEvent*)lParam1;
 	CScheduleStockEvent* s2 = (CScheduleStockEvent*)lParam2;
-	EventsViewColumns col = (EventsViewColumns)iColumn;
+	EventsViewColumns col = EventsViewColumns::ColumnsCount;
+	for (const auto& c : columnMappings)
+	{
+		if (c.second.colIndex == iColumn && c.second.visible)
+		{
+			col = c.first;
+			break;
+		}
+	}
+	ASSERT(col != EventsViewColumns::ColumnsCount);
 	switch (col)
 	{
 	case EventsViewColumns::Name:
@@ -53,7 +93,105 @@ int CStockEventsListCtrl::OnCompareItems(LPARAM lParam1, LPARAM lParam2, int iCo
 	default:
 		return 0;
 	}
+}
+BOOL CStockEventsListCtrl::SetCellText(int index, EventsViewColumns column, LPCTSTR text)
+{
+	if (columnMappings.at(column).visible)
+	{
+		return SetItem(index, columnMappings.at(column).colIndex, LVIF_TEXT, text, 0, 0, 0, 0);
+	}
+	return FALSE;
+}
 
+int CStockEventsListCtrl::GetColWidth(EventsViewColumns col) const
+{
+	return columnMappings.at(col).colWidth;
+}
+
+void CStockEventsListCtrl::SetColWidth(EventsViewColumns col, int width)
+{
+	columnMappings.at(col).colWidth = width;
+	if (columnMappings.at(col).visible)
+	{
+		SetColumnWidth(columnMappings.at(col).colIndex, width);
+	}
+}
+
+bool CStockEventsListCtrl::IsColumnVisible(EventsViewColumns col) const
+{
+	return columnMappings.at(col).visible;
+}
+void CStockEventsListCtrl::SetColumnVisible(EventsViewColumns col, bool flag)
+{
+	if (!flag) ASSERT(col != EventsViewColumns::Name);
+
+	if (columnMappings.at(col).visible == flag) return;
+
+	columnMappings.at(col).visible = flag;
+	auto& colMapping = columnMappings.at(col);
+	if (flag)
+	{
+		colMapping.colIndex = GetHeaderCtrl().GetItemCount();
+		InsertColumn(colMapping.colIndex, colMapping.caption, colMapping.format);
+		SetColWidth(col, colMapping.colWidth);
+		for (int i = 0; i < GetItemCount(); i++)
+		{
+			CScheduleStockEvent* event = (CScheduleStockEvent*)GetItemData(i);
+			CString color;
+			CString usage;
+			usage.Format(_T("%d"), event->GetUsage());
+			
+			auto duration = FormatDuration(event->GetDuration());
+			SetCellText(i, EventsViewColumns::Name, event->GetName());
+			SetCellText(i, EventsViewColumns::Duration, duration);
+			SetCellText(i, EventsViewColumns::Color, color);
+			SetCellText(i, EventsViewColumns::Usage, usage);
+		}
+	}
+	else
+	{
+		DeleteColumn(colMapping.colIndex);
+		for (auto&& c : columnMappings)
+		{
+			if (c.second.column != colMapping.column && c.second.colIndex >= colMapping.colIndex)
+			{
+				--c.second.colIndex;
+			}
+		}
+	}
+}
+void CStockEventsListCtrl::AddColumn(EventsViewColumns col, LPCTSTR caption, int format)
+{
+	Column colMapping(col,addingColumnIndex++,true, 90, caption, format);
+	InsertColumn(colMapping.colIndex, colMapping.caption, colMapping.format);
+	columnMappings[col] = colMapping;
+}
+
+void CFileViewToolBar::AdjustLocations()
+{
+	CMFCToolBar::AdjustLocations();
+
+	if (GetSafeHwnd())
+	{
+		int iCount(GetCount());
+		if (iCount)
+		{
+			CRect crClient(0, 0, 0, 0);
+			GetClientRect(crClient);
+
+			CMFCToolBarButton* pcButton(GetButton(iCount - 1));
+			if (pcButton)
+			{
+				CRect crPos(pcButton->Rect());
+				if (crClient.right > crPos.right)
+				{
+					crPos.OffsetRect(crClient.right - crPos.right, 0);
+					pcButton->SetRect(crPos);
+					UpdateTooltips();
+				}
+			}
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,6 +208,7 @@ CStockEventView::~CStockEventView()
 IMPLEMENT_DYNAMIC(CStockEventView, CViewDockingPane)
 
 BEGIN_MESSAGE_MAP(CStockEventView, CViewDockingPane)
+	ON_WM_DESTROY()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_CONTEXTMENU()
@@ -82,9 +221,12 @@ BEGIN_MESSAGE_MAP(CStockEventView, CViewDockingPane)
 	ON_NOTIFY(LVN_BEGINDRAG, IDC_EVENT_LIST, OnBeginDragEvent)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_EVENT,OnUpdateCommandToolbarButtons)
 	ON_UPDATE_COMMAND_UI(ID_REMOVE_EVENT, OnUpdateCommandToolbarButtons)
+	//ON_UPDATE_COMMAND_UI(ID_SHOW_EVENT_COLUMS, OnUpdateShowColumnsButton)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_EVENT_LIST, OnEventListItemChanged)
 	//ON_NOTIFY(LVN_COLUMNCLICK, IDC_EVENT_LIST, OnEventListColumnClick)
 	ON_MESSAGE(WM_EVENT_OBJECT_SELECTED, OnEventObjectSelected)
+	ON_COMMAND_RANGE(ID_SHOWCOLS_DURATION, ID_SHOWCOLS_MAXCOUNT, OnShowHideColumn)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_SHOWCOLS_DURATION, ID_SHOWCOLS_MAXCOUNT, OnUpdateShowHideColumnsPopup)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,16 +255,25 @@ int CStockEventView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CString strTemp;
 	BOOL bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_NAME);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn((int)EventsViewColumns::Name, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.AddColumn(EventsViewColumns::Name, strTemp, LVCFMT_LEFT);
+
 	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_DURATION);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn((int)EventsViewColumns::Duration, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.AddColumn(EventsViewColumns::Duration, strTemp, LVCFMT_LEFT);
+
 	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_USAGE);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn((int)EventsViewColumns::Usage, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.AddColumn(EventsViewColumns::Usage, strTemp, LVCFMT_LEFT);
+
+	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_MAXCOUNT);
+	ASSERT(bNameValid);
+	m_wndEventListView.AddColumn(EventsViewColumns::MaxCount, strTemp, LVCFMT_LEFT);
+
 	bNameValid = strTemp.LoadString(IDS_STOCK_EVENT_COLOR);
 	ASSERT(bNameValid);
-	m_wndEventListView.InsertColumn((int)EventsViewColumns::Color, strTemp, LVCFMT_LEFT);
+	m_wndEventListView.AddColumn(EventsViewColumns::Color, strTemp, LVCFMT_LEFT);
+
+	LoadListSettings();
 
 	// Load view images:
 	m_EventListImages.Create(IDB_FILE_VIEW, 16, 0, RGB(255, 0, 255));
@@ -142,12 +293,35 @@ int CStockEventView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// All commands will be routed via this control , not via the parent frame:
 	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
+	CMenu menuSort;
+	menuSort.LoadMenu(IDR_SHOW_COLUMNS_MENU);
+
+	m_wndToolBar.ReplaceButton(ID_SHOW_EVENT_COLUMS, CMFCToolBarMenuButton((UINT)-1,menuSort.GetSubMenu(0)->GetSafeHmenu(),3));
+	
+	CMFCToolBarMenuButton* pButton = DYNAMIC_DOWNCAST(CMFCToolBarMenuButton, m_wndToolBar.GetButton(m_wndToolBar.GetCount()-1));
+
+	if (pButton != NULL)
+	{
+		pButton->m_bText = FALSE;
+		pButton->m_bImage = TRUE;		
+		pButton->SetMessageWnd(this);
+	}
+
 	
 	AdjustLayout();
 
 	m_wndEventListView.SetSortColumn((int)EventsViewColumns::Name, true);
 
 	return 0;
+}
+void CStockEventView::OnDestroy()
+{
+	SaveListSettings();
+	CViewDockingPane::OnDestroy();
+}
+void CStockEventView::OnUpdateShowColumnsButton(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
 }
 void CStockEventView::OnUpdateCommandToolbarButtons(CCmdUI* pCmdUI)
 {
@@ -157,6 +331,34 @@ void CStockEventView::OnSize(UINT nType, int cx, int cy)
 {
 	CDockablePane::OnSize(nType, cx, cy);
 	AdjustLayout();
+}
+void CStockEventView::LoadListSettings()
+{
+	m_wndEventListView.SetColWidth(EventsViewColumns::Name, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("NameColumnWidth"), 90));
+	m_wndEventListView.SetColumnVisible(EventsViewColumns::Name, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("NameColumnVisible"), true));
+	m_wndEventListView.SetColWidth(EventsViewColumns::Color, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("ColorColumnWidth"), 90));
+	m_wndEventListView.SetColumnVisible(EventsViewColumns::Color, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("ColorColumnVisible"), true));
+	m_wndEventListView.SetColWidth(EventsViewColumns::Duration, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("DurationColumnWidth"), 90));
+	m_wndEventListView.SetColumnVisible(EventsViewColumns::Duration, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("DurationColumnVisible"), true));
+	m_wndEventListView.SetColWidth(EventsViewColumns::Usage, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("UsageColumnWidth"), 50));
+	m_wndEventListView.SetColumnVisible(EventsViewColumns::Usage, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("UsageColumnVisible"), true));
+	m_wndEventListView.SetColWidth(EventsViewColumns::MaxCount, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("MaxCountColumnWidth"), 50));
+	m_wndEventListView.SetColumnVisible(EventsViewColumns::MaxCount, theApp.GetProfileInt(_T("Settings\\StockEventView"), _T("MaxCountColumnVisible"), true));
+
+
+}
+void CStockEventView::SaveListSettings()
+{
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"),_T("NameColumnWidth"), m_wndEventListView.GetColWidth(EventsViewColumns::Name));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("NameColumnVisible"), m_wndEventListView.IsColumnVisible(EventsViewColumns::Name));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("ColorColumnWidth"), m_wndEventListView.GetColWidth(EventsViewColumns::Color));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("ColorColumnVisible"), m_wndEventListView.IsColumnVisible(EventsViewColumns::Color));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("DurationColumnWidth"), m_wndEventListView.GetColWidth(EventsViewColumns::Duration));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("DurationColumnVisible"), m_wndEventListView.IsColumnVisible(EventsViewColumns::Duration));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("UsageColumnWidth"), m_wndEventListView.GetColWidth(EventsViewColumns::Usage));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("UsageColumnVisible"), m_wndEventListView.IsColumnVisible(EventsViewColumns::Usage));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("MaxCountColumnWidth"), m_wndEventListView.GetColWidth(EventsViewColumns::MaxCount));
+	theApp.WriteProfileInt(_T("Settings\\StockEventView"), _T("MaxCountColumnVisible"), m_wndEventListView.IsColumnVisible(EventsViewColumns::MaxCount));
 }
 
 
@@ -181,9 +383,9 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			auto duration = FormatDuration(event->GetDuration());
 			CString usage;
 			usage.Format(_T("%d"), event->GetUsage());
-			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(listInfo->item.iItem, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
+			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Duration, duration);
+			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Color, color);
+			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Usage, usage);
 		}
 		else
 		{
@@ -255,25 +457,6 @@ void CStockEventView::OnUpdate(const LPARAM lHint)
 	ASSERT_VALID(pDoc);
 	ReloadEventsList(pDoc);
 }
-CString CStockEventView::FormatDuration(std::chrono::seconds seconds)
-{
-	CString str;
-	typedef std::chrono::duration<int, std::ratio<86400>> days;
-	const auto d = std::chrono::duration_cast<days>(seconds);
-	if (d.count() > 0)
-	{
-		str.AppendFormat(_T("%d days "),d.count());
-	}
-	seconds = seconds - d;
-	const auto h = std::chrono::duration_cast<std::chrono::hours>(seconds);
-	str.AppendFormat(_T("%02dh"), h.count());
-	seconds = seconds -  h;
-	const auto m = std::chrono::duration_cast<std::chrono::minutes>(seconds);
-	str.AppendFormat(_T(":%02dm"), m.count());
-	seconds = seconds - m;
-	str.AppendFormat(_T(":%02ds"), (int)seconds.count());
-	return str;
-}
 void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 {
 	m_wndEventListView.SetRedraw(FALSE);	
@@ -291,9 +474,10 @@ void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 			CString usage;
 			usage.Format(_T("%d"), ev->GetUsage());
 			auto duration = FormatDuration(ev->GetDuration());
-			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(insertedIndex, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
+			
+			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Duration,  duration);
+			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Color,  color);
+			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Usage,  usage);
 		}
 	}
 	else
@@ -305,10 +489,10 @@ void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 			CString usage;
 			usage.Format(_T("%d"), event->GetUsage());
 			auto duration = FormatDuration(event->GetDuration());
-			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Name, LVIF_TEXT, event->GetName(), 0, 0, 0, 0);
-			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Duration, LVIF_TEXT, duration, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Color, LVIF_TEXT, color, 0, 0, 0, 0);
-			m_wndEventListView.SetItem(i, (int)EventsViewColumns::Usage, LVIF_TEXT, usage, 0, 0, 0, 0);
+			m_wndEventListView.SetCellText(i, EventsViewColumns::Name, event->GetName());
+			m_wndEventListView.SetCellText(i, EventsViewColumns::Duration, duration);
+			m_wndEventListView.SetCellText(i, EventsViewColumns::Color, color);
+			m_wndEventListView.SetCellText(i, EventsViewColumns::Usage, usage);
 		}
 	}
 
@@ -335,14 +519,6 @@ void CStockEventView::AdjustLayout()
 
 	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndEventListView.SetWindowPos(nullptr, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
-	int colCount = m_wndEventListView.GetHeaderCtrl().GetItemCount();
-	for (int i = 0; i < colCount;++i)
-	{
-		if (m_wndEventListView.GetColumnWidth(i) < 20)
-		{
-			m_wndEventListView.SetColumnWidth(i, rectClient.Width() / colCount);
-		}
-	}
 }
 
 void CStockEventView::OnBeginDragEvent(NMHDR* pNMHDR, LRESULT* pResult)
@@ -365,11 +541,10 @@ void CStockEventView::OnAddEvent()
 	int index = m_wndEventListView.GetItemCount();
 	CString newEventName(_T("New Event"));
 	auto insertedIndex = m_wndEventListView.InsertItem(LVIF_TEXT | LVIF_STATE | LVIF_PARAM, index, newEventName, 0, 0, 0, 0);
-	CString color;
-	color.Format(_T("%x"), 0);
-	auto duration = FormatDuration(std::chrono::seconds(3600));
-	m_wndEventListView.SetItem(insertedIndex, 1, LVIF_TEXT, duration, 0, 0, 0, 0);
-	m_wndEventListView.SetItem(insertedIndex, 2, LVIF_TEXT, color, 0, 0, 0, 0);
+	m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Duration, _T(""));
+	m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Color, _T(""));
+	m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Usage, _T(""));
+	m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::MaxCount, _T(""));
 
 	addingItemIndex = index;
 	auto editControl = m_wndEventListView.EditLabel(index);
@@ -530,3 +705,59 @@ void CStockEventView::OnChangeVisualStyle()
 
 	m_wndEventListView.SetImageList(&m_EventListImages, LVSIL_SMALL);
 }
+
+void CStockEventView::OnShowHideColumn(UINT id)
+{
+	EventsViewColumns col = EventsViewColumns::ColumnsCount;
+	switch (id)
+	{
+	case ID_SHOWCOLS_DURATION:
+		col = EventsViewColumns::Duration;
+		break;
+	case ID_SHOWCOLS_USAGE:
+		col = EventsViewColumns::Usage;
+		break;
+	case ID_SHOWCOLS_COLOR:
+		col = EventsViewColumns::Color;
+		break;
+	case ID_SHOWCOLS_MAXCOUNT:
+		col = EventsViewColumns::MaxCount;
+		break;
+	default:
+		break;
+	}
+
+	m_wndEventListView.SetColumnVisible(col, !m_wndEventListView.IsColumnVisible(col));
+}
+void CStockEventView::OnUpdateShowHideColumnsPopup(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+
+	EventsViewColumns col = EventsViewColumns::ColumnsCount;
+	switch (pCmdUI->m_nID)
+	{
+	case ID_SHOWCOLS_DURATION:
+		col = EventsViewColumns::Duration;
+		break;
+	case ID_SHOWCOLS_USAGE:
+		col = EventsViewColumns::Usage;
+		break;
+	case ID_SHOWCOLS_COLOR:
+		col = EventsViewColumns::Color;
+		break;
+	case ID_SHOWCOLS_MAXCOUNT:
+		col = EventsViewColumns::MaxCount;
+		break;
+	default:
+		break;
+	}
+	pCmdUI->SetCheck(m_wndEventListView.IsColumnVisible(col));
+}
+
+
+/*#define ID_SHOWCOLS_DURATION            32792
+#define ID_SHOWCOLS_USAGE               32793
+#define ID_SHOWCOLS_COLOR               32794
+#define ID_SHOWCOLS_MAXUSAGE            32795
+#define ID_SHOWCOLS_MAXCOUNT            32796
+*/

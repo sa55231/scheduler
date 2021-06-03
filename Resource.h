@@ -137,7 +137,9 @@
 #define IDS_STOCK_EVENT_COLOR           325
 #define IDS_STOCK_EVENT_DURATION        326
 #define IDD_SCHEDULE_OPTIONS_DIALOG     327
-#define IDS_STOCK_EVENT_USAGE			328
+#define IDS_STOCK_EVENT_USAGE           328
+#define IDR_SHOW_COLUMNS_MENU           330
+#define IDS_STOCK_EVENT_MAXCOUNT		331
 #define IDC_EVENT_LIST                  1000
 #define IDC_TRACK_EVENT_LIST            1001
 #define ID_DOCUMENT_SETTINGS_MANAGER    1002
@@ -158,13 +160,12 @@
 #define IDC_PRINT_SCHEDULE_GRAPHICAL_RADIO 1022
 #define IDC_PRINT_SCHEDULE_TEXT_RADIO   1023
 #define IDC_PRINT_ONE_TRACK_PER_PAGE_CHECK 1024
-#define ID_TRACKS_DOC_FONT				1025
-#define ID_TRACKS_DOC_FONT_SIZE			1026
-#define ID_EVENTS_DOC_FONT				1027
-#define ID_EVENTS_DOC_FONT_SIZE			1028
-#define ID_HEADER_DOC_FONT				1029
-#define ID_HEADER_DOC_FONT_SIZE			1030
-
+#define ID_TRACKS_DOC_FONT              1025
+#define ID_TRACKS_DOC_FONT_SIZE         1026
+#define ID_EVENTS_DOC_FONT              1027
+#define ID_EVENTS_DOC_FONT_SIZE         1028
+#define ID_HEADER_DOC_FONT              1029
+#define ID_HEADER_DOC_FONT_SIZE         1030
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
@@ -182,13 +183,18 @@
 #define ID_VIEW_EVENTS                  32788
 #define ID_VIEW_PROPERTIES              32789
 #define ID_APP_OPTIONS                  32790
+#define ID_SHOW_EVENT_COLUMS            32791
+#define ID_SHOWCOLS_DURATION            32792
+#define ID_SHOWCOLS_USAGE               32793
+#define ID_SHOWCOLS_COLOR               32794
+#define ID_SHOWCOLS_MAXCOUNT            32796
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        330
-#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_RESOURCE_VALUE        332
+#define _APS_NEXT_COMMAND_VALUE         32797
 #define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

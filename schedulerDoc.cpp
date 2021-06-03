@@ -141,7 +141,8 @@ BOOL CSchedulerDoc::OnNewDocument()
 		CString name;
 		name.Format(_T("Event #%d"), i);
 		std::chrono::seconds duration(duration_distribution(generator));
-		stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(i, std::move(name), std::move(duration), color_distribution(generator)));
+		auto event = AddEvent(name,0);
+		event->SetDuration(std::move(duration));
 	}
 
 	std::uniform_int_distribution<int> stock_distribution(0, (int)stockEvents.size() - 1);
@@ -161,6 +162,7 @@ BOOL CSchedulerDoc::OnNewDocument()
 		tracks.emplace_back(std::make_unique<CScheduleTrack>(i, name, std::move(events)));
 	}
 	RefreshEventsSchedulingCapabilities();
+	SetModifiedFlag(FALSE);
 #endif //_DEBUG
 
 	AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
