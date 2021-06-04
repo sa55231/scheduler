@@ -51,16 +51,20 @@ protected:
 	CCustomPropertyGrid m_wndPropList;
 	enum PropertyControlsID
 	{
-		IDEventName = 0,
+		IDEventGroup = 0,
+		IDEventName,
 		IDEventColor,
 		IDEventDuration,
 		IDEventDurationDays,
 		IDEventDurationHours,
 		IDEventDurationMinutes,
 		IDEventDurationSeconds,
+		IDTrackGroup,
 		IDTrackName,
 		IDTrackStartDate,
-		IDTrackStartTime
+		IDTrackStartTime,
+		IDEventConstraints,
+		IDEventConstraintsMaxCount,
 	};
 // Implementation
 public:

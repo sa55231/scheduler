@@ -15,6 +15,7 @@
 #include "StockEventView.h"
 #include "Resource.h"
 #include "scheduler.h"
+#include "EventMaxCountConstraint.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -43,12 +44,31 @@ namespace
 		str.AppendFormat(_T(":%02ds"), (int)seconds.count());
 		return str;
 	}
+
+	int GetEventMaxCount(CScheduleStockEvent* event)
+	{
+		for (const auto& c : event->GetConstraints())
+		{
+			if (c->GetType() == ConstraintType::MaxCountConstraint)
+			{
+				auto maxCountConstraint = (CEventMaxCountConstraint*)(c.get());
+				return maxCountConstraint->GetCount();
+			}
+		}
+		return 0;
+	}
 }
 IMPLEMENT_DYNAMIC(CStockEventsListCtrl, CMFCListCtrl)
 
 COLORREF CStockEventsListCtrl::OnGetCellBkColor(int nRow, int nColumn)
 {
 	CScheduleStockEvent* event = (CScheduleStockEvent*)GetItemData(nRow);
+
+	if (!event->CanScheduleGlobally())
+	{
+		return RGB(128, 128, 128);
+	}
+
 	EventsViewColumns col = EventsViewColumns::ColumnsCount;
 	for (const auto& c : columnMappings)
 	{
@@ -90,6 +110,8 @@ int CStockEventsListCtrl::OnCompareItems(LPARAM lParam1, LPARAM lParam2, int iCo
 		return (int)(s1->GetColor() - s2->GetColor());
 	case EventsViewColumns::Usage:
 		return s1->GetUsage() - s2->GetUsage();
+	case EventsViewColumns::MaxCount:
+		return GetEventMaxCount(s1) - GetEventMaxCount(s2);
 	default:
 		return 0;
 	}
@@ -140,12 +162,14 @@ void CStockEventsListCtrl::SetColumnVisible(EventsViewColumns col, bool flag)
 			CString color;
 			CString usage;
 			usage.Format(_T("%d"), event->GetUsage());
-			
+			CString maxCount;
+			maxCount.Format(_T("%d"), GetEventMaxCount(event));
 			auto duration = FormatDuration(event->GetDuration());
 			SetCellText(i, EventsViewColumns::Name, event->GetName());
 			SetCellText(i, EventsViewColumns::Duration, duration);
 			SetCellText(i, EventsViewColumns::Color, color);
 			SetCellText(i, EventsViewColumns::Usage, usage);
+			SetCellText(i, EventsViewColumns::MaxCount, maxCount);
 		}
 	}
 	else
@@ -383,9 +407,12 @@ void CStockEventView::OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 			auto duration = FormatDuration(event->GetDuration());
 			CString usage;
 			usage.Format(_T("%d"), event->GetUsage());
+			CString maxCount;
+			maxCount.Format(_T("%d"), GetEventMaxCount(event));
 			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Duration, duration);
 			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Color, color);
 			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::Usage, usage);
+			m_wndEventListView.SetCellText(listInfo->item.iItem, EventsViewColumns::MaxCount, maxCount);
 		}
 		else
 		{
@@ -474,10 +501,13 @@ void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 			CString usage;
 			usage.Format(_T("%d"), ev->GetUsage());
 			auto duration = FormatDuration(ev->GetDuration());
-			
+			CString maxCount;
+			maxCount.Format(_T("%d"), GetEventMaxCount(ev.get()));
+
 			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Duration,  duration);
 			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Color,  color);
 			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::Usage,  usage);
+			m_wndEventListView.SetCellText(insertedIndex, EventsViewColumns::MaxCount, maxCount);
 		}
 	}
 	else
@@ -489,10 +519,13 @@ void CStockEventView::ReloadEventsList(CSchedulerDoc* pDoc)
 			CString usage;
 			usage.Format(_T("%d"), event->GetUsage());
 			auto duration = FormatDuration(event->GetDuration());
+			CString maxCount;
+			maxCount.Format(_T("%d"), GetEventMaxCount(event));
 			m_wndEventListView.SetCellText(i, EventsViewColumns::Name, event->GetName());
 			m_wndEventListView.SetCellText(i, EventsViewColumns::Duration, duration);
 			m_wndEventListView.SetCellText(i, EventsViewColumns::Color, color);
 			m_wndEventListView.SetCellText(i, EventsViewColumns::Usage, usage);
+			m_wndEventListView.SetCellText(i, EventsViewColumns::MaxCount, maxCount);
 		}
 	}
 
@@ -525,11 +558,16 @@ void CStockEventView::OnBeginDragEvent(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
 	int dragItemIndex = pNMListView->iItem;
+	CScheduleStockEvent* event = (CScheduleStockEvent*)m_wndEventListView.GetItemData(dragItemIndex);
+	if (!event->CanScheduleGlobally())
+	{
+		*pResult = 1;
+		return;
+	}
 	//// Create a drag image
 	POINT pt = {0,0};
 	CImageList*  dragImageList = m_wndEventListView.CreateDragImage(dragItemIndex, &pt);
 	ASSERT(dragImageList); //make sure it was created
-	CScheduleStockEvent* event = (CScheduleStockEvent*)m_wndEventListView.GetItemData(dragItemIndex);
 	GetMainFrame()->StartDraggingStockEvent(event->GetId(), dragImageList, pNMListView->ptAction);		
 
 	*pResult = 0;
@@ -753,11 +791,3 @@ void CStockEventView::OnUpdateShowHideColumnsPopup(CCmdUI* pCmdUI)
 	}
 	pCmdUI->SetCheck(m_wndEventListView.IsColumnVisible(col));
 }
-
-
-/*#define ID_SHOWCOLS_DURATION            32792
-#define ID_SHOWCOLS_USAGE               32793
-#define ID_SHOWCOLS_COLOR               32794
-#define ID_SHOWCOLS_MAXUSAGE            32795
-#define ID_SHOWCOLS_MAXCOUNT            32796
-*/

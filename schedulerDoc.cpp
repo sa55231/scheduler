@@ -367,6 +367,7 @@ CScheduleStockEvent* CSchedulerDoc::AddEvent(const CString& newName, LPARAM lHin
 	}
 	std::chrono::seconds duration(2*3600);
 	stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, newName, std::move(duration), color_distribution(generator)));
+	stockEvents.back()->AddConstraint(CScheduleEventConstraintFactory::Create(ConstraintType::MaxCountConstraint));
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 
@@ -424,6 +425,27 @@ void CSchedulerDoc::UpdateTrackName(CScheduleTrack* track, const CString& newNam
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 }
+void CSchedulerDoc::UpdateStockEventDuration(CScheduleStockEvent* event, const std::chrono::seconds& newDuration, LPARAM lHint)
+{
+	event->SetDuration(newDuration);
+	RefreshEventsSchedulingCapabilities();
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
+void CSchedulerDoc::UpdateStockEventConstraint(CScheduleStockEvent* event, ConstraintType type, const COleVariant& value, LPARAM lHint)
+{
+	for (const auto& c : event->GetConstraints())
+	{
+		if (c->GetType() == type)
+		{
+			c->SetValue(value);
+		}
+	}
+	
+	RefreshEventsSchedulingCapabilities();
+	SetModifiedFlag(TRUE);
+	UpdateAllViews(nullptr, lHint);
+}
 void CSchedulerDoc::UpdateStockEventName(CScheduleStockEvent* event, const CString& newName, LPARAM lHint)
 {
 	event->SetName(newName);
@@ -456,6 +478,7 @@ TRY
 			ar << ev->GetConstraints().size();
 			for (const auto& c : ev->GetConstraints())
 			{
+				ar << (int)c->GetType();
 				c->Serialize(ar);
 			}
 		}
@@ -609,6 +632,7 @@ TRY
 		tracks = std::move(newTracks);
 		stockEvents = std::move(newStockEvents);
 
+		RefreshEventsSchedulingCapabilities();
 		AfxGetMainWnd()->PostMessage(WM_DOCUMENT_LOADED, 0, (LPARAM)this);
 		UpdateAllViews(nullptr, 0);
 	}	

@@ -210,6 +210,7 @@
     <ClInclude Include="CScheduleEventConstraint.h" />
     <ClInclude Include="CScheduleEventConstraintFactory.h" />
     <ClInclude Include="CSchedulerOptionsPage.h" />
+    <ClInclude Include="EventMaxCountConstraint.h" />
     <ClInclude Include="PropertyGridDateProperty.h" />
     <ClInclude Include="TracksView.h" />
     <ClInclude Include="CScheduleEvent.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="CScheduleEventConstraint.cpp" />
     <ClCompile Include="CScheduleEventConstraintFactory.cpp" />
     <ClCompile Include="CSchedulerOptionsPage.cpp" />
+    <ClCompile Include="EventMaxCountConstraint.cpp" />
     <ClCompile Include="PropertyGridDateProperty.cpp" />
     <ClCompile Include="TracksView.cpp" />
     <ClCompile Include="CScheduleEvent.cpp" />

@@ -18,6 +18,7 @@
 #include "scheduler.h"
 #include "CScheduleEvent.h"
 #include "PropertyGridDateProperty.h"
+#include "EventMaxCountConstraint.h"
 
 #include <chrono>
 
@@ -120,9 +121,6 @@ void CPropertiesWnd::OnInitialUpdate()
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);	
-	m_wndPropList.RemoveAll();
-	m_wndPropList.RedrawWindow();
-
 }
 void CPropertiesWnd::OnUpdate(const LPARAM lHint)
 {
@@ -135,24 +133,25 @@ void CPropertiesWnd::OnUpdate(const LPARAM lHint)
 }
 std::chrono::seconds CPropertiesWnd::GetDurationFromPropertyParent(CMFCPropertyGridProperty* property)
 {
-	long days = property->GetSubItem(0)->GetValue().intVal;
-	long hours = property->GetSubItem(1)->GetValue().intVal;
-	long minutes = property->GetSubItem(2)->GetValue().intVal;
-	long seconds = property->GetSubItem(3)->GetValue().intVal;
+	int days = property->GetSubItem(0)->GetValue().intVal;
+	int hours = property->GetSubItem(1)->GetValue().intVal;
+	int minutes = property->GetSubItem(2)->GetValue().intVal;
+	int seconds = property->GetSubItem(3)->GetValue().intVal;
+
 	if (seconds > 59)
 	{
 		seconds = 59;
-		property->GetSubItem(3)->SetValue((variant_t)seconds);
+		property->GetSubItem(3)->SetValue(COleVariant((long)seconds, VT_I4));
 	}
 	if (minutes > 59)
 	{
 		minutes = 59;
-		property->GetSubItem(2)->SetValue((variant_t)minutes);
+		property->GetSubItem(2)->SetValue(COleVariant((long)minutes, VT_I4));
 	}
 	if (hours > 23)
 	{
 		hours = 23;
-		property->GetSubItem(1)->SetValue((variant_t)hours);
+		property->GetSubItem(1)->SetValue(COleVariant((long)hours, VT_I4));
 	}		
 
 	using days_t = std::chrono::duration<int, std::ratio<86400>>;
@@ -170,8 +169,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		if (event)
 		{
 			event->SetName(newName);
-			GetDocument()->SetModifiedFlag(TRUE);
-			GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+			GetDocument()->UpdateStockEventName(event, newName, (LPARAM)this);
 		}
 	}
 		break;
@@ -197,16 +195,12 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 	case IDEventDurationSeconds:
 	{
 		auto durationProperty = property->GetParent();
-		event->SetDuration(GetDurationFromPropertyParent(property->GetParent()));
-		GetDocument()->SetModifiedFlag(TRUE);
-		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+		GetDocument()->UpdateStockEventDuration(event, GetDurationFromPropertyParent(property->GetParent()), (LPARAM)this);
 	}	
 		break;
 	case IDEventDuration:
 	{
-		event->SetDuration(GetDurationFromPropertyParent(property));
-		GetDocument()->SetModifiedFlag(TRUE);
-		GetDocument()->UpdateAllViews(nullptr, (LPARAM)this);
+		GetDocument()->UpdateStockEventDuration(event, GetDurationFromPropertyParent(property), (LPARAM)this);
 	}
 		break;
 	case IDTrackName:
@@ -222,7 +216,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		[[fallthrough]];
 	case IDTrackStartDate:
 	{
-		auto trackPropertyGroup = m_wndPropList.GetProperty(0);		
+		auto trackPropertyGroup = property->GetParent();
 		CPropertyGridDateProperty* dateProperty = (CPropertyGridDateProperty*)trackPropertyGroup->GetSubItem(1);
 		CPropertyGridDateProperty* timeProperty = (CPropertyGridDateProperty*)trackPropertyGroup->GetSubItem(2);
 		auto date = dateProperty->GetTime();
@@ -244,27 +238,37 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		}
 	}
 	break;
+	case IDEventConstraintsMaxCount:
+		GetDocument()->UpdateStockEventConstraint(event, ConstraintType::MaxCountConstraint, property->GetValue(), (LPARAM)this);
+		break;
 	}
+
 	return (LRESULT)TRUE;
 }
 
 void CPropertiesWnd::SetupTrackPropertyControls(CScheduleTrack* track)
 {
-	auto trackPropertyGroup = new CMFCPropertyGridProperty(_T("Track"));
-	auto trackNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)track->GetName(), 
-		_T("Specifies the name of the track"), IDTrackName);
-	trackPropertyGroup->AddSubItem(trackNameProperty);
-	std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
-	COleDateTime time((__time64_t)std::chrono::duration_cast<std::chrono::seconds>(track->GetStartTime().time_since_epoch()).count());
-	ASSERT(time.GetStatus() == COleDateTime::valid);
-	auto trackStartDateProperty = new CPropertyGridDateProperty(_T("Start Date"), time,
-		_T("Specifies the start date of the track"), IDTrackStartDate, false);
-	trackPropertyGroup->AddSubItem(trackStartDateProperty);
-	auto trackStartTimeProperty = new CPropertyGridDateProperty(_T("Start Time"), time,
-		_T("Specifies the start time of the track"), IDTrackStartTime, true);
-	trackPropertyGroup->AddSubItem(trackStartTimeProperty);
 
-	m_wndPropList.AddProperty(trackPropertyGroup);
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		if (prop->GetData() == IDTrackGroup)
+		{
+			prop->GetSubItem(0)->SetOriginalValue((variant_t)track->GetName());
+			prop->GetSubItem(0)->SetValue((variant_t)track->GetName());
+
+			std::chrono::minutes utcOffset(GetDocument()->GetUTCOffsetMinutes());
+			COleDateTime time((__time64_t)std::chrono::duration_cast<std::chrono::seconds>(track->GetStartTime().time_since_epoch()).count());
+			ASSERT(time.GetStatus() == COleDateTime::valid);
+
+			prop->GetSubItem(1)->SetOriginalValue(time);
+			prop->GetSubItem(1)->SetValue(time);
+			prop->GetSubItem(2)->SetOriginalValue(time);
+			prop->GetSubItem(2)->SetValue(time);
+
+			prop->Show(TRUE);
+		}
+	}
 	m_wndPropList.ExpandAll();
 }
 void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
@@ -278,117 +282,115 @@ void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
 	duration -= h;
 	const auto m = std::chrono::duration_cast<std::chrono::minutes>(duration);
 	duration -= m;
-	const auto s = std::chrono::duration_cast<std::chrono::seconds>(duration);	
+	const auto s = std::chrono::duration_cast<std::chrono::seconds>(duration);
 
-	auto eventPropertyGroup = new CMFCPropertyGridProperty(_T("Event"));
-	auto eventNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)event->GetName(), _T("Specifies the name of the event"), IDEventName);
-	eventPropertyGroup->AddSubItem(eventNameProperty);
-	auto eventColorProperty = new CMFCPropertyGridColorProperty(_T("Color"), RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f), nullptr, _T("Specifies the event color"), IDEventColor);
-	eventColorProperty->EnableOtherButton(_T("Other..."));
-	eventColorProperty->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		switch (prop->GetData())
+		{
+		case IDEventGroup:
+			prop->GetSubItem(0)->SetOriginalValue((variant_t)event->GetName());
+			prop->GetSubItem(1)->SetOriginalValue((LONG)RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f));
+			break;
+		case IDEventDuration:
+		{
+			COleVariant days((long)d.count(), VT_I4);
+			COleVariant hours((long)h.count(), VT_I4);
+			COleVariant minutes((long)m.count(), VT_I4);
+			COleVariant seconds((long)s.count(), VT_I4);
+			prop->GetSubItem(0)->SetOriginalValue(days);
+			prop->GetSubItem(1)->SetOriginalValue(hours);
+			prop->GetSubItem(2)->SetOriginalValue(minutes);
+			prop->GetSubItem(3)->SetOriginalValue(seconds);
+		}
+			break;
+		case IDEventConstraints:
+		{
+			for (int i = 0; i < prop->GetSubItemsCount(); i++)
+			{
+				auto constraintProp = prop->GetSubItem(i);
+				for (const auto& c : event->GetConstraints())
+				{
+					if (c->GetType() == ConstraintType::MaxCountConstraint && constraintProp->GetData() == IDEventConstraintsMaxCount)
+					{
+						auto maxCountConstraint = (CEventMaxCountConstraint*)c.get();
+						COleVariant value((long)maxCountConstraint->GetCount(), VT_I4);
+						constraintProp->SetOriginalValue(value);
+					}
+				}
+			}
+		}
+			break;
+		}
+		prop->ResetOriginalValue();
+		prop->Show(prop->GetData() != IDTrackGroup);
+	}
 
-	eventPropertyGroup->AddSubItem(eventColorProperty);
 
-	auto eventDurationPropertyGroup = new CMFCPropertyGridProperty(_T("Duration"), IDEventDuration, FALSE);
-	auto eventDaysProperty = new CMFCPropertyGridProperty(_T("Days"), (_variant_t)(long)d.count(), _T("Specifies the number of days this event will last"),IDEventDurationDays);
-	eventDurationPropertyGroup->AddSubItem(eventDaysProperty);
-	auto eventHoursProperty = new CMFCPropertyGridProperty(_T("Hours"), (_variant_t)(long)h.count(), _T("Specifies the number of hours this event will last"), IDEventDurationHours);
-	eventHoursProperty->EnableSpinControl(TRUE, 0, 23);
-	eventDurationPropertyGroup->AddSubItem(eventHoursProperty);
-	auto eventMinutesProperty = new CMFCPropertyGridProperty(_T("Minutes"), (_variant_t)(long)m.count(), _T("Specifies the number of minutes this event will last"), IDEventDurationMinutes);
-	eventMinutesProperty->EnableSpinControl(TRUE, 0, 59);
-	eventDurationPropertyGroup->AddSubItem(eventMinutesProperty);
-	auto eventSecondsProperty = new CMFCPropertyGridProperty(_T("Seconds"), (_variant_t)(long)s.count(), _T("Specifies the number of seconds this event will last"), IDEventDurationSeconds);
-	eventSecondsProperty->EnableSpinControl(TRUE, 0, 59);
-	eventDurationPropertyGroup->AddSubItem(eventSecondsProperty);
-
-	eventPropertyGroup->AddSubItem(eventDurationPropertyGroup);
-
-	m_wndPropList.AddProperty(eventPropertyGroup);
 	m_wndPropList.ExpandAll();
 }
 
 void CPropertiesWnd::InitPropList()
 {
 	SetPropListFont();
-
+	m_wndPropList.SetOwner(this);
 	m_wndPropList.EnableHeaderCtrl(FALSE);
 	m_wndPropList.EnableDescriptionArea();
 	m_wndPropList.SetVSDotNetLook();
 	m_wndPropList.MarkModifiedProperties();
+	CString str;
+	auto eventPropertyGroup = new CMFCPropertyGridProperty(_T("Event"), IDEventGroup);
+	auto eventNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)str, _T("Specifies the name of the event"), IDEventName);
+	eventPropertyGroup->AddSubItem(eventNameProperty);
+	auto eventColorProperty = new CMFCPropertyGridColorProperty(_T("Color"), RGB(0, 0, 0), nullptr, _T("Specifies the event color"), IDEventColor);
+	eventColorProperty->EnableOtherButton(_T("Other..."));
+	eventColorProperty->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
 
-	/*CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
+	eventPropertyGroup->AddSubItem(eventColorProperty);
+	COleVariant number((long)0,VT_I4);
 
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D Look"), (_variant_t) false, _T("Specifies the window's font will be non-bold and controls will have a 3D border")));
+	auto eventDurationPropertyGroup = new CMFCPropertyGridProperty(_T("Duration"), IDEventDuration, FALSE);
+	auto eventDaysProperty = new CMFCPropertyGridProperty(_T("Days"), number, _T("Specifies the number of days this event will last"), IDEventDurationDays);
+	eventDurationPropertyGroup->AddSubItem(eventDaysProperty);
+	auto eventHoursProperty = new CMFCPropertyGridProperty(_T("Hours"), number, _T("Specifies the number of hours this event will last"), IDEventDurationHours);
+	eventHoursProperty->EnableSpinControl(TRUE, 0, 23);
+	eventDurationPropertyGroup->AddSubItem(eventHoursProperty);
+	auto eventMinutesProperty = new CMFCPropertyGridProperty(_T("Minutes"), number, _T("Specifies the number of minutes this event will last"), IDEventDurationMinutes);
+	eventMinutesProperty->EnableSpinControl(TRUE, 0, 59);
+	eventDurationPropertyGroup->AddSubItem(eventMinutesProperty);
+	auto eventSecondsProperty = new CMFCPropertyGridProperty(_T("Seconds"), number, _T("Specifies the number of seconds this event will last"), IDEventDurationSeconds);
+	eventSecondsProperty->EnableSpinControl(TRUE, 0, 59);
+	eventDurationPropertyGroup->AddSubItem(eventSecondsProperty);
 
-	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("Border"), _T("Dialog Frame"), _T("One of: None, Thin, Resizable, or Dialog Frame"));
-	pProp->AddOption(_T("None"));
-	pProp->AddOption(_T("Thin"));
-	pProp->AddOption(_T("Resizable"));
-	pProp->AddOption(_T("Dialog Frame"));
-	pProp->AllowEdit(FALSE);
+	auto eventConstraintsPropertyGroup = new CMFCPropertyGridProperty(_T("Constraints"), IDEventConstraints, FALSE);
+	auto maxCountConstraintProperty = new CMFCPropertyGridProperty(_T("Max Count"), number, _T("Specifies the maximum count allowed"), IDEventConstraintsMaxCount);
+	maxCountConstraintProperty->EnableSpinControl(TRUE, 0, INT_MAX);
+	eventConstraintsPropertyGroup->AddSubItem(maxCountConstraintProperty);
 
-	pGroup1->AddSubItem(pProp);
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("Caption"), (_variant_t) _T("About"), _T("Specifies the text that will be displayed in the window's title bar")));
+	auto trackPropertyGroup = new CMFCPropertyGridProperty(_T("Track"), IDTrackGroup);
+	auto trackNameProperty = new CMFCPropertyGridProperty(_T("Name"), (variant_t)str,
+		_T("Specifies the name of the track"), IDTrackName);
+	trackPropertyGroup->AddSubItem(trackNameProperty);
 
-	m_wndPropList.AddProperty(pGroup1);
+	COleDateTime time;	
+	auto trackStartDateProperty = new CPropertyGridDateProperty(_T("Start Date"), time,
+		_T("Specifies the start date of the track"), IDTrackStartDate, false);
+	trackPropertyGroup->AddSubItem(trackStartDateProperty);
+	auto trackStartTimeProperty = new CPropertyGridDateProperty(_T("Start Time"), time,
+		_T("Specifies the start time of the track"), IDTrackStartTime, true);
+	trackPropertyGroup->AddSubItem(trackStartTimeProperty);
 
-	CMFCPropertyGridProperty* pSize = new CMFCPropertyGridProperty(_T("Window Size"), 0, TRUE);
+	m_wndPropList.AddProperty(eventPropertyGroup);
+	m_wndPropList.AddProperty(eventDurationPropertyGroup);
+	m_wndPropList.AddProperty(eventConstraintsPropertyGroup);
+	m_wndPropList.AddProperty(trackPropertyGroup);
 
-	pProp = new CMFCPropertyGridProperty(_T("Height"), (_variant_t) 250l, _T("Specifies the window's height"));
-	pProp->EnableSpinControl(TRUE, 50, 300);
-	pSize->AddSubItem(pProp);
-
-	pProp = new CMFCPropertyGridProperty( _T("Width"), (_variant_t) 150l, _T("Specifies the window's width"));
-	pProp->EnableSpinControl(TRUE, 50, 200);
-	pSize->AddSubItem(pProp);
-
-	m_wndPropList.AddProperty(pSize);
-
-	CMFCPropertyGridProperty* pGroup2 = new CMFCPropertyGridProperty(_T("Font"));
-
-	LOGFONT lf;
-	CFont* font = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
-	font->GetLogFont(&lf);
-
-	_tcscpy_s(lf.lfFaceName, _T("Arial"));
-
-	pGroup2->AddSubItem(new CMFCPropertyGridFontProperty(_T("Font"), lf, CF_EFFECTS | CF_SCREENFONTS, _T("Specifies the default font for the window")));
-	pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("Use System Font"), (_variant_t) true, _T("Specifies that the window uses MS Shell Dlg font")));
-
-	m_wndPropList.AddProperty(pGroup2);
-
-	CMFCPropertyGridProperty* pGroup3 = new CMFCPropertyGridProperty(_T("Misc"));
-	pProp = new CMFCPropertyGridProperty(_T("(Name)"), _T("Application"));
-	pProp->Enable(FALSE);
-	pGroup3->AddSubItem(pProp);
-
-	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Window Color"), RGB(210, 192, 254), nullptr, _T("Specifies the default window color"));
-	pColorProp->EnableOtherButton(_T("Other..."));
-	pColorProp->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
-	pGroup3->AddSubItem(pColorProp);
-
-	static const TCHAR szFilter[] = _T("Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||");
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Icon"), TRUE, _T(""), _T("ico"), 0, szFilter, _T("Specifies the window icon")));
-
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Folder"), _T("c:\\")));
-
-	m_wndPropList.AddProperty(pGroup3);
-
-	CMFCPropertyGridProperty* pGroup4 = new CMFCPropertyGridProperty(_T("Hierarchy"));
-
-	CMFCPropertyGridProperty* pGroup41 = new CMFCPropertyGridProperty(_T("First sub-level"));
-	pGroup4->AddSubItem(pGroup41);
-
-	CMFCPropertyGridProperty* pGroup411 = new CMFCPropertyGridProperty(_T("Second sub-level"));
-	pGroup41->AddSubItem(pGroup411);
-
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 1"), (_variant_t) _T("Value 1"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 2"), (_variant_t) _T("Value 2"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 3"), (_variant_t) _T("Value 3"), _T("This is a description")));
-
-	pGroup4->Expand(FALSE);
-	m_wndPropList.AddProperty(pGroup4);*/
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		prop->Show(FALSE);
+	}
 }
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
@@ -427,7 +429,12 @@ void CPropertiesWnd::SetPropListFont()
 
 LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
-	m_wndPropList.RemoveAll();
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		prop->Show(prop->GetData() != IDTrackGroup);
+	}
+	
 	m_wndPropList.RedrawWindow();
 
 	int eventId = (int)wparam;
@@ -444,7 +451,11 @@ LRESULT CPropertiesWnd::OnEventObjectSelected(WPARAM wparam, LPARAM lparam)
 
 LRESULT CPropertiesWnd::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 {
-	m_wndPropList.RemoveAll();
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		prop->Show(prop->GetData() == IDTrackGroup);
+	}
 	m_wndPropList.RedrawWindow();
 
 	int trackId = (int)wparam;
@@ -459,7 +470,12 @@ LRESULT CPropertiesWnd::OnTrackObjectSelected(WPARAM wparam, LPARAM lparam)
 
 afx_msg LRESULT CPropertiesWnd::OnStockEventObjectSelected(WPARAM wparam, LPARAM lparam)
 {
-	m_wndPropList.RemoveAll();
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		prop->Show(prop->GetData() != IDTrackGroup);
+	}
+
 	m_wndPropList.RedrawWindow();
 	int eventId = (int)wparam;
 	event = GetDocument()->GetStockEvent(eventId);

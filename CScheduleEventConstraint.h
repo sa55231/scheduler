@@ -7,7 +7,7 @@ class CScheduleTrack;
 
 enum class ConstraintType : int
 {
-	UsageConstraint = 0
+	MaxCountConstraint = 0
 };
 
 class CScheduleEventConstraint
@@ -20,6 +20,7 @@ public:
 	virtual bool CanSchedule(const CScheduleStockEvent* event, const CScheduleTrack* track) const = 0;
 	virtual void Serialize(CArchive& ar) = 0;
 	virtual bool IsGlobal() const = 0;
+	virtual void SetValue(const COleVariant& value) = 0;
 };
 
 using CScheduleEventConstraintPtr = std::unique_ptr<CScheduleEventConstraint>;

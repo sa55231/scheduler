@@ -26,6 +26,9 @@ public:
 	const std::vector<CScheduleTrackPtr>& GetTracks() const;
 	const std::vector<CScheduleStockEventPtr>& GetStockEvents() const;
 	void UpdateStockEventName(CScheduleStockEvent* event, const CString& newName, LPARAM lHint);
+	void UpdateStockEventDuration(CScheduleStockEvent* event, const std::chrono::seconds& newDuration, LPARAM lHint);
+	void UpdateStockEventConstraint(CScheduleStockEvent* event, ConstraintType type, const COleVariant& value, LPARAM lHint);
+
 	CScheduleTrack* AddTrack(const CString& newName, LPARAM lHint);
 	void UpdateTrackName(CScheduleTrack* track, const CString& newName, LPARAM lHint);
 	void UpdateTrackStartTime(CScheduleTrack* track, const std::chrono::system_clock::time_point& time, LPARAM lHint);
