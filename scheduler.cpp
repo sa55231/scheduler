@@ -208,6 +208,8 @@ protected:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnNMClickGpl30Syslink(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX)
@@ -220,6 +222,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_NOTIFY(NM_CLICK, IDC_GPL30_SYSLINK, &CAboutDlg::OnNMClickGpl30Syslink)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -258,4 +261,14 @@ void CSchedulerApp::SaveCustomState()
 // CSchedulerApp message handlers
 
 
+void CAboutDlg::OnNMClickGpl30Syslink(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	PNMLINK pNMLink = (PNMLINK)pNMHDR;
+	
+	if (pNMLink->item.szUrl)
+	{
+		ShellExecute(NULL, L"open", pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
+	}
 
+	*pResult = 0;
+}
