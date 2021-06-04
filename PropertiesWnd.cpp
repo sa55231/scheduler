@@ -121,6 +121,11 @@ void CPropertiesWnd::OnInitialUpdate()
 {
 	CSchedulerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);	
+	for (int i = 0; i < m_wndPropList.GetPropertyCount(); i++)
+	{
+		auto prop = m_wndPropList.GetProperty(i);
+		prop->Show(FALSE);
+	}
 }
 void CPropertiesWnd::OnUpdate(const LPARAM lHint)
 {

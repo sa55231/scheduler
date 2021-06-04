@@ -176,8 +176,6 @@ void CSchedulerView::HandleEventSelection(CPoint point)
 	ASSERT_VALID(pDoc);
 	if (!pDoc) return;
 
-	lastLButtonDownPoint = point;
-
 	if (selectedEvent != nullptr)
 	{
 		selectedEvent->SetSelected(false);
@@ -228,6 +226,17 @@ void CSchedulerView::HandleEventSelection(CPoint point)
 void CSchedulerView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	HandleEventSelection(point);
+	if (DragDetect(point) && !dragging)
+	{
+		if (selectedEvent != nullptr)
+		{
+			dragging = true;
+			CreateEventDraggingImageList();
+			eventDraggingImageList->BeginDrag(0, CPoint(0, 0));
+			eventDraggingImageList->DragEnter(GetDesktopWindow(), point);
+			SetCapture();
+		}
+	}
 	CScrollView::OnLButtonDown(nFlags, point);
 }
 void CSchedulerView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -288,17 +297,6 @@ void CSchedulerView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	if (!dragging)
 	{
-		auto distance = std::sqrt((lastLButtonDownPoint.x - point.x) * (lastLButtonDownPoint.x - point.x) +
-			(lastLButtonDownPoint.y - point.y) * (lastLButtonDownPoint.y - point.y));		
-		
-		if ((nFlags & MK_LBUTTON) && (selectedEvent != nullptr) && (distance > 20.0))
-		{
-			dragging = true;
-			CreateEventDraggingImageList();
-			eventDraggingImageList->BeginDrag(0, CPoint(0, 0));
-			eventDraggingImageList->DragEnter(GetDesktopWindow(), point);
-			SetCapture();
-		}
 	}
 	
 	if (dragging)

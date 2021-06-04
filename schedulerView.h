@@ -98,7 +98,6 @@ private:
 	CEventRenderer* dropTargetEvent = nullptr;
 	CTrackRenderer* dropTargetTrack = nullptr;
 	bool dragging = false;
-	CPoint lastLButtonDownPoint = {0,0};
 	CImageList* eventDraggingImageList = nullptr;
 	CImageList contextMenuImageList;
 	CBitmap removeSelectedEventBitmap;
