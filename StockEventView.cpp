@@ -64,7 +64,7 @@ COLORREF CStockEventsListCtrl::OnGetCellBkColor(int nRow, int nColumn)
 {
 	CScheduleStockEvent* event = (CScheduleStockEvent*)GetItemData(nRow);
 
-	if (!event->CanScheduleGlobally())
+	if (event != nullptr && !event->CanScheduleGlobally())
 	{
 		return RGB(128, 128, 128);
 	}

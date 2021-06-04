@@ -368,6 +368,7 @@ CScheduleStockEvent* CSchedulerDoc::AddEvent(const CString& newName, LPARAM lHin
 	std::chrono::seconds duration(2*3600);
 	stockEvents.emplace_back(std::make_unique<CScheduleStockEvent>(id, newName, std::move(duration), color_distribution(generator)));
 	stockEvents.back()->AddConstraint(CScheduleEventConstraintFactory::Create(ConstraintType::MaxCountConstraint));
+	RefreshEventsSchedulingCapabilities();
 	SetModifiedFlag(TRUE);
 	UpdateAllViews(nullptr, lHint);
 
