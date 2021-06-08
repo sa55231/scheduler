@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CScheduleStockEvent.h"
+#include "CScheduleEventConstraintFactory.h"
 
 CScheduleStockEvent::CScheduleStockEvent() :duration{ 0 }
 {
@@ -97,4 +98,14 @@ void CScheduleStockEvent::RefreshGlobalSchedulingCapabilities(const std::vector<
 bool CScheduleStockEvent::CanScheduleGlobally() const
 {
 	return canScheduleGlobally;
+}
+void CScheduleStockEvent::EnsureContainsConstraint(ConstraintType type)
+{
+	auto it = std::find_if(constraints.begin(), constraints.end(), [type](const auto& c) {
+		return c->GetType() == type;
+	});
+	if (it == constraints.end())
+	{
+		AddConstraint(CScheduleEventConstraintFactory::Create(type));
+	}
 }

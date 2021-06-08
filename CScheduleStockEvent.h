@@ -29,6 +29,7 @@ public:
 	bool CanScheduleGlobally() const;
 	void RefreshGlobalSchedulingCapabilities(const std::vector<CScheduleTrackPtr>& tracks);
 	bool CanSchedule(CScheduleTrack* track) const;
+	void EnsureContainsConstraint(ConstraintType type);
 private:
 	int id = 0;
 	CString name;

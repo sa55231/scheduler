@@ -315,6 +315,7 @@ void CPropertiesWnd::SetupEventPropertyControls(CScheduleStockEvent* event)
 			for (int i = 0; i < prop->GetSubItemsCount(); i++)
 			{
 				auto constraintProp = prop->GetSubItem(i);
+				event->EnsureContainsConstraint(ConstraintType::MaxCountConstraint);
 				for (const auto& c : event->GetConstraints())
 				{
 					if (c->GetType() == ConstraintType::MaxCountConstraint && constraintProp->GetData() == IDEventConstraintsMaxCount)

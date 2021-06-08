@@ -435,6 +435,7 @@ void CSchedulerDoc::UpdateStockEventDuration(CScheduleStockEvent* event, const s
 }
 void CSchedulerDoc::UpdateStockEventConstraint(CScheduleStockEvent* event, ConstraintType type, const COleVariant& value, LPARAM lHint)
 {
+	event->EnsureContainsConstraint(type);
 	for (const auto& c : event->GetConstraints())
 	{
 		if (c->GetType() == type)
