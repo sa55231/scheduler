@@ -168,6 +168,7 @@
 #define ID_HEADER_DOC_FONT_SIZE         1030
 #define IDC_SYSLINK1                    1031
 #define IDC_GPL30_SYSLINK               1031
+#define IDC_VERSION_STATIC              1032
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_EDIT_EVENT                   32771
 #define ID_REMOVE_EVENT                 32772
@@ -197,7 +198,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        333
 #define _APS_NEXT_COMMAND_VALUE         32797
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1033
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

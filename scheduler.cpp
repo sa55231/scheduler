@@ -22,6 +22,8 @@
 #include "schedulerDoc.h"
 #include "schedulerView.h"
 
+#include <strsafe.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -204,7 +206,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
+	virtual BOOL OnInitDialog();
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -219,6 +221,48 @@ CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX)
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+}
+
+BOOL CAboutDlg::OnInitDialog()
+{
+	auto versionStatic = GetDlgItem(IDC_VERSION_STATIC);
+	if (versionStatic)
+	{
+		DWORD dwHandle;			// ignored 
+		CString name;
+		name.Format(_T("%s.exe"), AfxGetApp()->m_pszExeName);
+		DWORD versionSize = GetFileVersionInfoSize(name, &dwHandle);
+
+		if (versionSize != 0)
+		{
+			auto buf = std::make_unique<std::byte[]>(versionSize);
+			GetFileVersionInfo(name, NULL, versionSize, buf.get());
+			struct LANGANDCODEPAGE {
+				WORD wLanguage;
+				WORD wCodePage;
+			} *lpTranslate;
+			UINT cbTranslate;
+			VerQueryValue(buf.get(), TEXT("\\VarFileInfo\\Translation"), (LPVOID*)&lpTranslate, &cbTranslate);
+
+			for (int i = 0; i < (cbTranslate / sizeof(struct LANGANDCODEPAGE)); i++)
+			{
+				TCHAR SubBlock[50] = { 0 };
+				HRESULT hr = StringCchPrintf(SubBlock, ARRAYSIZE(SubBlock),
+					_T("\\StringFileInfo\\%04x%04x\\ProductVersion"),
+					lpTranslate[i].wLanguage,lpTranslate[i].wCodePage);
+				ASSERT(SUCCEEDED(hr));
+
+				LPVOID lpBuffer = nullptr;
+				UINT dwBytes = 0;
+				VerQueryValue(buf.get(), SubBlock, &lpBuffer, &dwBytes);
+				CString versionString((TCHAR*)lpBuffer,dwBytes);
+				versionStatic->SetWindowText(versionString);
+				break;
+			}
+		}
+	}
+
+	return TRUE;
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
